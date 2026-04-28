@@ -1,0 +1,7 @@
+<resources>
+    <string name="reader_opening_book">Opening book...</string>
+    <string name="reader_close_book_aria">Close book</string>
+    <string name="reader_unavailable_offline">This book is not available offline yet.</string>
+    <string name="reader_missing_cached_message">This book is not cached yet.</string>
+    <string name="reader_empty_symbol">📖</string>
+</resources>

@@ -1,0 +1,13 @@
+<resources>
+    <string name="settings_done">Done</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_signed_in_as_prefix">Signed in as</string>
+    <string name="settings_menu_offline_library">Offline library</string>
+    <string name="settings_menu_download_preferences">Download preferences</string>
+    <string name="settings_menu_parent_tips">Parent tips</string>
+    <string name="settings_sign_out">Sign out</string>
+    <string name="settings_guest_title">Login or register</string>
+    <string name="settings_guest_body">Create a parent profile to sync favorites and show your family name in the toolbar.</string>
+    <string name="settings_open_auth">Open auth</string>
+    <string name="settings_signed_out_message">Signed out.</string>
+</resources>

@@ -22,6 +22,10 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            export(projects.features.auth)
+            export(projects.features.home)
+            export(projects.features.reader)
+            export(projects.features.settings)
         }
     }
     
@@ -31,6 +35,15 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            implementation(projects.core)
+            implementation(projects.design)
+            implementation(projects.components)
+            implementation(projects.services.catalog)
+            implementation(projects.services.profiles)
+            implementation(projects.features.auth)
+            implementation(projects.features.home)
+            implementation(projects.features.reader)
+            implementation(projects.features.settings)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -39,6 +52,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.koin.core)
+            implementation(libs.ktor.client.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -76,4 +91,3 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
-

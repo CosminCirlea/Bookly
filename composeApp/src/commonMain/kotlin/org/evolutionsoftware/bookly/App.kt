@@ -1,49 +1,103 @@
 package org.evolutionsoftware.bookly
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
-
-import bookly.composeapp.generated.resources.Res
-import bookly.composeapp.generated.resources.compose_multiplatform
+import kotlinx.coroutines.launch
+import org.evolutionsoftware.bookly.design.theme.bookly.BooklyTheme
+import org.evolutionsoftware.bookly.di.AppKoin
+import org.evolutionsoftware.bookly.features.auth.AuthDestination
+import org.evolutionsoftware.bookly.features.auth.AuthFlow
+import org.evolutionsoftware.bookly.features.home.HomeRoute
+import org.evolutionsoftware.bookly.features.reader.ReaderRoute
+import org.evolutionsoftware.bookly.features.settings.SettingsRoute
 
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
+    remember { AppKoin.start() }
+
+    BooklyTheme {
+        val scope = rememberCoroutineScope()
+        val snackbarHostState = remember { SnackbarHostState() }
+        var refreshKey by remember { mutableIntStateOf(0) }
+        var destination by remember { mutableStateOf<AppDestination>(AppDestination.Home) }
+
+        fun showMessage(message: String) {
+            refreshKey++
+            scope.launch {
+                snackbarHostState.showSnackbar(message)
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+        }
+
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        ) { _ ->
+            when (val screen = destination) {
+                AppDestination.Home ->
+                    HomeRoute(
+                        refreshKey = refreshKey,
+                        onBookSelected = { bookId -> destination = AppDestination.Reader(bookId) },
+                        onSettingsClick = { destination = AppDestination.Settings },
+                    )
+
+                is AppDestination.Reader -> {
+                    PlatformBackHandler {
+                        destination = AppDestination.Home
+                    }
+                    ReaderRoute(
+                        bookId = screen.bookId,
+                        onBack = { destination = AppDestination.Home },
+                        onShowMessage = ::showMessage,
+                    )
+                }
+
+                AppDestination.Settings -> {
+                    PlatformBackHandler {
+                        destination = AppDestination.Home
+                    }
+                    SettingsRoute(
+                        refreshKey = refreshKey,
+                        onClose = { destination = AppDestination.Home },
+                        onRequireAuthentication = { destination = AppDestination.Auth(AuthDestination.SignIn) },
+                        onShowMessage = ::showMessage,
+                    )
+                }
+
+                is AppDestination.Auth -> {
+                    AuthFlow(
+                        startDestination = screen.destination,
+                        onExit = { destination = AppDestination.Settings },
+                        onAuthenticated = {
+                            destination = AppDestination.Settings
+                            showMessage(it)
+                        },
+                        onFinished = {
+                            destination = AppDestination.Settings
+                            showMessage(it)
+                        },
+                        onShowMessage = ::showMessage,
+                    )
                 }
             }
         }
     }
+}
+
+private sealed interface AppDestination {
+    data object Home : AppDestination
+
+    data class Reader(val bookId: String) : AppDestination
+
+    data object Settings : AppDestination
+
+    data class Auth(val destination: AuthDestination) : AppDestination
 }
