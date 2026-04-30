@@ -6,25 +6,31 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,10 +43,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import bookly.features.reader.generated.resources.Res
+import bookly.features.reader.generated.resources.reader_autoplay_start_aria
+import bookly.features.reader.generated.resources.reader_autoplay_stop_aria
+import bookly.features.reader.generated.resources.reader_close_book_aria
 import bookly.features.reader.generated.resources.reader_empty_symbol
 import bookly.features.reader.generated.resources.reader_missing_cached_message
+import bookly.features.reader.generated.resources.reader_opening_book
 import bookly.features.reader.generated.resources.reader_unavailable_offline
 import bookly.features.reader.generated.resources.reader_fox
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.IconButton
@@ -74,6 +85,7 @@ fun ReaderRoute(
 
     ReaderScreen(
         state = state,
+        onIntent = viewModel::onUserIntent,
         onBack = onBack,
     )
 }
@@ -81,11 +93,51 @@ fun ReaderRoute(
 @Composable
 private fun ReaderScreen(
     state: ReaderViewState,
+    onIntent: (ReaderIntent) -> Unit,
     onBack: () -> Unit,
 ) {
     val cards = state.book?.cards.orEmpty()
-    val pagerState = rememberPagerState(pageCount = { maxOf(cards.size, 1) })
     val unavailableMessage = stringResource(Res.string.reader_unavailable_offline)
+    val openingBook = stringResource(Res.string.reader_opening_book)
+    val closeBookAria = stringResource(Res.string.reader_close_book_aria)
+    val autoplayStartAria = stringResource(Res.string.reader_autoplay_start_aria)
+    val autoplayStopAria = stringResource(Res.string.reader_autoplay_stop_aria)
+    val pagerState =
+        rememberPagerState(
+            initialPage = state.currentPage,
+            pageCount = { maxOf(cards.size, 1) },
+        )
+
+    LaunchedEffect(state.isAutoplayEnabled, state.currentPage, cards.size) {
+        if (!state.isAutoplayEnabled || cards.isEmpty()) {
+            return@LaunchedEffect
+        }
+
+        delay(7_000)
+        onIntent(
+            ReaderIntent.AutoplayAdvanceRequested(
+                currentPage = state.currentPage,
+                totalPages = cards.size,
+            ),
+        )
+    }
+
+    LaunchedEffect(pagerState, cards.size) {
+        if (cards.isEmpty()) {
+            return@LaunchedEffect
+        }
+
+        snapshotFlow { pagerState.currentPage }
+            .collectLatest { page -> onIntent(ReaderIntent.PageChanged(page)) }
+    }
+
+    LaunchedEffect(state.currentPage, cards.size) {
+        if (cards.isEmpty() || pagerState.currentPage == state.currentPage) {
+            return@LaunchedEffect
+        }
+
+        pagerState.animateScrollToPage(state.currentPage.coerceIn(0, cards.lastIndex))
+    }
 
     Box(
         modifier =
@@ -95,57 +147,61 @@ private fun ReaderScreen(
                 .statusBarsPadding()
                 .navigationBarsPadding(),
     ) {
-        ReaderCloseButton(
+        ReaderTopBar(
+            isAutoplayEnabled = state.isAutoplayEnabled,
+            autoplayAriaLabel = if (state.isAutoplayEnabled) autoplayStopAria else autoplayStartAria,
+            onAutoplayToggle = { onIntent(ReaderIntent.AutoplayToggled) },
+            closeAriaLabel = closeBookAria,
             onBack = onBack,
             modifier =
                 Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = TokenProvider.spacings.lg, end = TokenProvider.spacings.lg),
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .padding(
+                        start = TokenProvider.spacings.horizontalSpacing,
+                        top = TokenProvider.spacings.horizontalSpacing,
+                        end = TokenProvider.spacings.horizontalSpacing,
+                    ),
         )
 
         if (cards.isEmpty()) {
             ReaderEmptyState(
-                title = state.book?.title ?: "Opening book...",
+                title = state.book?.title ?: openingBook,
                 unavailableMessage = unavailableMessage,
                 modifier = Modifier.align(Alignment.Center),
             )
         } else {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(top = 112.dp, bottom = 48.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween,
-            ) {
-                BoxWithConstraints(
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                val contentWidth = maxWidth.coerceAtMost(420.dp)
+
+                Column(
                     modifier =
                         Modifier
-                            .fillMaxWidth()
-                            .weight(1f, fill = true),
+                            .align(Alignment.TopCenter)
+                            .padding(top = 112.dp)
+                            .padding(horizontal = 8.dp)
+                            .widthIn(max = contentWidth),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    val contentWidth = maxWidth.coerceAtMost(420.dp)
                     HorizontalPager(
                         state = pagerState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = (maxWidth - contentWidth) / 2),
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(0.dp),
                     ) { page ->
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            ReaderPage(
-                                card = cards[page],
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        }
+                        ReaderPage(
+                            card = cards[page],
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
                 }
 
                 ReaderProgressIndicator(
                     total = cards.size,
-                    current = pagerState.currentPage,
-                    modifier = Modifier.padding(top = TokenProvider.spacings.lg),
+                    current = state.currentPage.coerceIn(0, cards.lastIndex),
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 48.dp),
                 )
             }
         }
@@ -160,16 +216,17 @@ private fun ReaderPage(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.lg),
+        verticalArrangement = Arrangement.Top,
     ) {
         ReaderIllustrationCard(
             card = card,
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = TokenProvider.spacings.xs)
                     .aspectRatio(4f / 5f),
         )
+
+        Spacer(modifier = Modifier.size(8.dp))
 
         Text(
             text = card.title,
@@ -186,6 +243,8 @@ private fun ReaderPage(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+
+        Spacer(modifier = Modifier.size(48.dp))
     }
 }
 
@@ -214,9 +273,10 @@ private fun ReaderIllustrationCard(
                 contentDescription = card.title,
                 modifier =
                     Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                contentScale = ContentScale.Fit,
+                        .fillMaxHeight()
+                        .fillMaxWidth(1.25f)
+                        .offset(x = (-6).dp),
+                contentScale = ContentScale.Crop,
             )
         } else {
             Box(
@@ -272,19 +332,82 @@ private fun ReaderProgressIndicator(
 
 @Composable
 private fun ReaderCloseButton(
+    ariaLabel: String,
     onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ReaderActionButton(
+        icon = Icons.Close,
+        ariaLabel = ariaLabel,
+        onClick = onBack,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun ReaderTopBar(
+    isAutoplayEnabled: Boolean,
+    autoplayAriaLabel: String,
+    onAutoplayToggle: () -> Unit,
+    closeAriaLabel: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        ReaderActionButton(
+            icon = if (isAutoplayEnabled) Icons.Pause else Icons.Play,
+            ariaLabel = autoplayAriaLabel,
+            onClick = onAutoplayToggle,
+        )
+        ReaderCloseButton(
+            ariaLabel = closeAriaLabel,
+            onBack = onBack,
+        )
+    }
+}
+
+@Composable
+private fun ReaderActionButton(
+    icon: Icons,
+    ariaLabel: String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     IconButton(
         modifier = modifier,
         properties =
             IconButtonProperties(
-                icon = Icons.Close,
-                ariaLabel = "Close book",
-                buttonSize = 64.dp,
-                iconSize = 18.dp,
+                icon = icon,
+                ariaLabel = ariaLabel,
             ),
-        onClick = onBack,
+        onClick = onClick,
+        content = {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = CircleShape,
+                            ambientColor = Color(0x0D392E00),
+                            spotColor = Color(0x0D392E00),
+                        )
+                        .clip(CircleShape)
+                        .background(TokenProvider.colors.bgAccentSoft),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(icon.icon),
+                    contentDescription = ariaLabel,
+                    tint = TokenProvider.colors.textAccent,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+        },
     )
 }
 
@@ -300,9 +423,9 @@ private fun ReaderEmptyState(
         modifier =
             modifier
                 .widthIn(max = 420.dp)
-                .padding(horizontal = TokenProvider.spacings.lg),
+                .padding(horizontal = TokenProvider.spacings.horizontalSpacing),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.lg),
+        verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.formGapLg),
     ) {
         Box(
             modifier =

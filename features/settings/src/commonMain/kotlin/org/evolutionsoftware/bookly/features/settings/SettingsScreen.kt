@@ -24,8 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,16 +32,40 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import bookly.features.settings.generated.resources.Res
+import bookly.features.settings.generated.resources.settings_account
+import bookly.features.settings.generated.resources.settings_change_password
+import bookly.features.settings.generated.resources.settings_contact_us
+import bookly.features.settings.generated.resources.settings_continue_facebook
+import bookly.features.settings.generated.resources.settings_continue_google
+import bookly.features.settings.generated.resources.settings_edit_profile
+import bookly.features.settings.generated.resources.settings_guest_existing_account
+import bookly.features.settings.generated.resources.settings_guest_playroom_body
+import bookly.features.settings.generated.resources.settings_guest_playroom_title
+import bookly.features.settings.generated.resources.settings_help_center
+import bookly.features.settings.generated.resources.settings_invite_friend
+import bookly.features.settings.generated.resources.settings_join_playroom
+import bookly.features.settings.generated.resources.settings_language
+import bookly.features.settings.generated.resources.settings_log_out
+import bookly.features.settings.generated.resources.settings_more
+import bookly.features.settings.generated.resources.settings_notifications
+import bookly.features.settings.generated.resources.settings_preferences
+import bookly.features.settings.generated.resources.settings_rate_app
+import bookly.features.settings.generated.resources.settings_reset_password
+import bookly.features.settings.generated.resources.settings_sound_audio
 import bookly.features.settings.generated.resources.settings_signed_out_message
+import bookly.features.settings.generated.resources.settings_support
+import bookly.features.settings.generated.resources.settings_title
 import kotlinx.coroutines.flow.collectLatest
 import org.evolutionsoftware.bookly.components.ui.PlayroomDivider
 import org.evolutionsoftware.bookly.components.ui.PlayroomMenuItem
 import org.evolutionsoftware.bookly.components.ui.PlayroomSocialButton
+import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.Header
 import org.evolutionsoftware.bookly.design.components.properties.ButtonProperties
 import org.evolutionsoftware.bookly.design.components.properties.HeaderProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -55,7 +77,6 @@ fun SettingsRoute(
 ) {
     val viewModel = rememberSettingsViewModel()
     val state by viewModel.viewState.collectAsState()
-    val signedOutMessage = stringResource(Res.string.settings_signed_out_message)
 
     LaunchedEffect(refreshKey) {
         viewModel.onUserIntent(SettingsIntent.Load)
@@ -65,7 +86,8 @@ fun SettingsRoute(
         viewModel.sideEffect.collectLatest { effect ->
             when (effect) {
                 SettingsSideEffect.RequireAuthentication -> onRequireAuthentication()
-                SettingsSideEffect.SignedOut -> onShowMessage(signedOutMessage)
+                SettingsSideEffect.SignedOut -> onShowMessage(getString(Res.string.settings_signed_out_message))
+                is SettingsSideEffect.ShowMessage -> onShowMessage(getString(effect.message))
             }
         }
     }
@@ -74,7 +96,6 @@ fun SettingsRoute(
         state = state,
         onIntent = viewModel::onUserIntent,
         onClose = onClose,
-        onShowMessage = onShowMessage,
     )
 }
 
@@ -83,16 +104,7 @@ private fun SettingsScreen(
     state: SettingsViewState,
     onIntent: (SettingsIntent) -> Unit,
     onClose: () -> Unit,
-    onShowMessage: (String) -> Unit,
 ) {
-    val toggles =
-        remember {
-            mutableStateMapOf(
-                "Notifications" to true,
-                "Sound & Audio" to true,
-            )
-        }
-
     if (!state.isAuthenticated) {
         GuestSettingsScreen(
             onBack = onClose,
@@ -112,7 +124,7 @@ private fun SettingsScreen(
                 .navigationBarsPadding(),
     ) {
         Header(
-            properties = HeaderProperties(title = "Settings"),
+            properties = HeaderProperties(title = stringResource(Res.string.settings_title)),
             onBackClick = onClose,
         )
 
@@ -121,74 +133,78 @@ private fun SettingsScreen(
                 Modifier
                     .fillMaxWidth()
                     .padding(
-                        horizontal = TokenProvider.spacings.lg,
+                        horizontal = TokenProvider.spacings.horizontalSpacing,
                         vertical = TokenProvider.spacings.md,
                     ),
-            verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xl),
+            verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.sectionGap),
         ) {
             SettingsSection(
-                title = "ACCOUNT",
+                title = stringResource(Res.string.settings_account),
                 items =
                     listOf(
-                        SettingsRowItem("Edit Profile", "☺", TokenProvider.colors.bgInfoSoft) {
-                            onShowMessage("Profile editing is ready for the next backend step.")
+                        SettingsRowItem(stringResource(Res.string.settings_edit_profile), "☺", TokenProvider.colors.bgInfoSoft) {
+                            onIntent(SettingsIntent.EditProfileClicked)
                         },
-                        SettingsRowItem("Change Password", "🔒", TokenProvider.colors.bgWarningSoft) {
-                            onIntent(SettingsIntent.AuthenticateClicked)
+                        SettingsRowItem(stringResource(Res.string.settings_change_password), "🔒", TokenProvider.colors.bgWarningSoft) {
+                            onIntent(SettingsIntent.ChangePasswordClicked)
                         },
-                        SettingsRowItem("Reset Password", "↺", TokenProvider.colors.bgDangerSoft) {
-                            onIntent(SettingsIntent.AuthenticateClicked)
+                        SettingsRowItem(stringResource(Res.string.settings_reset_password), "↺", TokenProvider.colors.bgDangerSoft) {
+                            onIntent(SettingsIntent.ResetPasswordClicked)
                         },
                     ),
             )
 
             SettingsSection(
-                title = "PREFERENCES",
+                title = stringResource(Res.string.settings_preferences),
                 items =
                     listOf(
                         SettingsRowItem(
-                            title = "Notifications",
+                            title = stringResource(Res.string.settings_notifications),
                             icon = "🔔",
                             iconBackground = TokenProvider.colors.success.copy(alpha = 0.12f),
-                            toggleKey = "Notifications",
-                            onToggle = { toggles["Notifications"] = it },
+                            toggleKey = ToggleKey.Notifications,
+                            onToggle = { onIntent(SettingsIntent.NotificationsToggled(it)) },
                         ),
                         SettingsRowItem(
-                            title = "Sound & Audio",
+                            title = stringResource(Res.string.settings_sound_audio),
                             icon = "🔊",
                             iconBackground = TokenProvider.colors.bgInfoSoft,
-                            toggleKey = "Sound & Audio",
-                            onToggle = { toggles["Sound & Audio"] = it },
+                            toggleKey = ToggleKey.Sound,
+                            onToggle = { onIntent(SettingsIntent.SoundToggled(it)) },
                         ),
                     ),
-                toggles = toggles,
+                toggles =
+                    mapOf(
+                        ToggleKey.Notifications to state.notificationsEnabled,
+                        ToggleKey.Sound to state.soundEnabled,
+                    ),
             )
 
             SettingsSection(
-                title = "SUPPORT",
+                title = stringResource(Res.string.settings_support),
                 items =
                     listOf(
-                        SettingsRowItem("Help Center", "?", TokenProvider.colors.bgWarningSoft) {
-                            onShowMessage("Help Center coming next.")
+                        SettingsRowItem(stringResource(Res.string.settings_help_center), "?", TokenProvider.colors.bgWarningSoft) {
+                            onIntent(SettingsIntent.HelpCenterClicked)
                         },
-                        SettingsRowItem("Contact Us", "✉", TokenProvider.colors.bgSuccessSoft.copy(alpha = 0.36f)) {
-                            onShowMessage("Contact options are not wired yet.")
+                        SettingsRowItem(stringResource(Res.string.settings_contact_us), "✉", TokenProvider.colors.bgSuccessSoft.copy(alpha = 0.36f)) {
+                            onIntent(SettingsIntent.ContactUsClicked)
                         },
                     ),
             )
 
             SettingsSection(
-                title = "MORE",
+                title = stringResource(Res.string.settings_more),
                 items =
                     listOf(
-                        SettingsRowItem("Invite a friend", "➕", TokenProvider.colors.bgInfoSoft) {
-                            onShowMessage("Invite flow coming next.")
+                        SettingsRowItem(stringResource(Res.string.settings_invite_friend), "➕", TokenProvider.colors.bgInfoSoft) {
+                            onIntent(SettingsIntent.InviteFriendClicked)
                         },
-                        SettingsRowItem("Rate the app", "★", TokenProvider.colors.bgWarningSoft) {
-                            onShowMessage("Store rating hook not connected yet.")
+                        SettingsRowItem(stringResource(Res.string.settings_rate_app), "★", TokenProvider.colors.bgWarningSoft) {
+                            onIntent(SettingsIntent.RateAppClicked)
                         },
-                        SettingsRowItem("Language", "◎", TokenProvider.colors.success.copy(alpha = 0.12f)) {
-                            onShowMessage("Language picker coming next.")
+                        SettingsRowItem(stringResource(Res.string.settings_language), "◎", TokenProvider.colors.success.copy(alpha = 0.12f)) {
+                            onIntent(SettingsIntent.LanguageClicked)
                         },
                     ),
             )
@@ -204,8 +220,8 @@ private fun SettingsScreen(
                             .background(TokenProvider.colors.bgDangerSoft)
                             .clickable { onIntent(SettingsIntent.SignOutClicked) }
                             .padding(
-                                horizontal = TokenProvider.spacings.lg,
-                                vertical = TokenProvider.spacings.sm,
+                                horizontal = TokenProvider.spacings.horizontalSpacing,
+                                vertical = TokenProvider.spacings.formGapSm,
                             ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xs),
@@ -216,7 +232,7 @@ private fun SettingsScreen(
                         color = TokenProvider.colors.textDanger,
                     )
                     Text(
-                        text = "Log Out",
+                        text = stringResource(Res.string.settings_log_out),
                         style = TokenProvider.textStyles.bodyStrong,
                         color = TokenProvider.colors.textDanger,
                     )
@@ -244,7 +260,7 @@ private fun GuestSettingsScreen(
         Header(
             properties =
                 HeaderProperties(
-                    title = "Settings",
+                    title = stringResource(Res.string.settings_title),
                     variant = HeaderProperties.Variant.Compact,
                 ),
             onBackClick = onBack,
@@ -254,50 +270,50 @@ private fun GuestSettingsScreen(
                 Modifier
                     .fillMaxWidth()
                     .padding(
-                        horizontal = TokenProvider.spacings.lg,
-                        vertical = TokenProvider.spacings.xl,
+                        horizontal = TokenProvider.spacings.horizontalSpacing,
+                        vertical = TokenProvider.spacings.sectionGap,
                     ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Welcome to the\nPlayroom!",
+                text = stringResource(Res.string.settings_guest_playroom_title),
                 style = TokenProvider.textStyles.headline.copy(fontWeight = FontWeight.ExtraBold),
                 color = TokenProvider.colors.text,
                 textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
+            Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
             Text(
-                text = "Create an account to save your favorite books and track your progress.",
+                text = stringResource(Res.string.settings_guest_playroom_body),
                 style = TokenProvider.textStyles.body,
                 color = TokenProvider.colors.textMuted,
                 textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.xxl + TokenProvider.spacings.xs))
+            Spacer(modifier = Modifier.height(TokenProvider.spacings.screenBottomSpacing))
             Button(
-                properties = primaryButtonProperties(label = "Join the Playroom", enabled = true),
+                properties = primaryButtonProperties(label = stringResource(Res.string.settings_join_playroom), enabled = true),
                 onClick = onJoin,
             )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.xl - TokenProvider.spacings.xs))
+            Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
             Text(
-                text = "Already have an account? Log in",
+                text = stringResource(Res.string.settings_guest_existing_account),
                 modifier = Modifier.clickable(onClick = onLogin),
                 style = TokenProvider.textStyles.bodyStrong,
                 color = TokenProvider.colors.textAccent,
                 textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.xl))
+            Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
             PlayroomDivider()
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.lg))
+            Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
             PlayroomSocialButton(
-                label = "Continue with Google",
-                accent = TokenProvider.colors.socialGoogle,
-                icon = "G",
+                label = stringResource(Res.string.settings_continue_google),
+                textColor = TokenProvider.colors.socialGoogle,
+                icon = Icons.Google,
             )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.sm))
+            Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapSm))
             PlayroomSocialButton(
-                label = "Continue with Facebook",
-                accent = TokenProvider.colors.socialFacebook,
-                icon = "f",
+                label = stringResource(Res.string.settings_continue_facebook),
+                textColor = TokenProvider.colors.socialFacebook,
+                icon = Icons.Facebook,
             )
         }
     }
@@ -307,16 +323,16 @@ private fun GuestSettingsScreen(
 private fun SettingsSection(
     title: String,
     items: List<SettingsRowItem>,
-    toggles: Map<String, Boolean> = emptyMap(),
+    toggles: Map<ToggleKey, Boolean> = emptyMap(),
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.md)) {
+    Column(verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.formGapMd)) {
         Text(
             text = title,
             modifier = Modifier.padding(start = TokenProvider.spacings.md),
             style = TokenProvider.textStyles.eyebrow.copy(fontWeight = FontWeight.Bold),
             color = TokenProvider.colors.textMuted,
         )
-        Column(verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.sm)) {
+        Column(verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.formGapSm)) {
             items.forEach { item ->
                 if (item.toggleKey == null) {
                     PlayroomMenuItem(
@@ -335,11 +351,11 @@ private fun SettingsSection(
                                     RoundedCornerShape(TokenProvider.borderRadius.md),
                                 )
                                 .padding(
-                                    horizontal = TokenProvider.spacings.lg - TokenProvider.spacings.xxs,
-                                    vertical = TokenProvider.spacings.lg - TokenProvider.spacings.xs,
+                                    horizontal = TokenProvider.spacings.horizontalSpacing,
+                                    vertical = TokenProvider.spacings.formGapLg,
                                 ),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.md),
+                        horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.formGapMd),
                     ) {
                         Box(
                             modifier =
@@ -378,9 +394,14 @@ private data class SettingsRowItem(
     val icon: String,
     val iconBackground: Color,
     val onClick: (() -> Unit)? = null,
-    val toggleKey: String? = null,
+    val toggleKey: ToggleKey? = null,
     val onToggle: ((Boolean) -> Unit)? = null,
 )
+
+private enum class ToggleKey {
+    Notifications,
+    Sound,
+}
 
 private fun primaryButtonProperties(
     label: String,

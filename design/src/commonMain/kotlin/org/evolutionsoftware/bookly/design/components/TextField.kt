@@ -81,7 +81,7 @@ fun TextField(
                         Modifier
                             .fillMaxWidth()
                             .background(state.getBackgroundColor(), shape)
-                            .border(TokenProvider.borderWidths.strong, state.getBorderColor(), shape)
+                            .border(state.getBorderWidth(), state.getBorderColor(), shape)
                             .padding(start = 22.dp, top = 19.dp, end = 16.dp, bottom = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {

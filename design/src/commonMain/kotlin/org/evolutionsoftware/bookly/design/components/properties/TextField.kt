@@ -2,6 +2,8 @@ package org.evolutionsoftware.bookly.design.components.properties
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 
 data class TextFieldProperties(
@@ -27,8 +29,15 @@ data class TextFieldProperties(
         fun getBorderColor(): Color =
             when (this) {
                 Error -> TokenProvider.colors.warning
-                Disabled -> TokenProvider.colors.border.copy(alpha = 0.72f)
-                Focused, Default -> TokenProvider.colors.borderAccent
+                Focused -> TokenProvider.colors.borderAccent
+                Disabled, Default -> Color.Transparent
+            }
+
+        @Composable
+        fun getBorderWidth(): Dp =
+            when (this) {
+                Error, Focused -> TokenProvider.borderWidths.strong
+                Disabled, Default -> 0.dp
             }
 
         @Composable

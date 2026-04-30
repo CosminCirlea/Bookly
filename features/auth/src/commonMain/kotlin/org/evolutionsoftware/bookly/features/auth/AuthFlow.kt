@@ -43,11 +43,13 @@ fun AuthFlow(
             ChangePasswordRoute(
                 onBack = { navigator.navigateBack() },
                 onFinished = onFinished,
+                onShowMessage = onShowMessage,
             )
         AuthDestination.ResetPassword ->
             ResetPasswordRoute(
                 onBack = { navigator.navigateBack() },
                 onFinished = onFinished,
+                onShowMessage = onShowMessage,
             )
     }
 }

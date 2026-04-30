@@ -1,6 +1,5 @@
 <resources>
-    <string name="auth_sign_in_title">WELCOME BACK</string>
-    <string name="auth_sign_in_symbol">🐝</string>
+    <string name="auth_sign_in_title">Sign In</string>
     <string name="auth_sign_in_email_label">Email or Phone</string>
     <string name="auth_sign_in_email_placeholder">Enter your email or phone</string>
     <string name="auth_sign_in_password_label">Password</string>
@@ -12,7 +11,7 @@
     <string name="auth_sign_in_to_register">Need an account? Join the Playroom</string>
     <string name="auth_sign_in_google">Continue with Google</string>
     <string name="auth_sign_in_facebook">Continue with Facebook</string>
-    <string name="auth_sign_up_title">JOIN THE PLAYROOM</string>
+    <string name="auth_sign_up_title">Register an account</string>
     <string name="auth_sign_up_symbol">✨</string>
     <string name="auth_sign_up_description">Create an account to save favorites, remember progress, and keep the grown-up settings in one place.</string>
     <string name="auth_sign_up_parent_name_label">Parent Name</string>

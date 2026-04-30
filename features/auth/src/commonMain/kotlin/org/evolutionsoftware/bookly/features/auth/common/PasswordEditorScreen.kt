@@ -6,14 +6,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.TextField
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
@@ -32,22 +30,27 @@ internal fun PasswordEditorScreen(
     newPasswordPlaceholder: String,
     confirmPasswordLabel: String,
     confirmPasswordPlaceholder: String,
-    strengthError: String,
-    matchError: String,
+    errorMessage: StringResource?,
+    isLoading: Boolean,
+    isSubmitEnabled: Boolean,
+    currentPassword: String,
+    newPassword: String,
+    confirmPassword: String,
+    isNewPasswordVisible: Boolean,
+    isConfirmPasswordVisible: Boolean,
     onBack: () -> Unit,
-    onSuccess: () -> Unit,
+    onCurrentPasswordChange: (String) -> Unit,
+    onNewPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
+    onNewPasswordVisibilityToggle: () -> Unit,
+    onConfirmPasswordVisibilityToggle: () -> Unit,
+    onSubmit: () -> Unit,
 ) {
-    var currentPassword by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var showNewPassword by remember { mutableStateOf(false) }
-    var showConfirmPassword by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
-    val isSubmitEnabled =
-        remember(currentPassword, newPassword, confirmPassword, includeCurrentPassword) {
-            (!includeCurrentPassword || currentPassword.length >= 4) &&
-                newPassword.length >= 4 &&
-                newPassword == confirmPassword
+    val textFieldState =
+        if (isLoading) {
+            TextFieldProperties.State.Disabled
+        } else {
+            TextFieldProperties.State.Default
         }
 
     AuthScreenScaffold(
@@ -59,90 +62,79 @@ internal fun PasswordEditorScreen(
             style = TokenProvider.textStyles.title,
             color = TokenProvider.colors.text,
         )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.sm))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapSm))
         Text(
             text = subtitle,
             style = TokenProvider.textStyles.body,
             color = TokenProvider.colors.textMuted,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.xl))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
         if (includeCurrentPassword) {
             TextField(
                 properties =
                     TextFieldProperties(
                         label = currentPasswordLabel,
                         placeholder = currentPasswordPlaceholder,
+                        state = textFieldState,
                     ),
                 value = currentPassword,
-                onValueChange = {
-                    currentPassword = it
-                    error = null
-                },
+                onValueChange = onCurrentPasswordChange,
+                enabled = !isLoading,
                 visualTransformation = PasswordVisualTransformation(),
             )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
+            Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
         }
         TextField(
             properties =
                 TextFieldProperties(
                     label = newPasswordLabel,
                     placeholder = newPasswordPlaceholder,
+                    state = textFieldState,
                 ),
             value = newPassword,
-            onValueChange = {
-                newPassword = it
-                error = null
-            },
-            visualTransformation = if (showNewPassword) VisualTransformation.None else PasswordVisualTransformation(),
+            onValueChange = onNewPasswordChange,
+            enabled = !isLoading,
+            visualTransformation = if (isNewPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             suffix = {
                 PasswordSuffix(
-                    visible = showNewPassword,
-                    onClick = { showNewPassword = !showNewPassword },
+                    visible = isNewPasswordVisible,
+                    onClick = onNewPasswordVisibilityToggle,
                 )
             },
         )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
         TextField(
             properties =
                 TextFieldProperties(
                     label = confirmPasswordLabel,
                     placeholder = confirmPasswordPlaceholder,
+                    state = textFieldState,
                 ),
             value = confirmPassword,
-            onValueChange = {
-                confirmPassword = it
-                error = null
-            },
-            visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
+            onValueChange = onConfirmPasswordChange,
+            enabled = !isLoading,
+            visualTransformation = if (isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             suffix = {
                 PasswordSuffix(
-                    visible = showConfirmPassword,
-                    onClick = { showConfirmPassword = !showConfirmPassword },
+                    visible = isConfirmPasswordVisible,
+                    onClick = onConfirmPasswordVisibilityToggle,
                 )
             },
         )
-        error?.let {
+        errorMessage?.let {
             Text(
-                text = it,
-                modifier = Modifier.padding(top = TokenProvider.spacings.sm),
+                text = stringResource(it),
+                modifier = Modifier.padding(top = TokenProvider.spacings.formGapSm),
                 style = TokenProvider.textStyles.body,
                 color = TokenProvider.colors.textDanger,
             )
         }
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.xl))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
         Button(
             properties = primaryButtonProperties(label = submitLabel, enabled = isSubmitEnabled),
             modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                if ((includeCurrentPassword && currentPassword.length < 4) || newPassword.length < 4) {
-                    error = strengthError
-                } else if (newPassword != confirmPassword) {
-                    error = matchError
-                } else {
-                    onSuccess()
-                }
-            },
+            onClick = onSubmit,
         )
     }
 }

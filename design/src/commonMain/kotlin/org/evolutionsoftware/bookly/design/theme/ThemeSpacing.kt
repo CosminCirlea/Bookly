@@ -10,4 +10,10 @@ data class ThemeSpacing(
     val lg: Dp,
     val xl: Dp,
     val xxl: Dp,
+    val horizontalSpacing: Dp,
+    val formGapSm: Dp,
+    val formGapMd: Dp,
+    val formGapLg: Dp,
+    val sectionGap: Dp,
+    val screenBottomSpacing: Dp,
 )

@@ -6,11 +6,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -25,26 +23,21 @@ import bookly.features.auth.generated.resources.auth_sign_in_google
 import bookly.features.auth.generated.resources.auth_sign_in_password_label
 import bookly.features.auth.generated.resources.auth_sign_in_password_placeholder
 import bookly.features.auth.generated.resources.auth_sign_in_submit
-import bookly.features.auth.generated.resources.auth_sign_in_success_message
-import bookly.features.auth.generated.resources.auth_sign_in_symbol
 import bookly.features.auth.generated.resources.auth_sign_in_title
 import bookly.features.auth.generated.resources.auth_sign_in_to_register
-import bookly.features.auth.generated.resources.auth_sign_in_validation_error
-import kotlinx.coroutines.launch
 import org.evolutionsoftware.bookly.components.ui.PlayroomDivider
 import org.evolutionsoftware.bookly.components.ui.PlayroomSocialButton
+import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.TextField
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
-import org.evolutionsoftware.bookly.features.auth.common.AuthIllustration
 import org.evolutionsoftware.bookly.features.auth.common.AuthScreenScaffold
 import org.evolutionsoftware.bookly.features.auth.common.PasswordSuffix
 import org.evolutionsoftware.bookly.features.auth.common.primaryButtonProperties
-import org.evolutionsoftware.bookly.features.auth.common.resolveDisplayName
-import org.evolutionsoftware.bookly.services.profiles.domain.usecase.LoginUseCase
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
-import org.koin.core.context.GlobalContext
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 internal fun SignInRoute(
@@ -54,120 +47,118 @@ internal fun SignInRoute(
     onAuthenticated: (String) -> Unit,
     onShowMessage: (String) -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
-    val loginUseCase = remember { GlobalContext.get().get<LoginUseCase>() }
-    val title = stringResource(Res.string.auth_sign_in_title)
-    val symbol = stringResource(Res.string.auth_sign_in_symbol)
-    val emailLabel = stringResource(Res.string.auth_sign_in_email_label)
-    val emailPlaceholder = stringResource(Res.string.auth_sign_in_email_placeholder)
-    val passwordLabel = stringResource(Res.string.auth_sign_in_password_label)
-    val passwordPlaceholder = stringResource(Res.string.auth_sign_in_password_placeholder)
-    val forgotPasswordLabel = stringResource(Res.string.auth_sign_in_forgot_password)
-    val submitLabel = stringResource(Res.string.auth_sign_in_submit)
-    val validationError = stringResource(Res.string.auth_sign_in_validation_error)
-    val successMessage = stringResource(Res.string.auth_sign_in_success_message)
-    val googleLabel = stringResource(Res.string.auth_sign_in_google)
-    val facebookLabel = stringResource(Res.string.auth_sign_in_facebook)
-    val toRegisterLabel = stringResource(Res.string.auth_sign_in_to_register)
-    var emailOrPhone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var showPassword by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
-    val isSubmitEnabled =
-        remember(emailOrPhone, password) {
-            resolveDisplayName(emailOrPhone).isNotBlank() && password.length >= 4
+    val viewModel = rememberSignInViewModel()
+    val viewState by viewModel.viewState.collectAsState()
+
+    LaunchedEffect(viewModel) {
+        viewModel.sideEffect.collectLatest { effect ->
+            when (effect) {
+                SignInSideEffect.NavigateToForgotPassword -> onForgotPassword()
+                SignInSideEffect.NavigateToSignUp -> onSignUp()
+                is SignInSideEffect.Authenticated -> onAuthenticated(getString(effect.message))
+                is SignInSideEffect.ShowMessage -> onShowMessage(getString(effect.message))
+            }
         }
+    }
 
     AuthScreenScaffold(
-        title = title,
+        title = stringResource(Res.string.auth_sign_in_title),
         onBack = onBack,
     ) {
-        AuthIllustration(symbol = symbol)
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.xl - TokenProvider.spacings.xs))
+        val textFieldState =
+            if (viewState.isLoading) {
+                TextFieldProperties.State.Disabled
+            } else {
+                TextFieldProperties.State.Default
+            }
+
         TextField(
             properties =
                 TextFieldProperties(
-                    label = emailLabel,
-                    placeholder = emailPlaceholder,
+                    label = stringResource(Res.string.auth_sign_in_email_label),
+                    placeholder = stringResource(Res.string.auth_sign_in_email_placeholder),
+                    state = textFieldState,
                 ),
-            value = emailOrPhone,
-            onValueChange = {
-                emailOrPhone = it
-                error = null
-            },
+            value = viewState.emailOrPhone,
+            onValueChange = { viewModel.onUserIntent(SignInIntent.EmailOrPhoneChanged(it)) },
+            enabled = !viewState.isLoading,
         )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
         TextField(
             properties =
                 TextFieldProperties(
-                    label = passwordLabel,
-                    placeholder = passwordPlaceholder,
+                    label = stringResource(Res.string.auth_sign_in_password_label),
+                    placeholder = stringResource(Res.string.auth_sign_in_password_placeholder),
+                    state = textFieldState,
                 ),
-            value = password,
-            onValueChange = {
-                password = it
-                error = null
-            },
-            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+            value = viewState.password,
+            onValueChange = { viewModel.onUserIntent(SignInIntent.PasswordChanged(it)) },
+            enabled = !viewState.isLoading,
+            visualTransformation = if (viewState.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             suffix = {
                 PasswordSuffix(
-                    visible = showPassword,
-                    onClick = { showPassword = !showPassword },
+                    visible = viewState.isPasswordVisible,
+                    onClick = { viewModel.onUserIntent(SignInIntent.PasswordVisibilityToggled) },
                 )
             },
         )
         Text(
-            text = forgotPasswordLabel,
+            text = stringResource(Res.string.auth_sign_in_forgot_password),
             modifier =
                 Modifier
                     .align(Alignment.End)
-                    .padding(top = TokenProvider.spacings.xs)
-                    .clickable(onClick = onForgotPassword),
+                    .padding(top = TokenProvider.spacings.formGapSm)
+                    .clickable(enabled = !viewState.isLoading) {
+                        viewModel.onUserIntent(SignInIntent.ForgotPasswordClicked)
+                    },
             style = TokenProvider.textStyles.body,
             color = TokenProvider.colors.textBrand,
         )
-        error?.let {
+        viewState.errorMessage?.let {
             Text(
-                text = it,
-                modifier = Modifier.padding(top = TokenProvider.spacings.sm),
+                text = stringResource(it),
+                modifier = Modifier.padding(top = TokenProvider.spacings.formGapSm),
                 style = TokenProvider.textStyles.body,
                 color = TokenProvider.colors.textDanger,
             )
         }
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.xl - TokenProvider.spacings.xs))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
         Button(
-            properties = primaryButtonProperties(label = submitLabel, enabled = isSubmitEnabled),
+            properties =
+                primaryButtonProperties(
+                    label = stringResource(Res.string.auth_sign_in_submit),
+                    enabled = viewState.isFormValid && !viewState.isLoading,
+                ),
             onClick = {
-                val displayName = resolveDisplayName(emailOrPhone)
-                if (displayName.isBlank() || password.length < 4) {
-                    error = validationError
-                    onShowMessage(validationError)
-                } else {
-                    scope.launch {
-                        loginUseCase(displayName)
-                        onAuthenticated(successMessage)
-                    }
-                }
+                viewModel.onUserIntent(
+                    SignInIntent.Submit(
+                        emailOrPhone = viewState.emailOrPhone,
+                        password = viewState.password,
+                    ),
+                )
             },
         )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.xl - TokenProvider.spacings.xs))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
         PlayroomDivider()
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.lg - TokenProvider.spacings.xxs))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
         PlayroomSocialButton(
-            label = googleLabel,
-            accent = TokenProvider.colors.socialGoogle,
-            icon = "G",
+            label = stringResource(Res.string.auth_sign_in_google),
+            textColor = TokenProvider.colors.socialGoogle,
+            icon = Icons.Google,
         )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.sm))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapSm))
         PlayroomSocialButton(
-            label = facebookLabel,
-            accent = TokenProvider.colors.socialFacebook,
-            icon = "f",
+            label = stringResource(Res.string.auth_sign_in_facebook),
+            textColor = TokenProvider.colors.socialFacebook,
+            icon = Icons.Facebook,
         )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.lg))
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
         Text(
-            text = toRegisterLabel,
-            modifier = Modifier.clickable(onClick = onSignUp),
+            text = stringResource(Res.string.auth_sign_in_to_register),
+            modifier =
+                Modifier.clickable(enabled = !viewState.isLoading) {
+                    viewModel.onUserIntent(SignInIntent.SignUpClicked)
+                },
             style = TokenProvider.textStyles.bodyStrong,
             color = TokenProvider.colors.textAccent,
             textAlign = TextAlign.Center,

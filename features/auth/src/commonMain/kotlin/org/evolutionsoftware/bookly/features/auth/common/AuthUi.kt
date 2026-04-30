@@ -2,8 +2,11 @@ package org.evolutionsoftware.bookly.features.auth.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,8 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.properties.ButtonProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun AuthIllustration(symbol: String) {
@@ -37,11 +43,14 @@ internal fun PasswordSuffix(
     visible: Boolean,
     onClick: () -> Unit,
 ) {
-    Text(
-        text = if (visible) "🙈" else "👁",
-        modifier = Modifier.clickable(onClick = onClick),
-        style = TokenProvider.textStyles.bodyStrong,
-        color = TokenProvider.colors.textMuted,
+    Image(
+        painter = painterResource(if (visible) Icons.EyeOff.icon else Icons.Eye.icon),
+        contentDescription = null,
+        modifier =
+            Modifier
+                .clickable(onClick = onClick)
+                .width(22.dp)
+                .height(if (visible) 20.dp else 15.dp),
     )
 }
 

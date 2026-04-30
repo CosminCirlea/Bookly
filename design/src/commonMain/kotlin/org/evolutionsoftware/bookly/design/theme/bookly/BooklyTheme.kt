@@ -72,6 +72,12 @@ private object BooklyTokens : ThemeProvider {
             lg = 24.dp,
             xl = 32.dp,
             xxl = 40.dp,
+            horizontalSpacing = 24.dp,
+            formGapSm = 8.dp,
+            formGapMd = 16.dp,
+            formGapLg = 24.dp,
+            sectionGap = 32.dp,
+            screenBottomSpacing = 48.dp,
         )
 
     override val fontSizes =

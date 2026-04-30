@@ -102,13 +102,13 @@ private fun HomeScreen(
             columns = GridCells.Fixed(2),
             contentPadding =
                 PaddingValues(
-                    start = TokenProvider.spacings.md,
-                    end = TokenProvider.spacings.md,
-                    top = TokenProvider.spacings.lg,
+                    start = TokenProvider.spacings.horizontalSpacing,
+                    end = TokenProvider.spacings.horizontalSpacing,
+                    top = TokenProvider.spacings.formGapLg,
                     bottom = TokenProvider.spacings.xxl,
                 ),
-            horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.md),
-            verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.md),
+            horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.formGapMd),
+            verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.formGapMd),
         ) {
             items(state.visibleBooks) { book ->
                 PlayroomBookCard(
@@ -129,9 +129,9 @@ private fun HomeScreen(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = TokenProvider.spacings.md),
+                        .padding(horizontal = TokenProvider.spacings.horizontalSpacing),
                 contentPadding = PaddingValues(horizontal = 0.dp),
-                horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.sm),
+                horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.formGapSm),
             ) {
                 lazyItems(primaryFilters) { filter ->
                     PlayroomSecondaryChip(
@@ -156,13 +156,13 @@ private fun PlayroomHeader(
             Modifier
                 .fillMaxWidth()
                 .padding(
-                    horizontal = TokenProvider.spacings.lg,
-                    vertical = TokenProvider.spacings.md,
+                    horizontal = TokenProvider.spacings.horizontalSpacing,
+                    vertical = TokenProvider.spacings.formGapMd,
                 ),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.sm),
+            horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.formGapSm),
         ) {
             Box(
                 modifier =
@@ -251,7 +251,7 @@ private fun PlayroomBookCard(
                 ).clickable(onClick = onClick)
                 .padding(TokenProvider.spacings.md),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.md),
+        verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.formGapMd),
     ) {
         Box(
             modifier =

@@ -11,6 +11,7 @@ internal class SettingsEffectProducer :
         when (action) {
             SettingsAction.AuthenticationRequested -> SettingsSideEffect.RequireAuthentication
             SettingsAction.SignedOut -> SettingsSideEffect.SignedOut
+            is SettingsAction.MessageRequested -> SettingsSideEffect.ShowMessage(action.message)
             else -> null
         }
 }

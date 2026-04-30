@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,7 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun PlayroomSecondaryChip(
@@ -57,8 +60,8 @@ fun PlayroomSecondaryChip(
 @Composable
 fun PlayroomSocialButton(
     label: String,
-    accent: Color,
-    icon: String,
+    textColor: Color,
+    icon: Icons,
 ) {
     Row(
         modifier =
@@ -78,15 +81,16 @@ fun PlayroomSocialButton(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = icon,
-            color = accent,
-            style = TokenProvider.textStyles.title.copy(fontWeight = FontWeight.Black),
+        Icon(
+            painter = painterResource(icon.icon),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(if (icon == Icons.Facebook) 24.dp else 20.dp),
         )
         Text(
             text = label,
             modifier = Modifier.padding(start = TokenProvider.spacings.sm),
-            color = accent,
+            color = textColor,
             style = TokenProvider.textStyles.bodyStrong,
         )
     }

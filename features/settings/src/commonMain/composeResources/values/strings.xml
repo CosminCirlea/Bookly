@@ -1,6 +1,27 @@
 <resources>
     <string name="settings_done">Done</string>
     <string name="settings_title">Settings</string>
+    <string name="settings_account">ACCOUNT</string>
+    <string name="settings_preferences">PREFERENCES</string>
+    <string name="settings_support">SUPPORT</string>
+    <string name="settings_more">MORE</string>
+    <string name="settings_edit_profile">Edit Profile</string>
+    <string name="settings_change_password">Change Password</string>
+    <string name="settings_reset_password">Reset Password</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_sound_audio">Sound &amp; Audio</string>
+    <string name="settings_help_center">Help Center</string>
+    <string name="settings_contact_us">Contact Us</string>
+    <string name="settings_invite_friend">Invite a friend</string>
+    <string name="settings_rate_app">Rate the app</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_log_out">Log Out</string>
+    <string name="settings_profile_edit_message">Profile editing is ready for the next backend step.</string>
+    <string name="settings_help_center_message">Help Center coming next.</string>
+    <string name="settings_contact_us_message">Contact options are not wired yet.</string>
+    <string name="settings_invite_friend_message">Invite flow coming next.</string>
+    <string name="settings_rate_app_message">Store rating hook not connected yet.</string>
+    <string name="settings_language_message">Language picker coming next.</string>
     <string name="settings_signed_in_as_prefix">Signed in as</string>
     <string name="settings_menu_offline_library">Offline library</string>
     <string name="settings_menu_download_preferences">Download preferences</string>
@@ -9,5 +30,12 @@
     <string name="settings_guest_title">Login or register</string>
     <string name="settings_guest_body">Create a parent profile to sync favorites and show your family name in the toolbar.</string>
     <string name="settings_open_auth">Open auth</string>
+    <string name="settings_guest_playroom_title">Welcome to the
+Playroom!</string>
+    <string name="settings_guest_playroom_body">Create an account to save your favorite books and track your progress.</string>
+    <string name="settings_join_playroom">Join the Playroom</string>
+    <string name="settings_guest_existing_account">Already have an account? Log in</string>
+    <string name="settings_continue_google">Continue with Google</string>
+    <string name="settings_continue_facebook">Continue with Facebook</string>
     <string name="settings_signed_out_message">Signed out.</string>
 </resources>

@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import org.evolutionsoftware.bookly.design.components.properties.IconButtonProperties
 import org.jetbrains.compose.resources.painterResource
 
@@ -27,7 +28,7 @@ fun IconButton(
     Box(
         modifier =
             modifier
-                .size(properties.buttonSize)
+                .size(48.dp)
                 .clip(CircleShape)
                 .background(properties.getContainerColor())
                 .clickable(
@@ -44,7 +45,7 @@ fun IconButton(
             Icon(
                 painter = painterResource(properties.icon.icon),
                 contentDescription = properties.ariaLabel,
-                modifier = Modifier.size(properties.iconSize),
+                modifier = Modifier.size(24.dp),
                 tint = properties.getIconTint(),
             )
         }

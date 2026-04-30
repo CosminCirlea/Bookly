@@ -1,5 +1,12 @@
 package org.evolutionsoftware.bookly.features.settings
 
+import bookly.features.settings.generated.resources.Res
+import bookly.features.settings.generated.resources.settings_contact_us_message
+import bookly.features.settings.generated.resources.settings_help_center_message
+import bookly.features.settings.generated.resources.settings_invite_friend_message
+import bookly.features.settings.generated.resources.settings_language_message
+import bookly.features.settings.generated.resources.settings_profile_edit_message
+import bookly.features.settings.generated.resources.settings_rate_app_message
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -19,6 +26,16 @@ internal class SettingsIntentProcessor(
                     emit(SettingsAction.ProfileLoaded(getCurrentProfileUseCase()))
                 }
             SettingsIntent.AuthenticateClicked -> flowOf(SettingsAction.AuthenticationRequested)
+            SettingsIntent.ChangePasswordClicked -> flowOf(SettingsAction.AuthenticationRequested)
+            SettingsIntent.ResetPasswordClicked -> flowOf(SettingsAction.AuthenticationRequested)
+            SettingsIntent.EditProfileClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_profile_edit_message))
+            SettingsIntent.HelpCenterClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_help_center_message))
+            SettingsIntent.ContactUsClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_contact_us_message))
+            SettingsIntent.InviteFriendClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_invite_friend_message))
+            SettingsIntent.RateAppClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_rate_app_message))
+            SettingsIntent.LanguageClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_language_message))
+            is SettingsIntent.NotificationsToggled -> flowOf(SettingsAction.NotificationsUpdated(intent.enabled))
+            is SettingsIntent.SoundToggled -> flowOf(SettingsAction.SoundUpdated(intent.enabled))
             SettingsIntent.SignOutClicked ->
                 flow {
                     logoutUseCase()

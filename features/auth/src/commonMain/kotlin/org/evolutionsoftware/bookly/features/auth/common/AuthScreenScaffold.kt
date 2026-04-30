@@ -50,10 +50,10 @@ internal fun AuthScreenScaffold(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(innerPadding)
-                    .padding(horizontal = TokenProvider.spacings.lg)
+                    .padding(horizontal = TokenProvider.spacings.horizontalSpacing)
                     .padding(
-                        top = TokenProvider.spacings.xl,
-                        bottom = TokenProvider.spacings.xl + TokenProvider.spacings.md,
+                        top = TokenProvider.spacings.sectionGap,
+                        bottom = TokenProvider.spacings.screenBottomSpacing,
                     ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
