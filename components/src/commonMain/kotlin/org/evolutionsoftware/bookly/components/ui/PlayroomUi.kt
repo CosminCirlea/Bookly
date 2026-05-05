@@ -62,6 +62,7 @@ fun PlayroomSocialButton(
     label: String,
     textColor: Color,
     icon: Icons,
+    onClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier =
@@ -73,6 +74,13 @@ fun PlayroomSocialButton(
                     width = TokenProvider.borderWidths.strong,
                     color = TokenProvider.colors.border,
                     shape = RoundedCornerShape(TokenProvider.borderRadius.md),
+                )
+                .then(
+                    if (onClick != null) {
+                        Modifier.clickable(onClick = onClick)
+                    } else {
+                        Modifier
+                    },
                 )
                 .padding(
                     horizontal = TokenProvider.spacings.lg + TokenProvider.spacings.xs,

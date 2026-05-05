@@ -42,6 +42,8 @@ internal sealed interface SettingsIntent : UserIntent {
 
     data object LoginClicked : SettingsIntent
 
+    data object FacebookContinueClicked : SettingsIntent
+
     data object SignOutClicked : SettingsIntent
 
     data class NotificationsToggled(val enabled: Boolean) : SettingsIntent

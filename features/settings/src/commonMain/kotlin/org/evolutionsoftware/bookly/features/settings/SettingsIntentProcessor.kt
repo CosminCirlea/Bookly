@@ -11,12 +11,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.evolutionsoftware.bookly.core.mvi.IntentProcessor
+import org.evolutionsoftware.bookly.services.profiles.domain.usecase.LoginUseCase
 import org.evolutionsoftware.bookly.services.profiles.domain.usecase.GetCurrentProfileUseCase
 import org.evolutionsoftware.bookly.services.profiles.domain.usecase.LogoutUseCase
 
 internal class SettingsIntentProcessor(
     private val getCurrentProfileUseCase: GetCurrentProfileUseCase,
     private val logoutUseCase: LogoutUseCase,
+    private val loginUseCase: LoginUseCase,
 ) : IntentProcessor<SettingsIntent, SettingsAction> {
     override fun invoke(intent: SettingsIntent): Flow<SettingsAction> =
         when (intent) {
@@ -27,6 +29,11 @@ internal class SettingsIntentProcessor(
                 }
             SettingsIntent.JoinClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignUp))
             SettingsIntent.LoginClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignIn))
+            SettingsIntent.FacebookContinueClicked ->
+                flow {
+                    emit(SettingsAction.LoadingStarted)
+                    emit(SettingsAction.ProfileLoaded(loginUseCase("Facebook Parent")))
+                }
             SettingsIntent.ChangePasswordClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.ChangePassword))
             SettingsIntent.ResetPasswordClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.ResetPassword))
             SettingsIntent.EditProfileClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_profile_edit_message))
