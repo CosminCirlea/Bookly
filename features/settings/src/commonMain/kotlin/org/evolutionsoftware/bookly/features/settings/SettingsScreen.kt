@@ -72,7 +72,7 @@ import org.jetbrains.compose.resources.stringResource
 fun SettingsRoute(
     refreshKey: Int,
     onClose: () -> Unit,
-    onRequireAuthentication: () -> Unit,
+    onRequireAuthentication: (SettingsAuthDestination) -> Unit,
     onShowMessage: (String) -> Unit,
 ) {
     val viewModel = rememberSettingsViewModel()
@@ -85,7 +85,7 @@ fun SettingsRoute(
     LaunchedEffect(viewModel) {
         viewModel.sideEffect.collectLatest { effect ->
             when (effect) {
-                SettingsSideEffect.RequireAuthentication -> onRequireAuthentication()
+                is SettingsSideEffect.RequireAuthentication -> onRequireAuthentication(effect.destination)
                 SettingsSideEffect.SignedOut -> onShowMessage(getString(Res.string.settings_signed_out_message))
                 is SettingsSideEffect.ShowMessage -> onShowMessage(getString(effect.message))
             }
@@ -108,8 +108,8 @@ private fun SettingsScreen(
     if (!state.isAuthenticated) {
         GuestSettingsScreen(
             onBack = onClose,
-            onJoin = { onIntent(SettingsIntent.AuthenticateClicked) },
-            onLogin = { onIntent(SettingsIntent.AuthenticateClicked) },
+            onJoin = { onIntent(SettingsIntent.JoinClicked) },
+            onLogin = { onIntent(SettingsIntent.LoginClicked) },
         )
         return
     }

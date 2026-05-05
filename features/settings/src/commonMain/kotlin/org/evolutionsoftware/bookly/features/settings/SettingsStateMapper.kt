@@ -18,7 +18,7 @@ internal class SettingsStateMapper : StateMapper<SettingsAction, SettingsViewSta
                 currentState.copy(notificationsEnabled = action.enabled)
             is SettingsAction.SoundUpdated ->
                 currentState.copy(soundEnabled = action.enabled)
-            SettingsAction.AuthenticationRequested -> currentState
+            is SettingsAction.AuthenticationRequested -> currentState
             SettingsAction.SignedOut ->
                 currentState.copy(
                     isLoading = false,

@@ -1,9 +1,14 @@
 package org.evolutionsoftware.bookly.features.auth.signup
 
+import org.evolutionsoftware.bookly.features.auth.common.PasswordValidators
+
 internal object SignUpValidators {
     fun isFormValid(
-        displayName: String,
         emailOrPhone: String,
         password: String,
-    ): Boolean = displayName.isNotBlank() && emailOrPhone.isNotBlank() && password.length >= 4
+        confirmPassword: String,
+    ): Boolean =
+        emailOrPhone.isNotBlank() &&
+            PasswordValidators.isStrongEnough(password) &&
+            PasswordValidators.doPasswordsMatch(password, confirmPassword)
 }

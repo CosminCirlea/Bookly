@@ -8,27 +8,32 @@ internal class SignUpStateMapper : StateMapper<SignUpAction, SignUpViewState> {
         currentState: SignUpViewState,
     ): SignUpViewState =
         when (action) {
-            is SignUpAction.DisplayNameUpdated ->
-                currentState.copy(
-                    displayName = action.value,
-                    isFormValid = SignUpValidators.isFormValid(action.value, currentState.emailOrPhone, currentState.password),
-                    errorMessage = null,
-                )
             is SignUpAction.EmailOrPhoneUpdated ->
                 currentState.copy(
                     emailOrPhone = action.value,
-                    isFormValid = SignUpValidators.isFormValid(currentState.displayName, action.value, currentState.password),
+                    isFormValid = SignUpValidators.isFormValid(action.value, currentState.password, currentState.confirmPassword),
                     errorMessage = null,
                 )
             is SignUpAction.PasswordUpdated ->
                 currentState.copy(
                     password = action.value,
-                    isFormValid = SignUpValidators.isFormValid(currentState.displayName, currentState.emailOrPhone, action.value),
+                    isFormValid = SignUpValidators.isFormValid(currentState.emailOrPhone, action.value, currentState.confirmPassword),
+                    errorMessage = null,
+                )
+            is SignUpAction.ConfirmPasswordUpdated ->
+                currentState.copy(
+                    confirmPassword = action.value,
+                    isFormValid = SignUpValidators.isFormValid(currentState.emailOrPhone, currentState.password, action.value),
                     errorMessage = null,
                 )
             SignUpAction.PasswordVisibilityToggled ->
                 currentState.copy(
                     isPasswordVisible = !currentState.isPasswordVisible,
+                    errorMessage = null,
+                )
+            SignUpAction.ConfirmPasswordVisibilityToggled ->
+                currentState.copy(
+                    isConfirmPasswordVisible = !currentState.isConfirmPasswordVisible,
                     errorMessage = null,
                 )
             SignUpAction.SubmissionStarted ->

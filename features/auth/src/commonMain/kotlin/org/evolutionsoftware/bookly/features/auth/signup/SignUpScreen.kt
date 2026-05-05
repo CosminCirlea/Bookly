@@ -1,10 +1,9 @@
 package org.evolutionsoftware.bookly.features.auth.signup
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,15 +16,13 @@ import androidx.compose.ui.text.style.TextAlign
 import bookly.features.auth.generated.resources.Res
 import bookly.features.auth.generated.resources.auth_sign_in_facebook
 import bookly.features.auth.generated.resources.auth_sign_in_google
-import bookly.features.auth.generated.resources.auth_sign_up_description
+import bookly.features.auth.generated.resources.auth_sign_up_confirm_password_label
+import bookly.features.auth.generated.resources.auth_sign_up_confirm_password_placeholder
 import bookly.features.auth.generated.resources.auth_sign_up_email_label
 import bookly.features.auth.generated.resources.auth_sign_up_email_placeholder
-import bookly.features.auth.generated.resources.auth_sign_up_parent_name_label
-import bookly.features.auth.generated.resources.auth_sign_up_parent_name_placeholder
 import bookly.features.auth.generated.resources.auth_sign_up_password_label
 import bookly.features.auth.generated.resources.auth_sign_up_password_placeholder
 import bookly.features.auth.generated.resources.auth_sign_up_submit
-import bookly.features.auth.generated.resources.auth_sign_up_symbol
 import bookly.features.auth.generated.resources.auth_sign_up_title
 import bookly.features.auth.generated.resources.auth_sign_up_to_sign_in
 import org.evolutionsoftware.bookly.components.ui.PlayroomDivider
@@ -35,7 +32,6 @@ import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.TextField
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
-import org.evolutionsoftware.bookly.features.auth.common.AuthIllustration
 import org.evolutionsoftware.bookly.features.auth.common.AuthScreenScaffold
 import org.evolutionsoftware.bookly.features.auth.common.PasswordSuffix
 import org.evolutionsoftware.bookly.features.auth.common.primaryButtonProperties
@@ -76,18 +72,6 @@ internal fun SignUpRoute(
         TextField(
             properties =
                 TextFieldProperties(
-                    label = stringResource(Res.string.auth_sign_up_parent_name_label),
-                    placeholder = stringResource(Res.string.auth_sign_up_parent_name_placeholder),
-                    state = textFieldState,
-                ),
-            value = viewState.displayName,
-            onValueChange = { viewModel.onUserIntent(SignUpIntent.DisplayNameChanged(it)) },
-            enabled = !viewState.isLoading,
-        )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
-        TextField(
-            properties =
-                TextFieldProperties(
                     label = stringResource(Res.string.auth_sign_up_email_label),
                     placeholder = stringResource(Res.string.auth_sign_up_email_placeholder),
                     state = textFieldState,
@@ -115,6 +99,25 @@ internal fun SignUpRoute(
                 )
             },
         )
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
+        TextField(
+            properties =
+                TextFieldProperties(
+                    label = stringResource(Res.string.auth_sign_up_confirm_password_label),
+                    placeholder = stringResource(Res.string.auth_sign_up_confirm_password_placeholder),
+                    state = textFieldState,
+                ),
+            value = viewState.confirmPassword,
+            onValueChange = { viewModel.onUserIntent(SignUpIntent.ConfirmPasswordChanged(it)) },
+            enabled = !viewState.isLoading,
+            visualTransformation = if (viewState.isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            suffix = {
+                PasswordSuffix(
+                    visible = viewState.isConfirmPasswordVisible,
+                    onClick = { viewModel.onUserIntent(SignUpIntent.ConfirmPasswordVisibilityToggled) },
+                )
+            },
+        )
         viewState.errorMessage?.let {
             Text(
                 text = stringResource(it),
@@ -133,9 +136,9 @@ internal fun SignUpRoute(
             onClick = {
                 viewModel.onUserIntent(
                     SignUpIntent.Submit(
-                        displayName = viewState.displayName,
                         emailOrPhone = viewState.emailOrPhone,
                         password = viewState.password,
+                        confirmPassword = viewState.confirmPassword,
                     ),
                 )
             },

@@ -9,7 +9,7 @@ internal class SettingsEffectProducer :
         currentState: SettingsViewState,
     ): SettingsSideEffect? =
         when (action) {
-            SettingsAction.AuthenticationRequested -> SettingsSideEffect.RequireAuthentication
+            is SettingsAction.AuthenticationRequested -> SettingsSideEffect.RequireAuthentication(action.destination)
             SettingsAction.SignedOut -> SettingsSideEffect.SignedOut
             is SettingsAction.MessageRequested -> SettingsSideEffect.ShowMessage(action.message)
             else -> null

@@ -18,6 +18,7 @@ import org.evolutionsoftware.bookly.features.auth.AuthDestination
 import org.evolutionsoftware.bookly.features.auth.AuthFlow
 import org.evolutionsoftware.bookly.features.home.HomeRoute
 import org.evolutionsoftware.bookly.features.reader.ReaderRoute
+import org.evolutionsoftware.bookly.features.settings.SettingsAuthDestination
 import org.evolutionsoftware.bookly.features.settings.SettingsRoute
 
 @Composable
@@ -67,7 +68,17 @@ fun App() {
                     SettingsRoute(
                         refreshKey = refreshKey,
                         onClose = { destination = AppDestination.Home },
-                        onRequireAuthentication = { destination = AppDestination.Auth(AuthDestination.SignIn) },
+                        onRequireAuthentication = { authDestination ->
+                            destination =
+                                AppDestination.Auth(
+                                    when (authDestination) {
+                                        SettingsAuthDestination.SignIn -> AuthDestination.SignIn
+                                        SettingsAuthDestination.SignUp -> AuthDestination.SignUp
+                                        SettingsAuthDestination.ChangePassword -> AuthDestination.ChangePassword
+                                        SettingsAuthDestination.ResetPassword -> AuthDestination.ResetPassword
+                                    },
+                                )
+                        },
                         onShowMessage = ::showMessage,
                     )
                 }

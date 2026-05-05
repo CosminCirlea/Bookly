@@ -16,11 +16,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
@@ -39,6 +44,24 @@ fun TextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     suffix: (@Composable () -> Unit)? = null,
 ) {
+    var textFieldValue by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = value,
+                selection = TextRange(value.length),
+            ),
+        )
+    }
+    LaunchedEffect(value) {
+        if (value != textFieldValue.text) {
+            textFieldValue =
+                textFieldValue.copy(
+                    text = value,
+                    selection = TextRange(value.length),
+                )
+        }
+    }
+
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     val state =
@@ -64,8 +87,11 @@ fun TextField(
         }
 
         BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
+            value = textFieldValue,
+            onValueChange = { updatedValue ->
+                textFieldValue = updatedValue
+                onValueChange(updatedValue.text)
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = singleLine,
@@ -89,7 +115,7 @@ fun TextField(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.CenterStart,
                     ) {
-                        if (value.isEmpty() && !properties.placeholder.isNullOrBlank()) {
+                        if (textFieldValue.text.isEmpty() && !properties.placeholder.isNullOrBlank()) {
                             Text(
                                 text = properties.placeholder,
                                 style = TokenProvider.textStyles.input,

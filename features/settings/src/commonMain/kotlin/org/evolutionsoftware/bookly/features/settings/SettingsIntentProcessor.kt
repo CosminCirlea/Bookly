@@ -25,9 +25,10 @@ internal class SettingsIntentProcessor(
                     emit(SettingsAction.LoadingStarted)
                     emit(SettingsAction.ProfileLoaded(getCurrentProfileUseCase()))
                 }
-            SettingsIntent.AuthenticateClicked -> flowOf(SettingsAction.AuthenticationRequested)
-            SettingsIntent.ChangePasswordClicked -> flowOf(SettingsAction.AuthenticationRequested)
-            SettingsIntent.ResetPasswordClicked -> flowOf(SettingsAction.AuthenticationRequested)
+            SettingsIntent.JoinClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignUp))
+            SettingsIntent.LoginClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignIn))
+            SettingsIntent.ChangePasswordClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.ChangePassword))
+            SettingsIntent.ResetPasswordClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.ResetPassword))
             SettingsIntent.EditProfileClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_profile_edit_message))
             SettingsIntent.HelpCenterClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_help_center_message))
             SettingsIntent.ContactUsClicked -> flowOf(SettingsAction.MessageRequested(Res.string.settings_contact_us_message))

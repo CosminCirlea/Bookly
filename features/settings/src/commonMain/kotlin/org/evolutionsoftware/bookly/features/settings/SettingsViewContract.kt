@@ -7,6 +7,16 @@ import org.evolutionsoftware.bookly.core.mvi.ViewState
 import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 import org.jetbrains.compose.resources.StringResource
 
+sealed interface SettingsAuthDestination {
+    data object SignIn : SettingsAuthDestination
+
+    data object SignUp : SettingsAuthDestination
+
+    data object ChangePassword : SettingsAuthDestination
+
+    data object ResetPassword : SettingsAuthDestination
+}
+
 internal data class SettingsViewState(
     val isLoading: Boolean = true,
     val profile: ParentProfile? = null,
@@ -18,7 +28,7 @@ internal data class SettingsViewState(
 }
 
 internal sealed interface SettingsSideEffect : SideEffect {
-    data object RequireAuthentication : SettingsSideEffect
+    data class RequireAuthentication(val destination: SettingsAuthDestination) : SettingsSideEffect
 
     data object SignedOut : SettingsSideEffect
 
@@ -28,7 +38,9 @@ internal sealed interface SettingsSideEffect : SideEffect {
 internal sealed interface SettingsIntent : UserIntent {
     data object Load : SettingsIntent
 
-    data object AuthenticateClicked : SettingsIntent
+    data object JoinClicked : SettingsIntent
+
+    data object LoginClicked : SettingsIntent
 
     data object SignOutClicked : SettingsIntent
 
@@ -58,7 +70,7 @@ internal sealed interface SettingsAction : UserIntentAction {
 
     data class ProfileLoaded(val profile: ParentProfile?) : SettingsAction
 
-    data object AuthenticationRequested : SettingsAction
+    data class AuthenticationRequested(val destination: SettingsAuthDestination) : SettingsAction
 
     data object SignedOut : SettingsAction
 
