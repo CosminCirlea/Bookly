@@ -43,7 +43,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun SignUpRoute(
     onBack: () -> Unit,
     onSignIn: () -> Unit,
-    onAuthenticated: (String) -> Unit,
+    onSignedUp: () -> Unit,
     onShowMessage: (String) -> Unit,
 ) {
     val viewModel = rememberSignUpViewModel()
@@ -53,7 +53,7 @@ internal fun SignUpRoute(
         viewModel.sideEffect.collectLatest { effect ->
             when (effect) {
                 SignUpSideEffect.NavigateToSignIn -> onSignIn()
-                is SignUpSideEffect.Authenticated -> onAuthenticated(getString(effect.message))
+                SignUpSideEffect.ReadyForProfileCreation -> onSignedUp()
                 is SignUpSideEffect.ShowMessage -> onShowMessage(getString(effect.message))
             }
         }
@@ -62,6 +62,7 @@ internal fun SignUpRoute(
     AuthScreenScaffold(
         title = stringResource(Res.string.auth_sign_up_title),
         onBack = onBack,
+        isLoading = viewState.isLoading,
     ) {
         val textFieldState =
             if (viewState.isLoading) {

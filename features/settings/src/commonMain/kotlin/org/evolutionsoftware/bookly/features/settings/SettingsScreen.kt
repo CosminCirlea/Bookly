@@ -107,6 +107,8 @@ private fun SettingsScreen(
     onIntent: (SettingsIntent) -> Unit,
     onClose: () -> Unit,
 ) {
+    if (state.isLoading && !state.isAuthenticated) return
+
     if (!state.isAuthenticated) {
         GuestSettingsScreen(
             onBack = onClose,

@@ -20,7 +20,7 @@ internal data class SignUpViewState(
 internal sealed interface SignUpSideEffect : SideEffect {
     data object NavigateToSignIn : SignUpSideEffect
 
-    data class Authenticated(val message: StringResource) : SignUpSideEffect
+    data object ReadyForProfileCreation : SignUpSideEffect
 
     data class ShowMessage(val message: StringResource) : SignUpSideEffect
 }
@@ -61,6 +61,8 @@ internal sealed interface SignUpAction : UserIntentAction {
     data class ValidationFailed(val message: StringResource) : SignUpAction
 
     data object SubmissionSucceeded : SignUpAction
+
+    data object SubmissionFailed : SignUpAction
 
     data object SignInNavigationRequested : SignUpAction
 }

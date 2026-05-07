@@ -1,38 +1,44 @@
 package org.evolutionsoftware.bookly.services.catalog.data.mapper
 
-import org.evolutionsoftware.bookly.services.catalog.data.dto.BookCardDto
-import org.evolutionsoftware.bookly.services.catalog.data.dto.BookDto
+import org.evolutionsoftware.bookly.services.catalog.data.dto.BookDetailDto
+import org.evolutionsoftware.bookly.services.catalog.data.dto.BookListItemDto
+import org.evolutionsoftware.bookly.services.catalog.data.dto.BookPageDto
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCard
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCategory
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookDetails
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookSummary
 
-internal fun BookDto.toSummary(): BookSummary =
-    BookSummary(
-        id = id,
-        title = title,
-        description = description,
-        category = category.toBookCategory(),
-        emoji = emoji,
-        imageUrl = imageUrl,
-    )
+internal fun BookListItemDto.toSummary(languageId: Int = DEFAULT_LANGUAGE_ID): BookSummary {
+    val translation =
+        bookTranslations
+            .firstOrNull { it.languageId == languageId }
+            ?: bookTranslations.firstOrNull()
 
-internal fun BookDto.toDetails(): BookDetails =
+    return BookSummary(
+        id = id.toString(),
+        title = translation?.title ?: "",
+        description = translation?.description ?: "",
+        category = BookCategory.All,
+        emoji = "",
+        imageUrl = photoUrl,
+    )
+}
+
+internal fun BookDetailDto.toDetails(): BookDetails =
     BookDetails(
-        id = id,
+        id = id.toString(),
         title = title,
-        category = category.toBookCategory(),
-        cards = cards.map(BookCardDto::toDomain),
+        category = BookCategory.All,
+        cards = bookPages.sortedBy { it.pageNumber }.map { it.toCard() },
     )
 
-private fun BookCardDto.toDomain(): BookCard =
+private fun BookPageDto.toCard(): BookCard =
     BookCard(
-        id = id,
-        title = title,
-        description = description,
-        emoji = emoji,
-        imageUrl = imageUrl,
+        id = id.toString(),
+        title = textContent,
+        description = textContent,
+        emoji = "",
+        imageUrl = photoUrl,
     )
 
-private fun String.toBookCategory(): BookCategory =
-    BookCategory.entries.firstOrNull { it.name == this } ?: BookCategory.All
+internal const val DEFAULT_LANGUAGE_ID = 1

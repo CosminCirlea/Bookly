@@ -11,6 +11,7 @@ fun AuthFlow(
     startDestination: AuthDestination,
     onExit: () -> Unit,
     onAuthenticated: (String) -> Unit,
+    onSignedUp: () -> Unit,
     onFinished: (String) -> Unit,
     onShowMessage: (String) -> Unit,
 ) {
@@ -36,7 +37,7 @@ fun AuthFlow(
             SignUpRoute(
                 onBack = { navigator.navigateBack() },
                 onSignIn = { navigator.resetTo(AuthDestination.SignIn) },
-                onAuthenticated = onAuthenticated,
+                onSignedUp = onSignedUp,
                 onShowMessage = onShowMessage,
             )
         AuthDestination.ChangePassword ->

@@ -64,6 +64,7 @@ internal fun SignInRoute(
     AuthScreenScaffold(
         title = stringResource(Res.string.auth_sign_in_title),
         onBack = onBack,
+        isLoading = viewState.isLoading,
     ) {
         val textFieldState =
             if (viewState.isLoading) {

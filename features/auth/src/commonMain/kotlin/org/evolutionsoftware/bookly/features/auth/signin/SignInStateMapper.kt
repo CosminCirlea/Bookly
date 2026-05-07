@@ -40,6 +40,10 @@ internal class SignInStateMapper : StateMapper<SignInAction, SignInViewState> {
                     isLoading = false,
                     errorMessage = null,
                 )
+            SignInAction.SubmissionFailed ->
+                currentState.copy(
+                    isLoading = false,
+                )
             SignInAction.ForgotPasswordNavigationRequested,
             SignInAction.SignUpNavigationRequested -> currentState
         }

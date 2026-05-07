@@ -1,52 +1,95 @@
 package org.evolutionsoftware.bookly.services.profiles.data.repository
 
-import org.evolutionsoftware.bookly.core.network.AuthToken
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.isSuccess
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import org.evolutionsoftware.bookly.core.logging.Logger
 import org.evolutionsoftware.bookly.core.network.AuthTokenStore
 import org.evolutionsoftware.bookly.core.network.UserSession
 import org.evolutionsoftware.bookly.core.network.UserSessionStore
+import org.evolutionsoftware.bookly.services.profiles.data.dto.ProfileDto
+import org.evolutionsoftware.bookly.services.profiles.data.mapper.toDomain
 import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 import org.evolutionsoftware.bookly.services.profiles.domain.repository.ProfileRepository
 
 class ProfileRepositoryImpl(
+    private val httpClient: HttpClient,
     private val authTokenStore: AuthTokenStore,
     private val userSessionStore: UserSessionStore,
 ) : ProfileRepository {
-    override suspend fun getCurrentProfile(): ParentProfile? =
-        userSessionStore.read()?.toDomain()
+    override suspend fun getCurrentProfile(): ParentProfile? {
+        val session = userSessionStore.read() ?: return null
 
-    override suspend fun login(displayName: String): ParentProfile = upsertSession(displayName)
+        val response = httpClient.get("$PROFILES_USERS_PATH/${session.userId}")
 
-    override suspend fun register(displayName: String): ParentProfile = upsertSession(displayName)
+        if (!response.status.isSuccess()) {
+            logger.d("Get profiles failed with status ${response.status.value}")
+            return session.toDomain()
+        }
+
+        val profiles = response.body<List<ProfileDto>>()
+        return profiles.firstOrNull()?.toDomain() ?: session.toDomain()
+    }
+
+    override suspend fun login(displayName: String): ParentProfile {
+        val session = userSessionStore.read()
+        if (session != null) {
+            val response = httpClient.get("$PROFILES_USERS_PATH/${session.userId}")
+            if (response.status.isSuccess()) {
+                val profiles = response.body<List<ProfileDto>>()
+                profiles.firstOrNull()?.let { return it.toDomain() }
+            }
+        }
+        return ParentProfile(id = displayName.lowercase(), displayName = displayName)
+    }
+
+    override suspend fun register(displayName: String): ParentProfile =
+        ParentProfile(id = displayName.lowercase(), displayName = displayName)
 
     override suspend fun logout() {
         authTokenStore.clear()
         userSessionStore.clear()
     }
 
-    private suspend fun upsertSession(displayName: String): ParentProfile {
-        val normalizedName = displayName.trim().ifBlank { "Guest Reader" }
-        val userId = normalizedName.lowercase().replace(" ", "-")
-        authTokenStore.write(
-            AuthToken(
-                accessToken = "bookly-$userId-token",
-                refreshToken = "refresh-$userId",
-            ),
-        )
-        userSessionStore.write(
-            UserSession(
-                userId = userId,
-                displayName = normalizedName,
-            ),
-        )
-        return ParentProfile(
-            id = userId,
-            displayName = normalizedName,
-        )
+    override suspend fun createProfile(
+        name: String,
+        dateOfBirth: String,
+        gender: Boolean,
+    ): ParentProfile {
+        val response =
+            httpClient.post(PROFILES_PATH) {
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            append("name", name)
+                            append("date_of_birth", dateOfBirth)
+                            append("gender", gender.toString())
+                        },
+                    ),
+                )
+            }
+
+        if (!response.status.isSuccess()) {
+            logger.d("Create profile failed with status ${response.status.value}")
+            throw Exception("Create profile failed: ${response.status.value}")
+        }
+
+        return response.body<ProfileDto>().toDomain()
+    }
+
+    private fun UserSession.toDomain(): ParentProfile =
+        ParentProfile(id = userId, displayName = displayName)
+
+    private companion object {
+        private const val PROFILES_USERS_PATH = "api/profiles/users"
+        private const val PROFILES_PATH = "api/profiles"
+        private val logger = Logger.withTag("ProfileRepository")
     }
 }
-
-private fun UserSession.toDomain(): ParentProfile =
-    ParentProfile(
-        id = userId,
-        displayName = displayName,
-    )

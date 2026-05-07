@@ -43,4 +43,18 @@
     <string name="auth_password_confirm_placeholder">Confirm New Password</string>
     <string name="auth_password_strength_error">Use a stronger password before continuing.</string>
     <string name="auth_password_match_error">Your new passwords do not match yet.</string>
+    <string name="auth_error_general">An error occurred, please try again</string>
+    <string name="auth_create_profile_title">Create Profile</string>
+    <string name="auth_create_profile_subtitle">Choose an avatar and tell us a bit about yourself</string>
+    <string name="auth_create_profile_name_label">Name</string>
+    <string name="auth_create_profile_name_placeholder">Enter your name</string>
+    <string name="auth_create_profile_name_error">Please enter a name</string>
+    <string name="auth_create_profile_dob_label">Date of Birth</string>
+    <string name="auth_create_profile_dob_placeholder">YYYY-MM-DD</string>
+    <string name="auth_create_profile_gender_label">Gender</string>
+    <string name="auth_create_profile_gender_boy">Boy</string>
+    <string name="auth_create_profile_gender_girl">Girl</string>
+    <string name="auth_create_profile_submit">Create Profile</string>
+    <string name="auth_create_profile_skip">Skip for now</string>
+    <string name="auth_create_profile_avatar_label">Pick your avatar</string>
 </resources>

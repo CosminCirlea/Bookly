@@ -16,6 +16,7 @@ import org.evolutionsoftware.bookly.design.theme.bookly.BooklyTheme
 import org.evolutionsoftware.bookly.di.AppKoin
 import org.evolutionsoftware.bookly.features.auth.AuthDestination
 import org.evolutionsoftware.bookly.features.auth.AuthFlow
+import org.evolutionsoftware.bookly.features.auth.createprofile.CreateProfileRoute
 import org.evolutionsoftware.bookly.features.home.HomeRoute
 import org.evolutionsoftware.bookly.features.reader.ReaderRoute
 import org.evolutionsoftware.bookly.features.settings.SettingsAuthDestination
@@ -88,13 +89,22 @@ fun App() {
                         startDestination = screen.destination,
                         onExit = { destination = AppDestination.Settings },
                         onAuthenticated = {
-                            destination = AppDestination.Settings
+                            destination = AppDestination.Home
                             showMessage(it)
                         },
+                        onSignedUp = { destination = AppDestination.CreateProfile },
                         onFinished = {
                             destination = AppDestination.Settings
                             showMessage(it)
                         },
+                        onShowMessage = ::showMessage,
+                    )
+                }
+
+                AppDestination.CreateProfile -> {
+                    CreateProfileRoute(
+                        onProfileCreated = { destination = AppDestination.Home },
+                        onSkip = { destination = AppDestination.Home },
                         onShowMessage = ::showMessage,
                     )
                 }
@@ -111,4 +121,6 @@ private sealed interface AppDestination {
     data object Settings : AppDestination
 
     data class Auth(val destination: AuthDestination) : AppDestination
+
+    data object CreateProfile : AppDestination
 }

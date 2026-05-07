@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:bookly-backend-batrinutsilvius-projects.vercel.app)",
+      "Bash(grep -E \"\\\\.\\(json|yaml|yml|md\\)$\")",
+      "Bash(grep -E \"\\\\.kt$\")",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api-docs\" -H \"Accept: application/json\")",
+      "Bash(curl -s -X POST https://bookly-backend-batrinutsilvius-projects.vercel.app/api/auth/register -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"password\":\"Test1234!\"}')",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/books\")",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/categories\")",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/languages\")",
+      "Bash(xargs cat *)",
+      "WebFetch(domain:www.figma.com)"
+    ]
+  }
+}

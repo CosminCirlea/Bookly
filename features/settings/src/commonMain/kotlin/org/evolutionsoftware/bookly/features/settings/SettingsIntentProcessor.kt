@@ -10,6 +10,8 @@ import bookly.features.settings.generated.resources.settings_rate_app_message
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import org.evolutionsoftware.bookly.core.auth.CheckSessionUseCase
+import org.evolutionsoftware.bookly.core.auth.SessionState
 import org.evolutionsoftware.bookly.core.mvi.IntentProcessor
 import org.evolutionsoftware.bookly.services.profiles.domain.usecase.LoginUseCase
 import org.evolutionsoftware.bookly.services.profiles.domain.usecase.GetCurrentProfileUseCase
@@ -19,13 +21,20 @@ internal class SettingsIntentProcessor(
     private val getCurrentProfileUseCase: GetCurrentProfileUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val loginUseCase: LoginUseCase,
+    private val checkSessionUseCase: CheckSessionUseCase,
 ) : IntentProcessor<SettingsIntent, SettingsAction> {
     override fun invoke(intent: SettingsIntent): Flow<SettingsAction> =
         when (intent) {
             SettingsIntent.Load ->
                 flow {
-                    emit(SettingsAction.LoadingStarted)
-                    emit(SettingsAction.ProfileLoaded(getCurrentProfileUseCase()))
+                    val isSignedIn = checkSessionUseCase() == SessionState.SignedIn
+                    emit(SettingsAction.SessionChecked(isSignedIn))
+                    if (isSignedIn) {
+                        emit(SettingsAction.LoadingStarted)
+                        emit(SettingsAction.ProfileLoaded(getCurrentProfileUseCase()))
+                    } else {
+                        emit(SettingsAction.ProfileLoaded(null))
+                    }
                 }
             SettingsIntent.JoinClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignUp))
             SettingsIntent.LoginClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignIn))

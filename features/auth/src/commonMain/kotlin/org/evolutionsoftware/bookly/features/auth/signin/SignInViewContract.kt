@@ -55,6 +55,8 @@ internal sealed interface SignInAction : UserIntentAction {
 
     data object SubmissionSucceeded : SignInAction
 
+    data object SubmissionFailed : SignInAction
+
     data object ForgotPasswordNavigationRequested : SignInAction
 
     data object SignUpNavigationRequested : SignInAction

@@ -32,6 +32,7 @@ kotlin {
             implementation(projects.core)
             implementation(projects.design)
             implementation(projects.components)
+            implementation(projects.services.auth)
             implementation(projects.services.profiles)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.foundation)

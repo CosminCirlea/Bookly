@@ -6,11 +6,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.evolutionsoftware.bookly.core.mvi.IntentProcessor
-import org.evolutionsoftware.bookly.features.auth.common.resolveDisplayName
-import org.evolutionsoftware.bookly.services.profiles.domain.usecase.LoginUseCase
+import org.evolutionsoftware.bookly.core.network.AuthToken
+import org.evolutionsoftware.bookly.core.network.AuthTokenStore
+import org.evolutionsoftware.bookly.core.network.UserSession
+import org.evolutionsoftware.bookly.core.network.UserSessionStore
+import org.evolutionsoftware.bookly.core.usecase.utils.Result
+import org.evolutionsoftware.bookly.services.auth.domain.model.AuthSession
+import org.evolutionsoftware.bookly.services.auth.domain.usecase.LoginUseCase
 
 internal class SignInIntentProcessor(
     private val loginUseCase: LoginUseCase,
+    private val authTokenStore: AuthTokenStore,
+    private val userSessionStore: UserSessionStore,
 ) : IntentProcessor<SignInIntent, SignInAction> {
     override fun invoke(intent: SignInIntent): Flow<SignInAction> =
         when (intent) {
@@ -21,15 +28,40 @@ internal class SignInIntentProcessor(
             is SignInIntent.PasswordChanged -> flowOf(SignInAction.PasswordUpdated(intent.value))
             is SignInIntent.Submit ->
                 flow {
-                    val displayName = resolveDisplayName(intent.emailOrPhone)
                     if (!SignInValidators.isFormValid(intent.emailOrPhone, intent.password)) {
                         emit(SignInAction.ValidationFailed(Res.string.auth_sign_in_validation_error))
                         return@flow
                     }
 
                     emit(SignInAction.SubmissionStarted)
-                    loginUseCase(displayName)
-                    emit(SignInAction.SubmissionSucceeded)
+
+                    val result = loginUseCase(
+                        email = intent.emailOrPhone.trim(),
+                        password = intent.password,
+                    )
+
+                    when (result) {
+                        is Result.Success -> {
+                            storeSession(result.data)
+                            emit(SignInAction.SubmissionSucceeded)
+                        }
+                        is Result.Error -> emit(SignInAction.SubmissionFailed)
+                    }
                 }
         }
+
+    private suspend fun storeSession(session: AuthSession) {
+        authTokenStore.write(
+            AuthToken(
+                accessToken = session.accessToken,
+                refreshToken = session.refreshToken,
+            ),
+        )
+        userSessionStore.write(
+            UserSession(
+                userId = session.user.id,
+                displayName = session.user.email,
+            ),
+        )
+    }
 }

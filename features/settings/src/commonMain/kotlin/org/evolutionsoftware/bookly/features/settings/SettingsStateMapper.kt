@@ -8,6 +8,7 @@ internal class SettingsStateMapper : StateMapper<SettingsAction, SettingsViewSta
         currentState: SettingsViewState,
     ): SettingsViewState =
         when (action) {
+            is SettingsAction.SessionChecked -> currentState.copy(isSessionActive = action.active)
             SettingsAction.LoadingStarted -> currentState.copy(isLoading = true)
             is SettingsAction.ProfileLoaded ->
                 currentState.copy(
@@ -22,6 +23,7 @@ internal class SettingsStateMapper : StateMapper<SettingsAction, SettingsViewSta
             SettingsAction.SignedOut ->
                 currentState.copy(
                     isLoading = false,
+                    isSessionActive = false,
                     profile = null,
                 )
             is SettingsAction.MessageRequested -> currentState

@@ -10,4 +10,10 @@ interface ProfileRepository {
     suspend fun register(displayName: String): ParentProfile
 
     suspend fun logout()
+
+    suspend fun createProfile(
+        name: String,
+        dateOfBirth: String,
+        gender: Boolean,
+    ): ParentProfile
 }

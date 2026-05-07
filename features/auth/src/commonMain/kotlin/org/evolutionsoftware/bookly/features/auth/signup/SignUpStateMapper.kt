@@ -51,6 +51,10 @@ internal class SignUpStateMapper : StateMapper<SignUpAction, SignUpViewState> {
                     isLoading = false,
                     errorMessage = null,
                 )
+            SignUpAction.SubmissionFailed ->
+                currentState.copy(
+                    isLoading = false,
+                )
             SignUpAction.SignInNavigationRequested -> currentState
         }
 }

@@ -9,8 +9,8 @@ import org.koin.dsl.module
 object CatalogDiModule {
     val module =
         module {
-            single<CatalogRepository> { CatalogRepositoryImpl() }
-            single { GetBooksUseCase(get()) }
-            single { GetBookDetailsUseCase(get()) }
+            single<CatalogRepository> { CatalogRepositoryImpl(get()) }
+            factory { GetBooksUseCase(get()) }
+            factory { GetBookDetailsUseCase(get()) }
         }
 }
