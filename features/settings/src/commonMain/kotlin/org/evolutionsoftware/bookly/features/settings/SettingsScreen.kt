@@ -221,7 +221,7 @@ private fun SettingsScreen(
                     Icon(
                         painter = painterResource(Icons.SettingsLogout.icon),
                         contentDescription = null,
-                        tint = Color.Unspecified,
+                        tint = TokenProvider.colors.textDanger,
                         modifier = Modifier.size(13.5.dp),
                     )
                     Text(

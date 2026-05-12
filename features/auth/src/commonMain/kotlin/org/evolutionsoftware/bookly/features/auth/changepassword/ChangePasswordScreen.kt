@@ -5,9 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import bookly.features.auth.generated.resources.Res
-import bookly.features.auth.generated.resources.auth_change_password_headline
 import bookly.features.auth.generated.resources.auth_change_password_submit
-import bookly.features.auth.generated.resources.auth_change_password_subtitle
 import bookly.features.auth.generated.resources.auth_change_password_title
 import bookly.features.auth.generated.resources.auth_password_confirm_label
 import bookly.features.auth.generated.resources.auth_password_confirm_placeholder
@@ -40,8 +38,6 @@ internal fun ChangePasswordRoute(
 
     PasswordEditorScreen(
         screenTitle = stringResource(Res.string.auth_change_password_title),
-        headline = stringResource(Res.string.auth_change_password_headline),
-        subtitle = stringResource(Res.string.auth_change_password_subtitle),
         submitLabel = stringResource(Res.string.auth_change_password_submit),
         includeCurrentPassword = true,
         currentPasswordLabel = stringResource(Res.string.auth_password_current_label),

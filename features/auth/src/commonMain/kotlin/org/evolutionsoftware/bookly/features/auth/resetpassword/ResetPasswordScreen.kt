@@ -11,9 +11,7 @@ import bookly.features.auth.generated.resources.auth_password_current_label
 import bookly.features.auth.generated.resources.auth_password_current_placeholder
 import bookly.features.auth.generated.resources.auth_password_new_label
 import bookly.features.auth.generated.resources.auth_password_new_placeholder
-import bookly.features.auth.generated.resources.auth_reset_password_headline
 import bookly.features.auth.generated.resources.auth_reset_password_submit
-import bookly.features.auth.generated.resources.auth_reset_password_subtitle
 import bookly.features.auth.generated.resources.auth_reset_password_title
 import kotlinx.coroutines.flow.collectLatest
 import org.evolutionsoftware.bookly.features.auth.common.PasswordEditorScreen
@@ -40,8 +38,6 @@ internal fun ResetPasswordRoute(
 
     PasswordEditorScreen(
         screenTitle = stringResource(Res.string.auth_reset_password_title),
-        headline = stringResource(Res.string.auth_reset_password_headline),
-        subtitle = stringResource(Res.string.auth_reset_password_subtitle),
         submitLabel = stringResource(Res.string.auth_reset_password_submit),
         includeCurrentPassword = false,
         currentPasswordLabel = stringResource(Res.string.auth_password_current_label),

@@ -26,13 +26,9 @@
     <string name="auth_sign_up_success_message">Welcome to Bookly.</string>
     <string name="auth_sign_up_to_sign_in">Already have an account? Log in</string>
     <string name="auth_change_password_title">Change Password</string>
-    <string name="auth_change_password_headline">Update Password</string>
-    <string name="auth_change_password_subtitle">Keep your playroom safe with a fresh password only you know.</string>
     <string name="auth_change_password_submit">Save Changes</string>
     <string name="auth_change_password_success_message">Password updated successfully.</string>
     <string name="auth_reset_password_title">Reset Password</string>
-    <string name="auth_reset_password_headline">New Password</string>
-    <string name="auth_reset_password_subtitle">Create a new secure password to access your playroom. Make it strong but memorable.</string>
     <string name="auth_reset_password_submit">Update Password</string>
     <string name="auth_reset_password_success_message">Password reset successfully.</string>
     <string name="auth_password_current_label">Current Password</string>

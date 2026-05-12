@@ -20,8 +20,6 @@ import org.evolutionsoftware.bookly.design.theme.TokenProvider
 @Composable
 internal fun PasswordEditorScreen(
     screenTitle: String,
-    headline: String,
-    subtitle: String,
     submitLabel: String,
     includeCurrentPassword: Boolean,
     currentPasswordLabel: String,
@@ -57,19 +55,6 @@ internal fun PasswordEditorScreen(
         title = screenTitle,
         onBack = onBack,
     ) {
-        Text(
-            text = headline,
-            style = TokenProvider.textStyles.title,
-            color = TokenProvider.colors.text,
-        )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapSm))
-        Text(
-            text = subtitle,
-            style = TokenProvider.textStyles.body,
-            color = TokenProvider.colors.textMuted,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
         if (includeCurrentPassword) {
             TextField(
                 properties =
