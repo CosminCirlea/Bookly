@@ -10,16 +10,22 @@ internal class HomeStateMapper : StateMapper<HomeAction, HomeViewState> {
     ): HomeViewState =
         when (action) {
             HomeAction.LoadingStarted ->
-                currentState.copy(isLoading = true)
+                currentState.copy(isLoading = true, error = null)
             is HomeAction.ContentLoaded -> {
                 val visible = filterBooks(action.books, currentState.selectedFilter)
                 currentState.copy(
                     isLoading = false,
+                    error = null,
                     profile = action.profile,
                     allBooks = action.books,
                     visibleBooks = visible,
                 )
             }
+            is HomeAction.LoadingFailed ->
+                currentState.copy(
+                    isLoading = false,
+                    error = action.error,
+                )
             is HomeAction.FilterChanged ->
                 currentState.copy(
                     selectedFilter = action.filter,

@@ -20,12 +20,20 @@ import androidx.compose.foundation.lazy.items as lazyItems
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -77,6 +85,9 @@ private fun HomeScreen(
             "Weather" to "Weather",
         )
 
+    val density = LocalDensity.current
+    var headerHeight by remember { mutableStateOf(0.dp) }
+
     Box(
         modifier =
             Modifier
@@ -94,11 +105,22 @@ private fun HomeScreen(
                         ),
                 ),
     ) {
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(
+                    color = TokenProvider.colors.bgAccentStrong,
+                )
+            }
+        }
+
         LazyVerticalGrid(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .padding(top = 148.dp),
+                    .padding(top = headerHeight),
             columns = GridCells.Fixed(2),
             contentPadding =
                 PaddingValues(
@@ -118,7 +140,14 @@ private fun HomeScreen(
             }
         }
 
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coordinates ->
+                        headerHeight = with(density) { coordinates.size.height.toDp() }
+                    },
+        ) {
             PlayroomHeader(
                 title = "Playroom",
                 profile = state.profile,
@@ -181,14 +210,14 @@ private fun PlayroomHeader(
                             .background(TokenProvider.colors.bgAccentStrong),
                     contentAlignment = Alignment.Center,
                 ) {
-                    androidx.compose.material3.Text(
+                    Text(
                         text = profile?.initials ?: "JR",
                         color = TokenProvider.colors.textInverse,
                         style = TokenProvider.textStyles.bodyStrong,
                     )
                 }
             }
-            androidx.compose.material3.Text(
+            Text(
                 text = title,
                 style = TokenProvider.textStyles.headline.copy(fontWeight = FontWeight.ExtraBold),
                 color = TokenProvider.colors.textAccent,
@@ -206,7 +235,7 @@ private fun PlayroomHeader(
                 ),
             onClick = onSettingsClick,
             content = {
-                androidx.compose.material3.Icon(
+                Icon(
                     painter = painterResource(Icons.Settings.icon),
                     contentDescription = "Settings",
                     tint = TokenProvider.colors.borderAccent,
@@ -281,14 +310,14 @@ private fun PlayroomBookCard(
                             .background(Color(0xFF204562)),
                 )
             } else {
-                androidx.compose.material3.Text(
+                Text(
                     text = book.emoji,
                     style = TokenProvider.textStyles.headline.copy(fontWeight = FontWeight.Black),
                 )
             }
         }
         Spacer(modifier = Modifier.height(TokenProvider.spacings.xs))
-        androidx.compose.material3.Text(
+        Text(
             text = book.title,
             style = TokenProvider.textStyles.bodyStrong.copy(fontWeight = FontWeight.ExtraBold),
             color = TokenProvider.colors.text,

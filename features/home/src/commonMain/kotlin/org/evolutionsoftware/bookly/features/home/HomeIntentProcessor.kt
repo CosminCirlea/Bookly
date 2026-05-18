@@ -16,12 +16,20 @@ internal class HomeIntentProcessor(
             HomeIntent.Load ->
                 flow {
                     emit(HomeAction.LoadingStarted)
-                    emit(
-                        HomeAction.ContentLoaded(
-                            books = getBooksUseCase(),
-                            profile = getCurrentProfileUseCase(),
-                        ),
-                    )
+                    val books =
+                        try {
+                            getBooksUseCase()
+                        } catch (e: Exception) {
+                            emit(HomeAction.LoadingFailed(e.message ?: "Failed to load books"))
+                            return@flow
+                        }
+                    val profile =
+                        try {
+                            getCurrentProfileUseCase()
+                        } catch (e: Exception) {
+                            null
+                        }
+                    emit(HomeAction.ContentLoaded(books = books, profile = profile))
                 }
             is HomeIntent.FilterSelected -> flowOf(HomeAction.FilterChanged(intent.filter))
         }

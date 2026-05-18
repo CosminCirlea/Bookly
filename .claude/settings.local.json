@@ -10,7 +10,11 @@
       "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/categories\")",
       "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/languages\")",
       "Bash(xargs cat *)",
-      "WebFetch(domain:www.figma.com)"
+      "WebFetch(domain:www.figma.com)",
+      "Bash(./gradlew :services:catalog:compileKotlinIosSimulatorArm64 --no-daemon)",
+      "Bash(./gradlew :services:catalog:compileDebugKotlin --no-daemon)",
+      "Bash(./gradlew :composeApp:assembleDebug --no-daemon)",
+      "Bash(./gradlew :features:reader:compileDebugKotlin --no-daemon)"
     ]
   }
 }

@@ -29,7 +29,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,8 +50,14 @@ import bookly.features.reader.generated.resources.reader_missing_cached_message
 import bookly.features.reader.generated.resources.reader_opening_book
 import bookly.features.reader.generated.resources.reader_unavailable_offline
 import bookly.features.reader.generated.resources.reader_fox
+import io.github.alexzhirkevich.compottie.DotLottie
+import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
+import io.github.alexzhirkevich.compottie.rememberLottieComposition
+import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.IconButton
 import org.evolutionsoftware.bookly.design.components.properties.IconButtonProperties
@@ -165,11 +170,18 @@ private fun ReaderScreen(
         )
 
         if (cards.isEmpty()) {
-            ReaderEmptyState(
-                title = state.book?.title ?: openingBook,
-                unavailableMessage = unavailableMessage,
-                modifier = Modifier.align(Alignment.Center),
-            )
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(top = 80.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                ReaderEmptyState(
+                    title = state.book?.title ?: openingBook,
+                    unavailableMessage = unavailableMessage,
+                )
+            }
         } else {
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 val contentWidth = maxWidth.coerceAtMost(420.dp)
@@ -411,13 +423,20 @@ private fun ReaderActionButton(
     )
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun ReaderEmptyState(
     title: String,
     unavailableMessage: String,
     modifier: Modifier = Modifier,
 ) {
-    val emptySymbol = stringResource(Res.string.reader_empty_symbol)
+    val composition by rememberLottieComposition {
+        LottieCompositionSpec.DotLottie(Res.readBytes("files/loading_lottie.lottie"))
+    }
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = Int.MAX_VALUE,
+    )
 
     Column(
         modifier =
@@ -430,19 +449,16 @@ private fun ReaderEmptyState(
         Box(
             modifier =
                 Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(4f / 5f)
-                    .clip(RoundedCornerShape(TokenProvider.borderRadius.xl))
-                    .background(TokenProvider.colors.bgSurface),
+                    .size(200.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = emptySymbol,
-                style =
-                    TokenProvider.textStyles.headline.copy(
-                        fontSize = 120.sp,
-                        lineHeight = 120.sp,
-                    ),
+            Image(
+                painter = rememberLottiePainter(
+                    composition = composition,
+                    progress = { progress },
+                ),
+                contentDescription = "Loading",
+                modifier = Modifier.fillMaxSize(),
             )
         }
 
@@ -451,8 +467,8 @@ private fun ReaderEmptyState(
             style =
                 TokenProvider.textStyles.headline.copy(
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = 64.sp,
-                    lineHeight = 64.sp,
+                    fontSize = 48.sp,
+                    lineHeight = 48.sp,
                     letterSpacing = (-2).sp,
                 ),
             color = TokenProvider.colors.text,
@@ -466,4 +482,73 @@ private fun ReaderEmptyState(
             textAlign = TextAlign.Center,
         )
     }
+}
+
+@Composable
+internal fun ReaderScreenContent(
+    state: ReaderViewState,
+    onIntent: (ReaderIntent) -> Unit,
+    onBack: () -> Unit,
+) {
+    ReaderScreen(
+        state = state,
+        onIntent = onIntent,
+        onBack = onBack,
+    )
+}
+
+@Composable
+internal fun ReaderPageContent(
+    card: BookCard,
+    modifier: Modifier = Modifier,
+) {
+    ReaderPage(
+        card = card,
+        modifier = modifier,
+    )
+}
+
+@Composable
+internal fun ReaderProgressIndicatorContent(
+    total: Int,
+    current: Int,
+    modifier: Modifier = Modifier,
+) {
+    ReaderProgressIndicator(
+        total = total,
+        current = current,
+        modifier = modifier,
+    )
+}
+
+@Composable
+internal fun ReaderTopBarContent(
+    isAutoplayEnabled: Boolean,
+    autoplayAriaLabel: String,
+    onAutoplayToggle: () -> Unit,
+    closeAriaLabel: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ReaderTopBar(
+        isAutoplayEnabled = isAutoplayEnabled,
+        autoplayAriaLabel = autoplayAriaLabel,
+        onAutoplayToggle = onAutoplayToggle,
+        closeAriaLabel = closeAriaLabel,
+        onBack = onBack,
+        modifier = modifier,
+    )
+}
+
+@Composable
+internal fun ReaderEmptyStateContent(
+    title: String,
+    unavailableMessage: String,
+    modifier: Modifier = Modifier,
+) {
+    ReaderEmptyState(
+        title = title,
+        unavailableMessage = unavailableMessage,
+        modifier = modifier,
+    )
 }

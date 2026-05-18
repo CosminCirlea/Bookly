@@ -9,6 +9,7 @@ import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 
 internal data class HomeViewState(
     val isLoading: Boolean = true,
+    val error: String? = null,
     val profile: ParentProfile? = null,
     val allBooks: List<BookSummary> = emptyList(),
     val visibleBooks: List<BookSummary> = emptyList(),
@@ -33,6 +34,8 @@ internal sealed interface HomeAction : UserIntentAction {
         val books: List<BookSummary>,
         val profile: ParentProfile?,
     ) : HomeAction
+
+    data class LoadingFailed(val error: String) : HomeAction
 
     data class FilterChanged(val filter: String) : HomeAction
 }

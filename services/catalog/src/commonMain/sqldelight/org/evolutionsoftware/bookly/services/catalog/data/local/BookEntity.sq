@@ -1,0 +1,40 @@
+CREATE TABLE BookEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    category TEXT NOT NULL,
+    emoji TEXT NOT NULL,
+    imageUrl TEXT,
+    updatedAt INTEGER NOT NULL
+);
+
+CREATE TABLE BookDetailEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    cardsJson TEXT NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+selectAllBooks:
+SELECT * FROM BookEntity ORDER BY title;
+
+selectBookById:
+SELECT * FROM BookEntity WHERE id = ?;
+
+insertBook:
+INSERT OR REPLACE INTO BookEntity(id, title, description, category, emoji, imageUrl, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteAllBooks:
+DELETE FROM BookEntity;
+
+selectBookDetailById:
+SELECT * FROM BookDetailEntity WHERE id = ?;
+
+insertBookDetail:
+INSERT OR REPLACE INTO BookDetailEntity(id, title, category, cardsJson, updatedAt)
+VALUES (?, ?, ?, ?, ?);
+
+deleteBookDetailById:
+DELETE FROM BookDetailEntity WHERE id = ?;
