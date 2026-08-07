@@ -15,4 +15,13 @@
     <string name="home_favorite_add_aria">Add to favorites</string>
     <string name="home_favorite_remove_aria">Remove from favorites</string>
     <string name="home_settings_aria">Settings</string>
+    <string name="home_loading_title">Opening the playroom</string>
+    <string name="home_loading_body">Just a moment while we gather the books.</string>
+    <string name="home_error_title">Wait a minute…</string>
+    <string name="home_error_body">We hit a small snag loading the books. Check your connection and give it another go.</string>
+    <string name="home_error_retry">Try again</string>
+    <string name="home_empty_filter_title">No books here yet</string>
+    <string name="home_empty_filter_body">Try another filter or search.</string>
+    <string name="home_empty_library_title">The playroom is empty</string>
+    <string name="home_empty_library_body">New books will show up here as soon as they arrive.</string>
 </resources>

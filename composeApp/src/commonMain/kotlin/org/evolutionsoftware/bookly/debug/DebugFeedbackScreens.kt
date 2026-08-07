@@ -28,8 +28,8 @@ fun DebugLoadingScreen(onClose: () -> Unit) {
 
         Feedback(
             properties = FeedbackProperties.Loading,
-            title = "Loading...",
-            description = "Please wait while we fetch your content",
+            title = "Opening the playroom",
+            description = "Just a moment while we gather the books.",
             modifier = Modifier.padding(top = 80.dp),
         )
     }
@@ -50,10 +50,10 @@ fun DebugEmptyScreen(onClose: () -> Unit) {
         Feedback(
             properties =
                 FeedbackProperties.Empty(
-                    mainAction = FeedbackAction(text = "Browse Books", onClick = {}),
+                    mainAction = FeedbackAction(text = "Back to the playroom", onClick = {}),
                 ),
-            title = "No Books Found",
-            description = "Your library is empty. Start by adding some books to read offline.",
+            title = "The playroom is empty",
+            description = "New books will show up here as soon as they arrive.",
             modifier = Modifier.padding(top = 80.dp),
         )
     }
@@ -74,10 +74,10 @@ fun DebugErrorScreen(onClose: () -> Unit) {
         Feedback(
             properties =
                 FeedbackProperties.Error(
-                    mainAction = FeedbackAction(text = "Try Again", onClick = {}),
+                    mainAction = FeedbackAction(text = "Try again", onClick = {}),
                 ),
-            title = "Something Went Wrong",
-            description = "We couldn't load your content. Please check your connection and try again.",
+            title = "Wait a minute…",
+            description = "We hit a small snag loading the books. Check your connection and give it another go.",
             modifier = Modifier.padding(top = 80.dp),
         )
     }

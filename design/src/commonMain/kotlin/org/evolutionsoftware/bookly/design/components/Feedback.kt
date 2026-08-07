@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
@@ -20,9 +20,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
@@ -58,13 +61,18 @@ fun Feedback(
 
         Text(
             text = title,
-            style = TokenProvider.textStyles.title,
+            style =
+                TokenProvider.textStyles.title.copy(
+                    fontWeight = FontWeight.Black,
+                    fontSize = 22.sp,
+                    lineHeight = 30.sp,
+                ),
             color = TokenProvider.colors.text,
             textAlign = TextAlign.Center,
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(bottom = TokenProvider.spacings.sm),
+                    .padding(bottom = TokenProvider.spacings.xs),
         )
 
         if (description != null) {
@@ -119,13 +127,40 @@ private fun IllustrationFromVariant(
 
     is FeedbackProperties.Error,
     is FeedbackProperties.Empty ->
-        properties.icon?.let {
-            IllustrationHolder(
-                icon = it,
-                iconTint = properties.iconTint,
-                modifier = FeedbackIconModifier(properties.iconBackgroundTint),
+        properties.icon?.let { icon ->
+            FeedbackBadge(
+                icon = icon,
+                tint = properties.iconTint?.invoke() ?: TokenProvider.colors.textSubtle,
+                background = properties.iconBackgroundTint?.invoke() ?: TokenProvider.colors.bgElevated,
             )
         }
+}
+
+/**
+ * Rounded-square badge holding a single tinted glyph — the same soft-tint-plus-coloured-icon
+ * treatment used by the settings menu rows, scaled up for a full-screen state.
+ */
+@Composable
+private fun FeedbackBadge(
+    icon: org.evolutionsoftware.bookly.design.Icons,
+    tint: Color,
+    background: Color,
+) {
+    Box(
+        modifier =
+            Modifier
+                .size(96.dp)
+                .clip(RoundedCornerShape(TokenProvider.borderRadius.lg))
+                .background(background),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(icon.icon),
+            contentDescription = icon.name,
+            tint = tint,
+            modifier = Modifier.size(44.dp),
+        )
+    }
 }
 
 @Composable
@@ -142,17 +177,6 @@ private fun IllustrationHolder(
         contentDescription = icon.name,
         tint = iconTint?.invoke() ?: LocalContentColor.current,
     )
-}
-
-@Composable
-private fun FeedbackIconModifier(iconBackgroundTint: (@Composable () -> Color)?): Modifier {
-    val tint = iconBackgroundTint?.invoke() ?: TokenProvider.colors.bgAccent
-    return Modifier
-        .size(96.dp)
-        .background(tint.copy(alpha = 0.35f), CircleShape)
-        .padding(12.dp)
-        .background(tint, CircleShape)
-        .padding(12.dp)
 }
 
 @OptIn(ExperimentalResourceApi::class)

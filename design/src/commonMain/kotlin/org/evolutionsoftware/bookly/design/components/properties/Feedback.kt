@@ -21,21 +21,27 @@ sealed interface FeedbackProperties {
         override val iconBackgroundTint: (@Composable () -> Color)? = null
     }
 
+    /**
+     * Soft-tinted danger badge, matching the settings menu's icon treatment rather
+     * than shouting with a solid red disc.
+     */
     data class Error(
         override val mainAction: FeedbackAction? = null,
         override val secondaryAction: FeedbackAction? = null,
     ) : FeedbackProperties {
-        override val icon: Icons = Icons.Warning
-        override val iconTint: @Composable () -> Color = { TokenProvider.colors.textInverse }
-        override val iconBackgroundTint: @Composable () -> Color = { TokenProvider.colors.textDanger }
+        override val icon: Icons = Icons.ErrorCircle
+        override val iconTint: @Composable () -> Color = { TokenProvider.colors.textDanger }
+        override val iconBackgroundTint: @Composable () -> Color = {
+            TokenProvider.colors.textDanger.copy(alpha = 0.12f)
+        }
     }
 
     data class Empty(
         override val mainAction: FeedbackAction? = null,
         override val secondaryAction: FeedbackAction? = null,
         override val icon: Icons? = Icons.Book,
-        override val iconTint: @Composable () -> Color = { TokenProvider.colors.textInverse },
-        override val iconBackgroundTint: @Composable () -> Color = { TokenProvider.colors.bgAccent },
+        override val iconTint: @Composable () -> Color = { TokenProvider.colors.textSubtle },
+        override val iconBackgroundTint: @Composable () -> Color = { TokenProvider.colors.bgElevated },
     ) : FeedbackProperties
 
     data class Custom(

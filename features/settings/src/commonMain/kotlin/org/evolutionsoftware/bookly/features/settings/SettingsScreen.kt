@@ -209,13 +209,13 @@ private fun SettingsScreen(
                 title = stringResource(Res.string.settings_account),
                 items =
                     listOf(
-                        SettingsRowItem(stringResource(Res.string.settings_edit_profile), Icons.SettingsEditProfile, TokenProvider.colors.bgInfoSoft) {
+                        SettingsRowItem(stringResource(Res.string.settings_edit_profile), Icons.SettingsEditProfile, SettingsRowStyles.Info) {
                             onIntent(SettingsIntent.EditProfileClicked)
                         },
-                        SettingsRowItem(stringResource(Res.string.settings_change_password), Icons.SettingsChangePassword, TokenProvider.colors.bgWarningSoft) {
+                        SettingsRowItem(stringResource(Res.string.settings_change_password), Icons.SettingsChangePassword, SettingsRowStyles.Accent) {
                             onIntent(SettingsIntent.ChangePasswordClicked)
                         },
-                        SettingsRowItem(stringResource(Res.string.settings_reset_password), Icons.SettingsResetPassword, TokenProvider.colors.bgDangerSoft) {
+                        SettingsRowItem(stringResource(Res.string.settings_reset_password), Icons.SettingsResetPassword, SettingsRowStyles.Danger) {
                             onIntent(SettingsIntent.ResetPasswordClicked)
                         },
                     ),
@@ -225,10 +225,10 @@ private fun SettingsScreen(
                 title = stringResource(Res.string.settings_preferences),
                 items =
                     listOf(
-                        SettingsRowItem(stringResource(Res.string.settings_notifications), Icons.SettingsNotifications, TokenProvider.colors.success.copy(alpha = 0.12f)) {
+                        SettingsRowItem(stringResource(Res.string.settings_notifications), Icons.SettingsNotifications, SettingsRowStyles.Success) {
                             onIntent(SettingsIntent.NotificationsClicked)
                         },
-                        SettingsRowItem(stringResource(Res.string.settings_sound_audio), Icons.SettingsSound, TokenProvider.colors.bgInfoSoft) {
+                        SettingsRowItem(stringResource(Res.string.settings_sound_audio), Icons.SettingsSound, SettingsRowStyles.Info) {
                             onIntent(SettingsIntent.SoundClicked)
                         },
                     ),
@@ -238,10 +238,10 @@ private fun SettingsScreen(
                 title = stringResource(Res.string.settings_support),
                 items =
                     listOf(
-                        SettingsRowItem(stringResource(Res.string.settings_help_center), Icons.SettingsHelp, TokenProvider.colors.bgWarningSoft) {
+                        SettingsRowItem(stringResource(Res.string.settings_help_center), Icons.SettingsHelp, SettingsRowStyles.Help) {
                             onIntent(SettingsIntent.HelpCenterClicked)
                         },
-                        SettingsRowItem(stringResource(Res.string.settings_contact_us), Icons.SettingsContact, TokenProvider.colors.bgSuccessSoft.copy(alpha = 0.36f)) {
+                        SettingsRowItem(stringResource(Res.string.settings_contact_us), Icons.SettingsContact, SettingsRowStyles.Success) {
                             onIntent(SettingsIntent.ContactUsClicked)
                         },
                     ),
@@ -251,16 +251,16 @@ private fun SettingsScreen(
                 title = stringResource(Res.string.settings_more),
                 items =
                     listOf(
-                        SettingsRowItem(stringResource(Res.string.settings_invite_friend), Icons.SettingsInviteFriend, TokenProvider.colors.bgInfoSoft) {
+                        SettingsRowItem(stringResource(Res.string.settings_invite_friend), Icons.SettingsInviteFriend, SettingsRowStyles.Info) {
                             showInviteSheet = true
                         },
-                        SettingsRowItem(stringResource(Res.string.settings_rate_app), Icons.SettingsRateApp, TokenProvider.colors.bgWarningSoft) {
+                        SettingsRowItem(stringResource(Res.string.settings_rate_app), Icons.SettingsRateApp, SettingsRowStyles.Accent) {
                             showRateSheet = true
                         },
                         SettingsRowItem(
                             title = stringResource(Res.string.settings_language),
                             icon = Icons.SettingsLanguage,
-                            iconBackground = TokenProvider.colors.success.copy(alpha = 0.12f),
+                            style = SettingsRowStyles.Success,
                             trailingText = state.selectedLanguage,
                         ) {
                             showLanguageSheet = true
@@ -465,7 +465,7 @@ private fun RateAppSheet(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            SheetIconBadge(icon = Icons.Star, background = Color(0xFFFFE0B2))
+            SheetIconBadge(icon = Icons.Star, background = Color(0xFFFFE0B2), tint = Color(0xFF874E00))
             Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
             Text(
                 text = stringResource(Res.string.settings_rate_title),
@@ -488,7 +488,7 @@ private fun RateAppSheet(
                     Icon(
                         painter = painterResource(if (filled) Icons.Star.icon else Icons.StarOutline.icon),
                         contentDescription = null,
-                        tint = Color.Unspecified,
+                        tint = if (filled) TokenProvider.colors.borderAccent else Color(0xFFE6D8A0),
                         modifier =
                             Modifier
                                 .size(44.dp)
@@ -545,7 +545,7 @@ private fun InviteFriendSheet(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            SheetIconBadge(icon = Icons.Gift, background = Color(0xFFE3F2FD))
+            SheetIconBadge(icon = Icons.Gift, background = Color(0xFFE3F2FD), tint = Color(0xFF005E9F))
             Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
             Text(
                 text = stringResource(Res.string.settings_invite_title),
@@ -609,6 +609,7 @@ private fun InviteFriendSheet(
             ) {
                 InviteShareOption(
                     icon = Icons.Mail,
+                    iconTint = Color(0xFF874E00),
                     label = stringResource(Res.string.settings_invite_email),
                     iconBackground = Color(0xFFFFE0B2),
                     onClick = onCopy,
@@ -616,6 +617,7 @@ private fun InviteFriendSheet(
                 )
                 InviteShareOption(
                     icon = Icons.Chat,
+                    iconTint = Color(0xFF006B1B),
                     label = stringResource(Res.string.settings_invite_message),
                     iconBackground = Color(0xFFC8E6C9),
                     onClick = onCopy,
@@ -623,6 +625,7 @@ private fun InviteFriendSheet(
                 )
                 InviteShareOption(
                     icon = Icons.Share,
+                    iconTint = Color(0xFF005E9F),
                     label = stringResource(Res.string.settings_invite_more),
                     iconBackground = Color(0xFFE3F2FD),
                     onClick = onCopy,
@@ -641,6 +644,7 @@ private fun InviteFriendSheet(
 @Composable
 private fun InviteShareOption(
     icon: Icons,
+    iconTint: Color,
     label: String,
     iconBackground: Color,
     onClick: () -> Unit,
@@ -667,7 +671,7 @@ private fun InviteShareOption(
             Icon(
                 painter = painterResource(icon.icon),
                 contentDescription = null,
-                tint = Color.Unspecified,
+                tint = iconTint,
                 modifier = Modifier.size(20.dp),
             )
         }
@@ -822,6 +826,7 @@ private fun LogoutConfirmSheet(
 private fun SheetIconBadge(
     icon: Icons,
     background: Color,
+    tint: Color,
 ) {
     Box(
         modifier =
@@ -834,7 +839,7 @@ private fun SheetIconBadge(
         Icon(
             painter = painterResource(icon.icon),
             contentDescription = null,
-            tint = Color.Unspecified,
+            tint = tint,
             modifier = Modifier.size(30.dp),
         )
     }
@@ -1029,14 +1034,14 @@ private fun SettingsMenuRow(item: SettingsRowItem) {
                 Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(item.iconBackground),
+                    .background(item.style.background),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 painter = painterResource(item.icon.icon),
                 contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(18.dp),
+                tint = item.style.tint,
+                modifier = Modifier.size(22.dp),
             )
         }
         Text(
@@ -1055,11 +1060,8 @@ private fun SettingsMenuRow(item: SettingsRowItem) {
         Icon(
             painter = painterResource(Icons.SettingsChevron.icon),
             contentDescription = null,
-            tint = Color.Unspecified,
-            modifier =
-                Modifier
-                    .width(7.4.dp)
-                    .height(12.dp),
+            tint = TokenProvider.colors.textSubtle.copy(alpha = 0.6f),
+            modifier = Modifier.size(20.dp),
         )
     }
 }
@@ -1067,10 +1069,28 @@ private fun SettingsMenuRow(item: SettingsRowItem) {
 private data class SettingsRowItem(
     val title: String,
     val icon: Icons,
-    val iconBackground: Color,
+    val style: SettingsRowStyle,
     val trailingText: String? = null,
     val onClick: () -> Unit,
 )
+
+/** Icon tint and badge fill for a settings row. */
+private data class SettingsRowStyle(
+    val tint: Color,
+    val background: Color,
+)
+
+/**
+ * The five row palettes used by the prototype's settings menu. Each badge is the
+ * icon's own colour at 10% opacity, except Help, which sits on soft amber.
+ */
+private object SettingsRowStyles {
+    val Info = SettingsRowStyle(tint = Color(0xFF005E9F), background = Color(0x1A005E9F))
+    val Accent = SettingsRowStyle(tint = Color(0xFF874E00), background = Color(0x1A874E00))
+    val Danger = SettingsRowStyle(tint = Color(0xFFB02500), background = Color(0x1AB02500))
+    val Success = SettingsRowStyle(tint = Color(0xFF006B1B), background = Color(0x1A006B1B))
+    val Help = SettingsRowStyle(tint = Color(0xFF874E00), background = Color(0x33FFC107))
+}
 
 private fun primaryButtonProperties(
     label: String,

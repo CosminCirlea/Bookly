@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.flowOf
 import org.evolutionsoftware.bookly.core.auth.CheckSessionUseCase
 import org.evolutionsoftware.bookly.core.auth.SessionState
 import org.evolutionsoftware.bookly.core.mvi.IntentProcessor
+import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 import org.evolutionsoftware.bookly.services.profiles.domain.usecase.GetCurrentProfileUseCase
 import org.evolutionsoftware.bookly.services.profiles.domain.usecase.LogoutUseCase
 
@@ -24,6 +25,18 @@ internal class SettingsIntentProcessor(
         when (intent) {
             SettingsIntent.Load ->
                 flow {
+                    // ===================== TEMPORARY STUB — DELETE ME =====================
+                    // Forces a signed-in state so the settings menu can be tested without
+                    // a working backend. Nothing here touches the network.
+                    //
+                    // TO RESTORE THE REAL API CALL:
+                    //   1. delete these two emit(...) lines and this comment block, and
+                    //   2. un-comment the original implementation directly below.
+                    emit(SettingsAction.SessionChecked(true))
+                    emit(SettingsAction.ProfileLoaded(STUB_PROFILE))
+                    // =================== END TEMPORARY STUB — DELETE ME ===================
+
+                    /* ORIGINAL IMPLEMENTATION — UN-COMMENT TO RESTORE
                     val isSignedIn = checkSessionUseCase() == SessionState.SignedIn
                     emit(SettingsAction.SessionChecked(isSignedIn))
                     if (isSignedIn) {
@@ -32,6 +45,7 @@ internal class SettingsIntentProcessor(
                     } else {
                         emit(SettingsAction.ProfileLoaded(null))
                     }
+                     */
                 }
             SettingsIntent.JoinClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignUp))
             SettingsIntent.LoginClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignIn))
@@ -71,9 +85,25 @@ internal class SettingsIntentProcessor(
                 }
             SettingsIntent.SignOutClicked ->
                 flow {
-                    logoutUseCase()
+                    // TEMPORARY STUB — DELETE ME: swallow backend failures so the logout
+                    // sheet can be exercised offline. Restore by replacing this
+                    // try/catch with a plain `logoutUseCase()` call.
+                    try {
+                        logoutUseCase()
+                    } catch (e: Exception) {
+                        // ignored while running against a stubbed session
+                    }
                     emit(SettingsAction.SignedOut)
                     emit(SettingsAction.ProfileLoaded(null))
                 }
         }
+
+    // TEMPORARY STUB — DELETE ME: stand-in profile for the forced signed-in state.
+    private companion object {
+        val STUB_PROFILE =
+            ParentProfile(
+                id = "stub-profile",
+                displayName = "Mia",
+            )
+    }
 }

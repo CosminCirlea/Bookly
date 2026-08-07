@@ -51,6 +51,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import bookly.features.home.generated.resources.Res
 import bookly.features.home.generated.resources.home_favorite_add_aria
+import bookly.features.home.generated.resources.home_empty_filter_body
+import bookly.features.home.generated.resources.home_empty_filter_title
+import bookly.features.home.generated.resources.home_empty_library_body
+import bookly.features.home.generated.resources.home_empty_library_title
+import bookly.features.home.generated.resources.home_error_body
+import bookly.features.home.generated.resources.home_error_retry
+import bookly.features.home.generated.resources.home_error_title
+import bookly.features.home.generated.resources.home_loading_body
+import bookly.features.home.generated.resources.home_loading_title
 import bookly.features.home.generated.resources.home_favorite_added
 import bookly.features.home.generated.resources.home_favorite_failed
 import bookly.features.home.generated.resources.home_favorite_remove_aria
@@ -167,8 +176,8 @@ private fun HomeScreen(
                 state.isLoading -> {
                     Feedback(
                         properties = FeedbackProperties.Loading,
-                        title = "Loading...",
-                        description = "Please wait while we fetch your books",
+                        title = stringResource(Res.string.home_loading_title),
+                        description = stringResource(Res.string.home_loading_body),
                     )
                 }
 
@@ -178,20 +187,20 @@ private fun HomeScreen(
                             FeedbackProperties.Error(
                                 mainAction =
                                     FeedbackAction(
-                                        text = "Try Again",
+                                        text = stringResource(Res.string.home_error_retry),
                                         onClick = { onIntent(HomeIntent.Load) },
                                     ),
                             ),
-                        title = "Something Went Wrong",
-                        description = state.error,
+                        title = stringResource(Res.string.home_error_title),
+                        description = stringResource(Res.string.home_error_body),
                     )
                 }
 
                 state.visibleBooks.isEmpty() -> {
                     Feedback(
                         properties = FeedbackProperties.Empty(),
-                        title = "No Books Found",
-                        description = "Try another filter or search.",
+                        title = stringResource(Res.string.home_empty_filter_title),
+                        description = stringResource(Res.string.home_empty_filter_body),
                     )
                 }
 
@@ -891,8 +900,8 @@ internal fun HomeScreenContent(
 internal fun HomeLoadingContent() {
     Feedback(
         properties = FeedbackProperties.Loading,
-        title = "Loading...",
-        description = "Please wait while we fetch your books",
+        title = stringResource(Res.string.home_loading_title),
+        description = stringResource(Res.string.home_loading_body),
     )
 }
 
@@ -900,8 +909,8 @@ internal fun HomeLoadingContent() {
 internal fun HomeEmptyContent() {
     Feedback(
         properties = FeedbackProperties.Empty(),
-        title = "No Books Found",
-        description = "Your library is empty. Check back later for new books!",
+        title = stringResource(Res.string.home_empty_library_title),
+        description = stringResource(Res.string.home_empty_library_body),
     )
 }
 
@@ -912,11 +921,11 @@ internal fun HomeErrorContent(onRetry: () -> Unit) {
             FeedbackProperties.Error(
                 mainAction =
                     FeedbackAction(
-                        text = "Try Again",
+                        text = stringResource(Res.string.home_error_retry),
                         onClick = onRetry,
                     ),
             ),
-        title = "Something Went Wrong",
-        description = "We couldn't load your books. Please try again.",
+        title = stringResource(Res.string.home_error_title),
+        description = stringResource(Res.string.home_error_body),
     )
 }
