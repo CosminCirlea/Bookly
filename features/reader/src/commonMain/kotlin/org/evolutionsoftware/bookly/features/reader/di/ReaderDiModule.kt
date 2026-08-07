@@ -8,7 +8,7 @@ import org.koin.dsl.module
 object ReaderDiModule {
     val module =
         module {
-            factory { ReaderIntentProcessor(get()) }
+            factory { ReaderIntentProcessor(get(), get(), get(), get(), get()) }
             factory { ReaderStateMapper() }
             factory { ReaderEffectProducer() }
         }

@@ -24,22 +24,25 @@ data class ButtonProperties(
     enum class State {
         Default,
         Disabled,
+        Loading,
     }
 
     fun isEnabled(): Boolean = state == State.Default
 
+    fun isLoading(): Boolean = state == State.Loading
+
     @Composable
     fun getContainerColor(): Color =
         when (state) {
-            State.Default -> TokenProvider.colors.bgAccent
-            State.Disabled -> TokenProvider.colors.textMuted.copy(alpha = 0.28f)
+            State.Default, State.Loading -> TokenProvider.colors.bgAccent
+            State.Disabled -> DISABLED_CONTAINER
         }
 
     @Composable
     fun getBaseColor(): Color =
         when (state) {
-            State.Default -> TokenProvider.colors.bgAccentPressed
-            State.Disabled -> Color.Transparent
+            State.Default, State.Loading -> TokenProvider.colors.bgAccentPressed
+            State.Disabled -> DISABLED_BASE
         }
 
     @Composable
@@ -48,11 +51,7 @@ data class ButtonProperties(
     @Composable
     fun getCornerRadius(): Dp = TokenProvider.borderRadius.md
 
-    fun getDepth(): Dp =
-        when (state) {
-            State.Default -> 6.dp
-            State.Disabled -> 0.dp
-        }
+    fun getDepth(): Dp = 6.dp
 
     @Composable
     fun getHorizontalPadding(): Dp = TokenProvider.spacings.lg
@@ -69,4 +68,9 @@ data class ButtonProperties(
             Size.Medium -> 56.dp
             Size.Large -> 60.dp
         }
+
+    private companion object {
+        val DISABLED_CONTAINER = Color(0xFFCFD2C4)
+        val DISABLED_BASE = Color(0xFFB8BBAE)
+    }
 }

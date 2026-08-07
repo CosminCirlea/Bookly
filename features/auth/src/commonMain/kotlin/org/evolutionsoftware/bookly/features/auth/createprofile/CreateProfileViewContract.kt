@@ -5,7 +5,8 @@ import org.evolutionsoftware.bookly.core.mvi.UserIntent
 import org.evolutionsoftware.bookly.core.mvi.UserIntentAction
 import org.evolutionsoftware.bookly.core.mvi.ViewState
 
-val PROFILE_AVATARS = listOf("🦊", "🐻", "🐼", "🐸", "🦁", "🐯", "🐨", "🐧", "🦋", "🦄")
+val PROFILE_AVATARS =
+    listOf("🧒", "👦", "👧", "👶", "🐻", "🦊", "🐰", "🦄", "🐼", "🐯", "🦁", "🐨")
 
 internal data class CreateProfileViewState(
     val name: String = "",
@@ -15,8 +16,9 @@ internal data class CreateProfileViewState(
     val isLoading: Boolean = false,
     val nameError: Boolean = false,
 ) : ViewState {
+    // Birthdate is optional, so only the name gates submission.
     val isFormValid: Boolean
-        get() = name.isNotBlank() && dateOfBirth.length == 10
+        get() = name.isNotBlank()
 }
 
 internal sealed interface CreateProfileSideEffect : SideEffect {

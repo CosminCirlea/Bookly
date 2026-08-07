@@ -144,11 +144,11 @@ private fun ReaderTopBarPreview() {
                     .background(TokenProvider.colors.bgBase),
         ) {
             ReaderTopBarContent(
-                isAutoplayEnabled = false,
-                autoplayAriaLabel = "Start autoplay",
-                onAutoplayToggle = {},
+                title = "Forest Animals",
                 closeAriaLabel = "Close",
                 onBack = {},
+                isFavorite = true,
+                onFavoriteToggle = {},
             )
         }
     }

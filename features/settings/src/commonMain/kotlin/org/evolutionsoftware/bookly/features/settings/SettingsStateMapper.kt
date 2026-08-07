@@ -15,10 +15,8 @@ internal class SettingsStateMapper : StateMapper<SettingsAction, SettingsViewSta
                     isLoading = false,
                     profile = action.profile,
                 )
-            is SettingsAction.NotificationsUpdated ->
-                currentState.copy(notificationsEnabled = action.enabled)
-            is SettingsAction.SoundUpdated ->
-                currentState.copy(soundEnabled = action.enabled)
+            is SettingsAction.LanguageUpdated ->
+                currentState.copy(selectedLanguage = action.language)
             is SettingsAction.AuthenticationRequested -> currentState
             SettingsAction.SignedOut ->
                 currentState.copy(
@@ -27,5 +25,9 @@ internal class SettingsStateMapper : StateMapper<SettingsAction, SettingsViewSta
                     profile = null,
                 )
             is SettingsAction.MessageRequested -> currentState
+            SettingsAction.NotificationsOpened -> currentState
+            SettingsAction.ContactUsOpened -> currentState
+            SettingsAction.EditProfileOpened -> currentState
+            SettingsAction.OnboardingRequested -> currentState
         }
 }

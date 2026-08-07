@@ -46,9 +46,5 @@ data class HeaderProperties(
         )
 
     @Composable
-    fun getTitleColor(): Color =
-        when (variant) {
-            Variant.Compact -> TokenProvider.colors.text
-            Variant.Screen -> TokenProvider.colors.borderAccent
-        }
+    fun getTitleColor(): Color = TokenProvider.colors.borderAccent
 }

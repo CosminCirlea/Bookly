@@ -19,6 +19,7 @@ data class ThemeColors(
     val bgDangerSoft: Color,
     val text: Color,
     val textMuted: Color,
+    val textSubtle: Color,
     val textInverse: Color,
     val textAccent: Color,
     val textBrand: Color,
@@ -28,6 +29,7 @@ data class ThemeColors(
     val borderAccent: Color,
     val success: Color,
     val warning: Color,
+    val favorite: Color,
     val socialGoogle: Color,
     val socialFacebook: Color,
 )

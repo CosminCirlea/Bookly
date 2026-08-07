@@ -20,6 +20,7 @@ import org.evolutionsoftware.bookly.design.theme.TokenProvider
 @Composable
 internal fun PasswordEditorScreen(
     screenTitle: String,
+    description: String?,
     submitLabel: String,
     includeCurrentPassword: Boolean,
     currentPasswordLabel: String,
@@ -31,6 +32,7 @@ internal fun PasswordEditorScreen(
     errorMessage: StringResource?,
     isLoading: Boolean,
     isSubmitEnabled: Boolean,
+    showPasswordStrength: Boolean,
     currentPassword: String,
     newPassword: String,
     confirmPassword: String,
@@ -55,6 +57,15 @@ internal fun PasswordEditorScreen(
         title = screenTitle,
         onBack = onBack,
     ) {
+        if (description != null) {
+            Text(
+                text = description,
+                modifier = Modifier.padding(bottom = TokenProvider.spacings.lg),
+                style = TokenProvider.textStyles.body,
+                color = TokenProvider.colors.textMuted,
+                textAlign = TextAlign.Center,
+            )
+        }
         if (includeCurrentPassword) {
             TextField(
                 properties =
@@ -107,6 +118,13 @@ internal fun PasswordEditorScreen(
                 )
             },
         )
+        if (showPasswordStrength) {
+            Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapSm))
+            PasswordStrengthMeter(
+                password = newPassword,
+                modifier = Modifier.padding(horizontal = TokenProvider.spacings.xxs),
+            )
+        }
         errorMessage?.let {
             Text(
                 text = stringResource(it),
@@ -117,7 +135,12 @@ internal fun PasswordEditorScreen(
         }
         Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
         Button(
-            properties = primaryButtonProperties(label = submitLabel, enabled = isSubmitEnabled),
+            properties =
+                primaryButtonProperties(
+                    label = submitLabel,
+                    enabled = isSubmitEnabled,
+                    loading = isLoading,
+                ),
             modifier = Modifier.fillMaxWidth(),
             onClick = onSubmit,
         )

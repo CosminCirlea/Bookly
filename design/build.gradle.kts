@@ -32,6 +32,9 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
+            implementation(libs.compottie)
+            implementation(libs.compottie.dot)
+            implementation(libs.compottie.resources)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

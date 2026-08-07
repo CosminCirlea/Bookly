@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Bookly</string>
+    <string name="shortcut_debug_label">Debug Menu</string>
+    <string name="shortcut_debug_long_label">Open Debug Menu</string>
 </resources>

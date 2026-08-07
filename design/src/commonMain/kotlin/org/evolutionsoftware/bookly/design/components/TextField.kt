@@ -71,7 +71,7 @@ fun TextField(
             isFocused -> TextFieldProperties.State.Focused
             else -> TextFieldProperties.State.Default
         }
-    val shape = RoundedCornerShape(TokenProvider.borderRadius.sm)
+    val shape = RoundedCornerShape(TokenProvider.borderRadius.md)
 
     Column(
         modifier = modifier.fillMaxWidth(),

@@ -105,7 +105,7 @@ fun PlayroomSocialButton(
 }
 
 @Composable
-fun PlayroomDivider() {
+fun PlayroomDivider(label: String = "OR") {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -119,7 +119,7 @@ fun PlayroomDivider() {
                     .background(TokenProvider.colors.border.copy(alpha = 0.8f)),
         )
         Text(
-            text = "OR",
+            text = label.uppercase(),
             style = TokenProvider.textStyles.eyebrow.copy(fontWeight = FontWeight.Bold),
             color = TokenProvider.colors.textMuted,
         )

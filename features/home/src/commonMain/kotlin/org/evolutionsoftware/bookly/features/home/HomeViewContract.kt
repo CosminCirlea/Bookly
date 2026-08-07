@@ -4,6 +4,7 @@ import org.evolutionsoftware.bookly.core.mvi.SideEffect
 import org.evolutionsoftware.bookly.core.mvi.UserIntent
 import org.evolutionsoftware.bookly.core.mvi.UserIntentAction
 import org.evolutionsoftware.bookly.core.mvi.ViewState
+import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCategory
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookSummary
 import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 
@@ -13,29 +14,60 @@ internal data class HomeViewState(
     val profile: ParentProfile? = null,
     val allBooks: List<BookSummary> = emptyList(),
     val visibleBooks: List<BookSummary> = emptyList(),
-    val selectedFilter: String = "All",
+    val selectedCategory: BookCategory = BookCategory.All,
+    val searchQuery: String = "",
+    val favoriteBookIds: Set<String> = emptySet(),
 ) : ViewState {
-    val filters: List<String> =
-        listOf("All") + allBooks.map { it.category.label }.distinct()
+    val categories: List<BookCategory>
+        get() =
+            listOf(BookCategory.All) +
+                allBooks.map { it.category }.distinct().filterNot { it == BookCategory.All }
 }
 
-internal sealed interface HomeSideEffect : SideEffect
+internal sealed interface HomeSideEffect : SideEffect {
+    data class FavoriteToggled(val added: Boolean) : HomeSideEffect
+
+    data object FavoriteUpdateFailed : HomeSideEffect
+}
 
 internal sealed interface HomeIntent : UserIntent {
     data object Load : HomeIntent
 
-    data class FilterSelected(val filter: String) : HomeIntent
+    data class FilterSelected(val category: BookCategory) : HomeIntent
+
+    data class SearchChanged(val query: String) : HomeIntent
+
+    data class FavoriteToggled(
+        val bookId: String,
+        val makeFavorite: Boolean,
+    ) : HomeIntent
 }
 
 internal sealed interface HomeAction : UserIntentAction {
     data object LoadingStarted : HomeAction
 
-    data class ContentLoaded(
+    data class BooksLoaded(
         val books: List<BookSummary>,
+    ) : HomeAction
+
+    data class ProfileLoaded(
         val profile: ParentProfile?,
+        val favoriteBookIds: Set<String>,
     ) : HomeAction
 
     data class LoadingFailed(val error: String) : HomeAction
 
-    data class FilterChanged(val filter: String) : HomeAction
+    data class FilterChanged(val category: BookCategory) : HomeAction
+
+    data class SearchChanged(val query: String) : HomeAction
+
+    data class FavoriteUpdated(
+        val bookId: String,
+        val isFavorite: Boolean,
+    ) : HomeAction
+
+    data class FavoriteUpdateReverted(
+        val bookId: String,
+        val isFavorite: Boolean,
+    ) : HomeAction
 }

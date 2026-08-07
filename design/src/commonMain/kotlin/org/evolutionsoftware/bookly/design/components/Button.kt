@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -99,15 +101,23 @@ fun Button(
                     ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = properties.label,
-                style =
-                    when (properties.size) {
-                        ButtonProperties.Size.Large -> TokenProvider.textStyles.button
-                        ButtonProperties.Size.Medium -> TokenProvider.textStyles.title.copy(fontWeight = FontWeight.ExtraBold)
-                    },
-                color = properties.getContentColor(),
-            )
+            if (properties.isLoading()) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = properties.getContentColor(),
+                    strokeWidth = 3.dp,
+                )
+            } else {
+                Text(
+                    text = properties.label,
+                    style =
+                        when (properties.size) {
+                            ButtonProperties.Size.Large -> TokenProvider.textStyles.button
+                            ButtonProperties.Size.Medium -> TokenProvider.textStyles.title.copy(fontWeight = FontWeight.ExtraBold)
+                        },
+                    color = properties.getContentColor(),
+                )
+            }
         }
     }
 }

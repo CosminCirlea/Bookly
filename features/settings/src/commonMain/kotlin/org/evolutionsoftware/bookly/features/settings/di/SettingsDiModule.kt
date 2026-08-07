@@ -8,7 +8,7 @@ import org.koin.dsl.module
 object SettingsDiModule {
     val module =
         module {
-            factory { SettingsIntentProcessor(get(), get(), get(), get()) }
+            factory { SettingsIntentProcessor(get(), get(), get()) }
             factory { SettingsStateMapper() }
             factory { SettingsEffectProducer() }
         }

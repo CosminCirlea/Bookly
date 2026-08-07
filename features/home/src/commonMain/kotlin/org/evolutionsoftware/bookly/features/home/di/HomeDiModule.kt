@@ -8,7 +8,7 @@ import org.koin.dsl.module
 object HomeDiModule {
     val module =
         module {
-            factory { HomeIntentProcessor(get(), get()) }
+            factory { HomeIntentProcessor(get(), get(), get(), get(), get()) }
             factory { HomeStateMapper() }
             factory { HomeEffectProducer() }
         }

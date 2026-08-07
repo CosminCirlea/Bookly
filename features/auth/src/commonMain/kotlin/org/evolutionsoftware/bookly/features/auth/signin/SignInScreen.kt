@@ -46,6 +46,7 @@ internal fun SignInRoute(
     onSignUp: () -> Unit,
     onAuthenticated: (String) -> Unit,
     onShowMessage: (String) -> Unit,
+    onFacebook: () -> Unit = {},
 ) {
     val viewModel = rememberSignInViewModel()
     val viewState by viewModel.viewState.collectAsState()
@@ -61,10 +62,24 @@ internal fun SignInRoute(
         }
     }
 
+    SignInContent(
+        viewState = viewState,
+        onIntent = viewModel::onUserIntent,
+        onBack = onBack,
+        onFacebook = onFacebook,
+    )
+}
+
+@Composable
+internal fun SignInContent(
+    viewState: SignInViewState,
+    onIntent: (SignInIntent) -> Unit,
+    onBack: () -> Unit,
+    onFacebook: () -> Unit = {},
+) {
     AuthScreenScaffold(
         title = stringResource(Res.string.auth_sign_in_title),
         onBack = onBack,
-        isLoading = viewState.isLoading,
     ) {
         val textFieldState =
             if (viewState.isLoading) {
@@ -81,7 +96,7 @@ internal fun SignInRoute(
                     state = textFieldState,
                 ),
             value = viewState.emailOrPhone,
-            onValueChange = { viewModel.onUserIntent(SignInIntent.EmailOrPhoneChanged(it)) },
+            onValueChange = { onIntent(SignInIntent.EmailOrPhoneChanged(it)) },
             enabled = !viewState.isLoading,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
@@ -93,13 +108,13 @@ internal fun SignInRoute(
                     state = textFieldState,
                 ),
             value = viewState.password,
-            onValueChange = { viewModel.onUserIntent(SignInIntent.PasswordChanged(it)) },
+            onValueChange = { onIntent(SignInIntent.PasswordChanged(it)) },
             enabled = !viewState.isLoading,
             visualTransformation = if (viewState.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             suffix = {
                 PasswordSuffix(
                     visible = viewState.isPasswordVisible,
-                    onClick = { viewModel.onUserIntent(SignInIntent.PasswordVisibilityToggled) },
+                    onClick = { onIntent(SignInIntent.PasswordVisibilityToggled) },
                 )
             },
         )
@@ -110,7 +125,7 @@ internal fun SignInRoute(
                     .align(Alignment.End)
                     .padding(top = TokenProvider.spacings.formGapSm)
                     .clickable(enabled = !viewState.isLoading) {
-                        viewModel.onUserIntent(SignInIntent.ForgotPasswordClicked)
+                        onIntent(SignInIntent.ForgotPasswordClicked)
                     },
             style = TokenProvider.textStyles.body,
             color = TokenProvider.colors.textBrand,
@@ -129,9 +144,10 @@ internal fun SignInRoute(
                 primaryButtonProperties(
                     label = stringResource(Res.string.auth_sign_in_submit),
                     enabled = viewState.isFormValid && !viewState.isLoading,
+                    loading = viewState.isLoading,
                 ),
             onClick = {
-                viewModel.onUserIntent(
+                onIntent(
                     SignInIntent.Submit(
                         emailOrPhone = viewState.emailOrPhone,
                         password = viewState.password,
@@ -152,13 +168,14 @@ internal fun SignInRoute(
             label = stringResource(Res.string.auth_sign_in_facebook),
             textColor = TokenProvider.colors.socialFacebook,
             icon = Icons.Facebook,
+            onClick = onFacebook,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
         Text(
             text = stringResource(Res.string.auth_sign_in_to_register),
             modifier =
                 Modifier.clickable(enabled = !viewState.isLoading) {
-                    viewModel.onUserIntent(SignInIntent.SignUpClicked)
+                    onIntent(SignInIntent.SignUpClicked)
                 },
             style = TokenProvider.textStyles.bodyStrong,
             color = TokenProvider.colors.textAccent,

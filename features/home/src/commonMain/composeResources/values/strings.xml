@@ -1,4 +1,18 @@
 <resources>
     <string name="home_title">Bookly</string>
     <string name="home_guest_subtitle">Offline-friendly books for little learners</string>
+    <string name="home_greeting_eyebrow">Hi there!</string>
+    <string name="home_playroom_suffix">’s Playroom</string>
+    <string name="home_search_placeholder">Find a book…</string>
+    <string name="home_filters_label">Filters</string>
+    <string name="home_filter_sheet_title">Filter books</string>
+    <string name="home_filter_sheet_subtitle">Pick a category to narrow the playroom.</string>
+    <string name="home_filter_sheet_reset">Reset</string>
+    <string name="home_filter_sheet_done">Done</string>
+    <string name="home_favorite_added">Added to favorites!</string>
+    <string name="home_favorite_removed">Removed from favorites</string>
+    <string name="home_favorite_failed">Couldn’t update favorites. Try again.</string>
+    <string name="home_favorite_add_aria">Add to favorites</string>
+    <string name="home_favorite_remove_aria">Remove from favorites</string>
+    <string name="home_settings_aria">Settings</string>
 </resources>

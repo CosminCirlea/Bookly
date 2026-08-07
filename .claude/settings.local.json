@@ -14,7 +14,26 @@
       "Bash(./gradlew :services:catalog:compileKotlinIosSimulatorArm64 --no-daemon)",
       "Bash(./gradlew :services:catalog:compileDebugKotlin --no-daemon)",
       "Bash(./gradlew :composeApp:assembleDebug --no-daemon)",
-      "Bash(./gradlew :features:reader:compileDebugKotlin --no-daemon)"
+      "Bash(./gradlew :features:reader:compileDebugKotlin --no-daemon)",
+      "Bash(./gradlew :design:compileCommonMainKotlinMetadata)",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/books/1/languages/1\")",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/books?limit=5\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(./gradlew :services:catalog:compileCommonMainKotlinMetadata --no-daemon)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\(f'Total pages: {len\\(data[0][\\\\\"bookPages\\\\\"]\\)}'\\); [print\\(f'  Page {p[\\\\\"page_number\\\\\"]}: {p[\\\\\"text_content\\\\\"][:50]}...'\\) for p in data[0]['bookPages']]\")",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/books/1/languages/1?limit=100\")",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\(f'Total pages: {len\\(data[0][\\\\\"bookPages\\\\\"]\\)}'\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/books/1/languages/1?page=2\")",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\(f'Pages returned: {len\\(data[0][\\\\\"bookPages\\\\\"]\\)}'\\); [print\\(f' Page {p[\\\\\"page_number\\\\\"]}'\\) for p in data[0]['bookPages']]\")",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/books/1/languages/1?pageLimit=100\")",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\(f'Pages: {len\\(data[0][\\\\\"bookPages\\\\\"]\\)}'\\); [print\\(f' Page {p[\\\\\"page_number\\\\\"]}'\\) for p in data[0]['bookPages']]\")",
+      "Bash(curl -s \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/books/1/languages/1?pagesLimit=20\")",
+      "Bash(curl -s -X POST \"https://bookly-backend-batrinutsilvius-projects.vercel.app/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"test123\"}')",
+      "Bash(./gradlew :services:catalog:compileKotlinIosArm64 :services:auth:compileKotlinIosArm64 :services:favorites:compileKotlinIosArm64 :services:categories:compileKotlinIosArm64 :services:languages:compileKotlinIosArm64 :services:profiles:compileKotlinIosArm64 --parallel)",
+      "Bash(./gradlew :services:catalog:compileDebugKotlinAndroid :services:auth:compileDebugKotlinAndroid :services:favorites:compileDebugKotlinAndroid :services:categories:compileDebugKotlinAndroid :services:languages:compileDebugKotlinAndroid :services:profiles:compileDebugKotlinAndroid --parallel)",
+      "Bash(mkdir -p design-bundle)",
+      "Bash(tar -xzf webfetch-1781160804202-vc3gye.bin -C design-bundle)"
     ]
   }
 }

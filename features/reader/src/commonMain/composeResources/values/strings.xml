@@ -6,4 +6,10 @@
     <string name="reader_unavailable_offline">This book is not available offline yet.</string>
     <string name="reader_missing_cached_message">This book is not cached yet.</string>
     <string name="reader_empty_symbol">📖</string>
+    <string name="reader_autoplay_badge">AUTOPLAY</string>
+    <string name="reader_favorite_add_aria">Add to favorites</string>
+    <string name="reader_favorite_remove_aria">Remove from favorites</string>
+    <string name="reader_favorite_added">Added to favorites!</string>
+    <string name="reader_favorite_removed">Removed from favorites</string>
+    <string name="reader_favorite_failed">Couldn’t update favorites. Try again.</string>
 </resources>

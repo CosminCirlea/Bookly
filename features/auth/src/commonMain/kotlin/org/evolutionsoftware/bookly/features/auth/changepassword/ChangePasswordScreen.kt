@@ -38,6 +38,7 @@ internal fun ChangePasswordRoute(
 
     PasswordEditorScreen(
         screenTitle = stringResource(Res.string.auth_change_password_title),
+        description = null,
         submitLabel = stringResource(Res.string.auth_change_password_submit),
         includeCurrentPassword = true,
         currentPasswordLabel = stringResource(Res.string.auth_password_current_label),
@@ -49,6 +50,7 @@ internal fun ChangePasswordRoute(
         errorMessage = viewState.errorMessage,
         isLoading = viewState.isLoading,
         isSubmitEnabled = viewState.isFormValid && !viewState.isLoading,
+        showPasswordStrength = false,
         currentPassword = viewState.currentPassword,
         newPassword = viewState.newPassword,
         confirmPassword = viewState.confirmPassword,

@@ -21,8 +21,7 @@ internal data class SettingsViewState(
     val isLoading: Boolean = true,
     val isSessionActive: Boolean = false,
     val profile: ParentProfile? = null,
-    val notificationsEnabled: Boolean = true,
-    val soundEnabled: Boolean = true,
+    val selectedLanguage: String = "English",
 ) : ViewState {
     val isAuthenticated: Boolean
         get() = profile != null || isSessionActive
@@ -33,7 +32,19 @@ internal sealed interface SettingsSideEffect : SideEffect {
 
     data object SignedOut : SettingsSideEffect
 
-    data class ShowMessage(val message: StringResource) : SettingsSideEffect
+    data class ShowMessage(
+        val message: StringResource,
+        val args: List<String> = emptyList(),
+        val isSuccess: Boolean = false,
+    ) : SettingsSideEffect
+
+    data object OpenNotifications : SettingsSideEffect
+
+    data object OpenContactUs : SettingsSideEffect
+
+    data object OpenEditProfile : SettingsSideEffect
+
+    data object OpenOnboarding : SettingsSideEffect
 }
 
 internal sealed interface SettingsIntent : UserIntent {
@@ -47,9 +58,9 @@ internal sealed interface SettingsIntent : UserIntent {
 
     data object SignOutClicked : SettingsIntent
 
-    data class NotificationsToggled(val enabled: Boolean) : SettingsIntent
+    data object NotificationsClicked : SettingsIntent
 
-    data class SoundToggled(val enabled: Boolean) : SettingsIntent
+    data object SoundClicked : SettingsIntent
 
     data object EditProfileClicked : SettingsIntent
 
@@ -61,11 +72,11 @@ internal sealed interface SettingsIntent : UserIntent {
 
     data object ContactUsClicked : SettingsIntent
 
-    data object InviteFriendClicked : SettingsIntent
+    data class RateSubmitted(val stars: Int) : SettingsIntent
 
-    data object RateAppClicked : SettingsIntent
+    data object InviteLinkCopied : SettingsIntent
 
-    data object LanguageClicked : SettingsIntent
+    data class LanguageSelected(val language: String) : SettingsIntent
 }
 
 internal sealed interface SettingsAction : UserIntentAction {
@@ -79,9 +90,19 @@ internal sealed interface SettingsAction : UserIntentAction {
 
     data object SignedOut : SettingsAction
 
-    data class NotificationsUpdated(val enabled: Boolean) : SettingsAction
+    data class MessageRequested(
+        val message: StringResource,
+        val args: List<String> = emptyList(),
+        val isSuccess: Boolean = false,
+    ) : SettingsAction
 
-    data class SoundUpdated(val enabled: Boolean) : SettingsAction
+    data class LanguageUpdated(val language: String) : SettingsAction
 
-    data class MessageRequested(val message: StringResource) : SettingsAction
+    data object NotificationsOpened : SettingsAction
+
+    data object ContactUsOpened : SettingsAction
+
+    data object EditProfileOpened : SettingsAction
+
+    data object OnboardingRequested : SettingsAction
 }

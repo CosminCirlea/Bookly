@@ -9,6 +9,8 @@ internal class ReaderEffectProducer : EffectProducer<ReaderAction, ReaderViewSta
     ): ReaderSideEffect? =
         when (action) {
             ReaderAction.MissingBook -> ReaderSideEffect.MissingBook
+            is ReaderAction.FavoriteUpdated -> ReaderSideEffect.FavoriteToggled(added = action.isFavorite)
+            is ReaderAction.FavoriteUpdateReverted -> ReaderSideEffect.FavoriteUpdateFailed
             else -> null
         }
 }

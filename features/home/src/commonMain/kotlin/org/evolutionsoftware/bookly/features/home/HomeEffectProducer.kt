@@ -6,5 +6,10 @@ internal class HomeEffectProducer : EffectProducer<HomeAction, HomeViewState, Ho
     override fun invoke(
         action: HomeAction,
         currentState: HomeViewState,
-    ): HomeSideEffect? = null
+    ): HomeSideEffect? =
+        when (action) {
+            is HomeAction.FavoriteUpdated -> HomeSideEffect.FavoriteToggled(added = action.isFavorite)
+            is HomeAction.FavoriteUpdateReverted -> HomeSideEffect.FavoriteUpdateFailed
+            else -> null
+        }
 }

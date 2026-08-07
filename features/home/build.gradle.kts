@@ -30,14 +30,21 @@ kotlin {
             implementation(projects.design)
             implementation(projects.components)
             implementation(projects.services.catalog)
+            implementation(projects.services.favorites)
             implementation(projects.services.profiles)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
+            implementation(libs.compose.uiToolingPreview)
             implementation(libs.koin.core)
             implementation(libs.kotlinx.coroutines.core)
+        }
+        androidMain.dependencies {
+            implementation(libs.compose.uiTooling)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -1,5 +1,8 @@
 package org.evolutionsoftware.bookly.services.catalog.data.local
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -16,13 +19,13 @@ class CatalogLocalDataSource(
     private val queries = database.bookEntityQueries
     private val json = Json { ignoreUnknownKeys = true }
 
-    fun getBooks(): List<BookSummary> {
+    suspend fun getBooks(): List<BookSummary> = withContext(Dispatchers.IO) {
         val entities = queries.selectAllBooks().executeAsList()
         logger.d("LocalDataSource.getBooks: found ${entities.size} entities in DB")
-        return entities.map { it.toBookSummary() }
+        entities.map { it.toBookSummary() }
     }
 
-    fun saveBooks(books: List<BookSummary>) {
+    suspend fun saveBooks(books: List<BookSummary>): Unit = withContext(Dispatchers.IO) {
         logger.d("LocalDataSource.saveBooks: saving ${books.size} books")
         val now = Clock.System.now().toEpochMilliseconds()
         queries.transaction {
@@ -43,14 +46,11 @@ class CatalogLocalDataSource(
         logger.d("LocalDataSource.saveBooks: verified $savedCount books in DB after save")
     }
 
-    companion object {
-        private val logger = Logger.withTag("CatalogLocalDataSource")
+    suspend fun getBookDetails(bookId: String): BookDetails? = withContext(Dispatchers.IO) {
+        queries.selectBookDetailById(bookId).executeAsOneOrNull()?.toBookDetails()
     }
 
-    fun getBookDetails(bookId: String): BookDetails? =
-        queries.selectBookDetailById(bookId).executeAsOneOrNull()?.toBookDetails()
-
-    fun saveBookDetails(details: BookDetails) {
+    suspend fun saveBookDetails(details: BookDetails): Unit = withContext(Dispatchers.IO) {
         val cardsJson = json.encodeToString(details.cards.map { CardJson(it) })
         queries.insertBookDetail(
             id = details.id,
@@ -59,6 +59,10 @@ class CatalogLocalDataSource(
             cardsJson = cardsJson,
             updatedAt = Clock.System.now().toEpochMilliseconds(),
         )
+    }
+
+    companion object {
+        private val logger = Logger.withTag("CatalogLocalDataSource")
     }
 
     private fun BookEntity.toBookSummary(): BookSummary =

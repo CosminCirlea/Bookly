@@ -13,6 +13,7 @@ internal class ReaderStateMapper : StateMapper<ReaderAction, ReaderViewState> {
                     isLoading = true,
                     currentPage = 0,
                     isAutoplayEnabled = false,
+                    isFavorite = false,
                 )
             is ReaderAction.ContentLoaded ->
                 currentState.copy(
@@ -29,8 +30,14 @@ internal class ReaderStateMapper : StateMapper<ReaderAction, ReaderViewState> {
                     isAutoplayEnabled = false,
                 )
             is ReaderAction.AutoplayUpdated ->
-                currentState.copy(isAutoplayEnabled = !currentState.isAutoplayEnabled)
+                currentState.copy(isAutoplayEnabled = action.isEnabled)
             is ReaderAction.CurrentPageUpdated ->
                 currentState.copy(currentPage = action.page.coerceAtLeast(0))
+            is ReaderAction.FavoriteStatusLoaded ->
+                currentState.copy(isFavorite = action.isFavorite)
+            is ReaderAction.FavoriteUpdated ->
+                currentState.copy(isFavorite = action.isFavorite)
+            is ReaderAction.FavoriteUpdateReverted ->
+                currentState.copy(isFavorite = action.isFavorite)
         }
 }

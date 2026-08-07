@@ -68,9 +68,15 @@ internal fun resolveDisplayName(emailOrPhone: String): String {
 internal fun primaryButtonProperties(
     label: String,
     enabled: Boolean,
+    loading: Boolean = false,
 ): ButtonProperties =
     ButtonProperties(
         label = label,
         size = ButtonProperties.Size.Large,
-        state = if (enabled) ButtonProperties.State.Default else ButtonProperties.State.Disabled,
+        state =
+            when {
+                loading -> ButtonProperties.State.Loading
+                enabled -> ButtonProperties.State.Default
+                else -> ButtonProperties.State.Disabled
+            },
     )

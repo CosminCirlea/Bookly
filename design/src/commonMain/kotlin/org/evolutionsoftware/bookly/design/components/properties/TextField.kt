@@ -28,17 +28,14 @@ data class TextFieldProperties(
         @Composable
         fun getBorderColor(): Color =
             when (this) {
-                Error -> TokenProvider.colors.warning
+                Error -> TokenProvider.colors.textDanger
                 Focused -> TokenProvider.colors.borderAccent
                 Disabled, Default -> Color.Transparent
             }
 
+        // Always 2dp so the field's content does not shift when it gains focus.
         @Composable
-        fun getBorderWidth(): Dp =
-            when (this) {
-                Error, Focused -> TokenProvider.borderWidths.strong
-                Disabled, Default -> 0.dp
-            }
+        fun getBorderWidth(): Dp = TokenProvider.borderWidths.strong
 
         @Composable
         fun getTextColor(): Color =

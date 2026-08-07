@@ -26,7 +26,7 @@ private object BooklyTokens : ThemeProvider {
             bgElevated = Color(0xFFFFF0C4),
             bgAccent = Color(0xFF1CB0F6),
             bgAccentPressed = Color(0xFF1899D6),
-            bgAccentSoft = Color(0xFFFFE796),
+            bgAccentSoft = Color(0xFFFAE18C),
             bgAccentStrong = Color(0xFF005E9F),
             bgSuccessSoft = Color(0xFF91F78E),
             bgInfoSoft = Color(0x3344A5FF),
@@ -34,15 +34,17 @@ private object BooklyTokens : ThemeProvider {
             bgDangerSoft = Color(0x22F95630),
             text = Color(0xFF392E00),
             textMuted = Color(0xFF695B23),
+            textSubtle = Color(0xFF86763B),
             textInverse = Color(0xFFFFFFFF),
             textAccent = Color(0xFF874E00),
             textBrand = Color(0xFF1CB0F6),
             textSuccess = Color(0xFF005E17),
-            textDanger = Color(0xFFF95630),
+            textDanger = Color(0xFFB02500),
             border = Color(0xFFF5DC81),
             borderAccent = Color(0xFFFFC107),
             success = Color(0xFF22A447),
             warning = Color(0xFFF95630),
+            favorite = Color(0xFFE53935),
             socialGoogle = Color(0xFF3C4043),
             socialFacebook = Color(0xFF1877F2),
         )
@@ -153,9 +155,9 @@ private object BooklyTokens : ThemeProvider {
             button =
                 TextStyle(
                     fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 20.sp,
-                    lineHeight = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    lineHeight = 26.sp,
                 ),
         )
 }

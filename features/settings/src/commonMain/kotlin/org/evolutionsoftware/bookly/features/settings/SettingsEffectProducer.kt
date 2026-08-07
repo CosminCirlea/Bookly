@@ -11,7 +11,16 @@ internal class SettingsEffectProducer :
         when (action) {
             is SettingsAction.AuthenticationRequested -> SettingsSideEffect.RequireAuthentication(action.destination)
             SettingsAction.SignedOut -> SettingsSideEffect.SignedOut
-            is SettingsAction.MessageRequested -> SettingsSideEffect.ShowMessage(action.message)
+            is SettingsAction.MessageRequested ->
+                SettingsSideEffect.ShowMessage(
+                    message = action.message,
+                    args = action.args,
+                    isSuccess = action.isSuccess,
+                )
+            SettingsAction.NotificationsOpened -> SettingsSideEffect.OpenNotifications
+            SettingsAction.ContactUsOpened -> SettingsSideEffect.OpenContactUs
+            SettingsAction.EditProfileOpened -> SettingsSideEffect.OpenEditProfile
+            SettingsAction.OnboardingRequested -> SettingsSideEffect.OpenOnboarding
             else -> null
         }
 }

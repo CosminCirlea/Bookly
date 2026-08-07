@@ -28,7 +28,7 @@ fun IconButton(
     Box(
         modifier =
             modifier
-                .size(48.dp)
+                .size(44.dp)
                 .clip(CircleShape)
                 .background(properties.getContainerColor())
                 .clickable(

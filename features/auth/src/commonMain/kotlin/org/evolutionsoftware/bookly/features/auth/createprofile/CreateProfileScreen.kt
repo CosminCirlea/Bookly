@@ -71,6 +71,8 @@ private val AVATAR_BACKGROUNDS = listOf(
     Color(0xFFFFF0D4),
     Color(0xFFD4FFD4),
     Color(0xFFFFD4F5),
+    Color(0xFFDCE7FF),
+    Color(0xFFFFE3C7),
 )
 
 @Composable
@@ -92,6 +94,17 @@ fun CreateProfileRoute(
         }
     }
 
+    CreateProfileContent(
+        viewState = viewState,
+        onIntent = viewModel::onUserIntent,
+    )
+}
+
+@Composable
+internal fun CreateProfileContent(
+    viewState: CreateProfileViewState,
+    onIntent: (CreateProfileIntent) -> Unit,
+) {
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier =
@@ -108,7 +121,7 @@ fun CreateProfileRoute(
                             title = stringResource(Res.string.auth_create_profile_title),
                             variant = HeaderProperties.Variant.Compact,
                         ),
-                    onBackClick = { viewModel.onUserIntent(CreateProfileIntent.Skip) },
+                    onBackClick = { onIntent(CreateProfileIntent.Skip) },
                 )
             },
         ) { innerPadding ->
@@ -136,7 +149,7 @@ fun CreateProfileRoute(
                 Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
                 AvatarGrid(
                     selected = viewState.selectedAvatar,
-                    onSelect = { viewModel.onUserIntent(CreateProfileIntent.AvatarSelected(it)) },
+                    onSelect = { onIntent(CreateProfileIntent.AvatarSelected(it)) },
                 )
 
                 Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
@@ -155,7 +168,7 @@ fun CreateProfileRoute(
                                 },
                         ),
                     value = viewState.name,
-                    onValueChange = { viewModel.onUserIntent(CreateProfileIntent.NameChanged(it)) },
+                    onValueChange = { onIntent(CreateProfileIntent.NameChanged(it)) },
                     enabled = !viewState.isLoading,
                 )
                 if (viewState.nameError) {
@@ -186,7 +199,7 @@ fun CreateProfileRoute(
                                 },
                         ),
                     value = viewState.dateOfBirth,
-                    onValueChange = { viewModel.onUserIntent(CreateProfileIntent.DateOfBirthChanged(it)) },
+                    onValueChange = { onIntent(CreateProfileIntent.DateOfBirthChanged(it)) },
                     enabled = !viewState.isLoading,
                 )
 
@@ -198,7 +211,7 @@ fun CreateProfileRoute(
                 GenderSelector(
                     isMale = viewState.isMale,
                     enabled = !viewState.isLoading,
-                    onSelect = { viewModel.onUserIntent(CreateProfileIntent.GenderChanged(it)) },
+                    onSelect = { onIntent(CreateProfileIntent.GenderChanged(it)) },
                 )
 
                 Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
@@ -217,7 +230,7 @@ fun CreateProfileRoute(
                                 },
                         ),
                     onClick = {
-                        viewModel.onUserIntent(
+                        onIntent(
                             CreateProfileIntent.Submit(
                                 name = viewState.name,
                                 dateOfBirth = viewState.dateOfBirth,
@@ -234,7 +247,7 @@ fun CreateProfileRoute(
                     modifier =
                         Modifier
                             .clickable(enabled = !viewState.isLoading) {
-                                viewModel.onUserIntent(CreateProfileIntent.Skip)
+                                onIntent(CreateProfileIntent.Skip)
                             }
                             .padding(vertical = TokenProvider.spacings.sm),
                     style = TokenProvider.textStyles.bodyStrong,

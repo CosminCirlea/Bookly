@@ -1,7 +1,9 @@
 package org.evolutionsoftware.bookly.features.auth.common
 
 internal object PasswordValidators {
-    fun isStrongEnough(password: String): Boolean = password.length >= 4
+    const val MIN_LENGTH = 6
+
+    fun isStrongEnough(password: String): Boolean = password.length >= MIN_LENGTH
 
     fun doPasswordsMatch(
         password: String,

@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import org.evolutionsoftware.bookly.design.components.Header
 import org.evolutionsoftware.bookly.design.components.properties.HeaderProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
@@ -26,7 +24,6 @@ import org.evolutionsoftware.bookly.design.theme.TokenProvider
 internal fun AuthScreenScaffold(
     title: String,
     onBack: () -> Unit,
-    isLoading: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -64,18 +61,6 @@ internal fun AuthScreenScaffold(
                 verticalArrangement = Arrangement.Top,
                 content = content,
             )
-        }
-
-        if (isLoading) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.4f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(color = TokenProvider.colors.bgAccent)
-            }
         }
     }
 }

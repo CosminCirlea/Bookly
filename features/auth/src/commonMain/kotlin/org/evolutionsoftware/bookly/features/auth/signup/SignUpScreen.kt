@@ -17,6 +17,8 @@ import bookly.features.auth.generated.resources.Res
 import bookly.features.auth.generated.resources.auth_sign_in_facebook
 import bookly.features.auth.generated.resources.auth_sign_in_google
 import bookly.features.auth.generated.resources.auth_sign_up_confirm_password_label
+import bookly.features.auth.generated.resources.auth_sign_up_divider
+import bookly.features.auth.generated.resources.auth_sign_up_terms
 import bookly.features.auth.generated.resources.auth_sign_up_confirm_password_placeholder
 import bookly.features.auth.generated.resources.auth_sign_up_email_label
 import bookly.features.auth.generated.resources.auth_sign_up_email_placeholder
@@ -33,6 +35,7 @@ import org.evolutionsoftware.bookly.design.components.TextField
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.evolutionsoftware.bookly.features.auth.common.AuthScreenScaffold
+import org.evolutionsoftware.bookly.features.auth.common.PasswordStrengthMeter
 import org.evolutionsoftware.bookly.features.auth.common.PasswordSuffix
 import org.evolutionsoftware.bookly.features.auth.common.primaryButtonProperties
 import kotlinx.coroutines.flow.collectLatest
@@ -45,6 +48,7 @@ internal fun SignUpRoute(
     onSignIn: () -> Unit,
     onSignedUp: () -> Unit,
     onShowMessage: (String) -> Unit,
+    onFacebook: () -> Unit = {},
 ) {
     val viewModel = rememberSignUpViewModel()
     val viewState by viewModel.viewState.collectAsState()
@@ -59,10 +63,24 @@ internal fun SignUpRoute(
         }
     }
 
+    SignUpContent(
+        viewState = viewState,
+        onIntent = viewModel::onUserIntent,
+        onBack = onBack,
+        onFacebook = onFacebook,
+    )
+}
+
+@Composable
+internal fun SignUpContent(
+    viewState: SignUpViewState,
+    onIntent: (SignUpIntent) -> Unit,
+    onBack: () -> Unit,
+    onFacebook: () -> Unit = {},
+) {
     AuthScreenScaffold(
         title = stringResource(Res.string.auth_sign_up_title),
         onBack = onBack,
-        isLoading = viewState.isLoading,
     ) {
         val textFieldState =
             if (viewState.isLoading) {
@@ -78,7 +96,7 @@ internal fun SignUpRoute(
                     state = textFieldState,
                 ),
             value = viewState.emailOrPhone,
-            onValueChange = { viewModel.onUserIntent(SignUpIntent.EmailOrPhoneChanged(it)) },
+            onValueChange = { onIntent(SignUpIntent.EmailOrPhoneChanged(it)) },
             enabled = !viewState.isLoading,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
@@ -90,15 +108,20 @@ internal fun SignUpRoute(
                     state = textFieldState,
                 ),
             value = viewState.password,
-            onValueChange = { viewModel.onUserIntent(SignUpIntent.PasswordChanged(it)) },
+            onValueChange = { onIntent(SignUpIntent.PasswordChanged(it)) },
             enabled = !viewState.isLoading,
             visualTransformation = if (viewState.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             suffix = {
                 PasswordSuffix(
                     visible = viewState.isPasswordVisible,
-                    onClick = { viewModel.onUserIntent(SignUpIntent.PasswordVisibilityToggled) },
+                    onClick = { onIntent(SignUpIntent.PasswordVisibilityToggled) },
                 )
             },
+        )
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapSm))
+        PasswordStrengthMeter(
+            password = viewState.password,
+            modifier = Modifier.padding(horizontal = TokenProvider.spacings.xxs),
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
         TextField(
@@ -109,13 +132,13 @@ internal fun SignUpRoute(
                     state = textFieldState,
                 ),
             value = viewState.confirmPassword,
-            onValueChange = { viewModel.onUserIntent(SignUpIntent.ConfirmPasswordChanged(it)) },
+            onValueChange = { onIntent(SignUpIntent.ConfirmPasswordChanged(it)) },
             enabled = !viewState.isLoading,
             visualTransformation = if (viewState.isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             suffix = {
                 PasswordSuffix(
                     visible = viewState.isConfirmPasswordVisible,
-                    onClick = { viewModel.onUserIntent(SignUpIntent.ConfirmPasswordVisibilityToggled) },
+                    onClick = { onIntent(SignUpIntent.ConfirmPasswordVisibilityToggled) },
                 )
             },
         )
@@ -133,9 +156,10 @@ internal fun SignUpRoute(
                 primaryButtonProperties(
                     label = stringResource(Res.string.auth_sign_up_submit),
                     enabled = viewState.isFormValid && !viewState.isLoading,
+                    loading = viewState.isLoading,
                 ),
             onClick = {
-                viewModel.onUserIntent(
+                onIntent(
                     SignUpIntent.Submit(
                         emailOrPhone = viewState.emailOrPhone,
                         password = viewState.password,
@@ -145,7 +169,7 @@ internal fun SignUpRoute(
             },
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
-        PlayroomDivider()
+        PlayroomDivider(label = stringResource(Res.string.auth_sign_up_divider))
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
         PlayroomSocialButton(
             label = stringResource(Res.string.auth_sign_in_google),
@@ -157,13 +181,22 @@ internal fun SignUpRoute(
             label = stringResource(Res.string.auth_sign_in_facebook),
             textColor = TokenProvider.colors.socialFacebook,
             icon = Icons.Facebook,
+            onClick = onFacebook,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
+        Text(
+            text = stringResource(Res.string.auth_sign_up_terms),
+            modifier = Modifier.padding(horizontal = TokenProvider.spacings.md),
+            style = TokenProvider.textStyles.eyebrow,
+            color = TokenProvider.colors.textMuted,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.sm))
         Text(
             text = stringResource(Res.string.auth_sign_up_to_sign_in),
             modifier =
                 Modifier.clickable(enabled = !viewState.isLoading) {
-                    viewModel.onUserIntent(SignUpIntent.SignInClicked)
+                    onIntent(SignUpIntent.SignInClicked)
                 },
             style = TokenProvider.textStyles.bodyStrong,
             color = TokenProvider.colors.textAccent,

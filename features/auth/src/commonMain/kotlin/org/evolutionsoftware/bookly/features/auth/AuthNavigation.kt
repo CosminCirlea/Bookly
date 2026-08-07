@@ -15,7 +15,11 @@ sealed interface AuthDestination {
 
     data object ChangePassword : AuthDestination
 
+    data object ForgotPassword : AuthDestination
+
     data object ResetPassword : AuthDestination
+
+    data object Onboarding : AuthDestination
 }
 
 internal class AuthNavigator(

@@ -1,6 +1,7 @@
 package org.evolutionsoftware.bookly.services.auth.di
 
 import org.evolutionsoftware.bookly.core.network.TokenRefresher
+import org.evolutionsoftware.bookly.services.auth.data.api.AuthAPI
 import org.evolutionsoftware.bookly.services.auth.data.repository.AuthRepositoryImpl
 import org.evolutionsoftware.bookly.services.auth.domain.refresher.AuthTokenRefresher
 import org.evolutionsoftware.bookly.services.auth.domain.repository.AuthRepository
@@ -14,6 +15,7 @@ import org.koin.dsl.module
 object AuthServiceDiModule {
     val module =
         module {
+            single { AuthAPI(get()) }
             single<AuthRepository> { AuthRepositoryImpl(get()) }
             single<TokenRefresher> { AuthTokenRefresher() }
             factory<LoginUseCase> { LoginUseCaseImpl(repository = get()) }
