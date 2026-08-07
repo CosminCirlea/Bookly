@@ -1,5 +1,6 @@
 package org.evolutionsoftware.bookly.services.auth.data.repository
 
+import org.evolutionsoftware.bookly.services.auth.data.error.withExceptionWrapping
 import org.evolutionsoftware.bookly.services.auth.data.api.AuthAPI
 import org.evolutionsoftware.bookly.services.auth.data.dto.LoginRequestDto
 import org.evolutionsoftware.bookly.services.auth.data.dto.RefreshTokenRequestDto

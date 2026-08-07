@@ -8,7 +8,7 @@ import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.setBody
 import org.evolutionsoftware.bookly.services.profiles.data.dto.ProfileDto
-import org.evolutionsoftware.bookly.services.profiles.data.repository.requireSuccess
+import org.evolutionsoftware.bookly.services.profiles.data.error.requireSuccess
 
 class ProfilesAPI(
     private val httpClient: HttpClient,

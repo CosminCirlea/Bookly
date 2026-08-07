@@ -8,7 +8,7 @@ import org.evolutionsoftware.bookly.services.auth.data.dto.AuthResponseDto
 import org.evolutionsoftware.bookly.services.auth.data.dto.LoginRequestDto
 import org.evolutionsoftware.bookly.services.auth.data.dto.RefreshTokenRequestDto
 import org.evolutionsoftware.bookly.services.auth.data.dto.RegisterRequestDto
-import org.evolutionsoftware.bookly.services.auth.data.repository.requireSuccess
+import org.evolutionsoftware.bookly.services.auth.data.error.requireSuccess
 
 class AuthAPI(
     private val httpClient: HttpClient,

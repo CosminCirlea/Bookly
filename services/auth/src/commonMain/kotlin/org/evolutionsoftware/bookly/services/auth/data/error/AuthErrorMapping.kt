@@ -1,11 +1,11 @@
-package org.evolutionsoftware.bookly.services.favorites.data.repository
+package org.evolutionsoftware.bookly.services.auth.data.error
 
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 import kotlinx.io.IOException
-import org.evolutionsoftware.bookly.services.favorites.domain.exception.FavoritesServiceException
+import org.evolutionsoftware.bookly.services.auth.domain.exception.AuthServiceException
 
 internal inline fun <T> withExceptionWrapping(block: () -> T): T =
     try {
@@ -25,25 +25,26 @@ internal fun HttpResponse.requireSuccess(): HttpResponse {
 
 private fun Throwable.mapToDomainException(): Throwable =
     when (this) {
-        is FavoritesServiceException -> this
+        is AuthServiceException -> this
         is IOException ->
-            FavoritesServiceException.NetworkError(
+            AuthServiceException.NetworkError(
                 message = "Network error: ${this.message}",
                 cause = this,
             )
-        else -> FavoritesServiceException.ServerError(message ?: "Unknown error")
+        else -> AuthServiceException.ServerError(message ?: "Unknown error")
     }
 
-private fun HttpStatusCode.mapToDomain(): FavoritesServiceException =
+private fun HttpStatusCode.mapToDomain(): AuthServiceException =
     when (this) {
+        HttpStatusCode.BadRequest -> AuthServiceException.ValidationError("Invalid request data")
         HttpStatusCode.Unauthorized,
         HttpStatusCode.Forbidden,
-        -> FavoritesServiceException.Unauthorized()
-        HttpStatusCode.NotFound -> FavoritesServiceException.NotFound()
+        -> AuthServiceException.Unauthorized()
+        HttpStatusCode.NotFound -> AuthServiceException.NotFound()
         else ->
             if (value in 500..599) {
-                FavoritesServiceException.ServerError()
+                AuthServiceException.ServerError()
             } else {
-                FavoritesServiceException.NetworkError("Request failed with status $value")
+                AuthServiceException.NetworkError("Request failed with status $value")
             }
     }

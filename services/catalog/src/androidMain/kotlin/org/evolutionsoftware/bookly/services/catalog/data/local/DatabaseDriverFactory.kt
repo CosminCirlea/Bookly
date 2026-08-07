@@ -6,5 +6,5 @@ import org.evolutionsoftware.bookly.core.CoreContext
 
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver =
-        AndroidSqliteDriver(CatalogDatabase.Schema, CoreContext.appContext, "catalog.db")
+        AndroidSqliteDriver(CatalogDatabase.Schema, CoreContext.appContext, CATALOG_DATABASE_NAME)
 }

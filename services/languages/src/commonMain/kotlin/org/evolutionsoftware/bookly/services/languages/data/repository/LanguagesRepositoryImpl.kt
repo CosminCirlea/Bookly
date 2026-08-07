@@ -1,5 +1,6 @@
 package org.evolutionsoftware.bookly.services.languages.data.repository
 
+import org.evolutionsoftware.bookly.services.languages.data.error.withExceptionWrapping
 import org.evolutionsoftware.bookly.services.languages.data.api.LanguagesAPI
 import org.evolutionsoftware.bookly.services.languages.data.mapper.toDomain
 import org.evolutionsoftware.bookly.services.languages.domain.model.Language

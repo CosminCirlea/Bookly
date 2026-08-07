@@ -3,6 +3,7 @@ package org.evolutionsoftware.bookly.services.catalog.data.mapper
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookDetailDto
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookListItemDto
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookPageDto
+import org.evolutionsoftware.bookly.services.catalog.data.local.BookRow
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCard
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCategory
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookDetails
@@ -21,6 +22,24 @@ internal fun BookListItemDto.toSummary(languageId: Int = DEFAULT_LANGUAGE_ID): B
         category = BookCategory.All,
         emoji = "",
         imageUrl = photoUrl,
+    )
+}
+
+/**
+ * Maps a catalog entry straight to the row that will be cached, carrying the
+ * server's content revision so [org.evolutionsoftware.bookly.services.catalog.data.repository.CatalogRepositoryImpl]
+ * can later tell whether the book's pages need re-downloading.
+ */
+internal fun BookListItemDto.toRow(languageId: Int = DEFAULT_LANGUAGE_ID): BookRow {
+    val summary = toSummary(languageId)
+    return BookRow(
+        id = summary.id,
+        title = summary.title,
+        description = summary.description,
+        category = summary.category.name,
+        emoji = summary.emoji,
+        imageUrl = summary.imageUrl,
+        revision = revision,
     )
 }
 

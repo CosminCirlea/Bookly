@@ -1,5 +1,6 @@
 package org.evolutionsoftware.bookly.services.profiles.data.repository
 
+import org.evolutionsoftware.bookly.services.profiles.data.error.withExceptionWrapping
 import org.evolutionsoftware.bookly.core.network.AuthTokenStore
 import org.evolutionsoftware.bookly.core.network.UserSession
 import org.evolutionsoftware.bookly.core.network.UserSessionStore

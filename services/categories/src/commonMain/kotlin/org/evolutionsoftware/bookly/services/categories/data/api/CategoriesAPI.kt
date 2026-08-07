@@ -5,7 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import org.evolutionsoftware.bookly.services.categories.data.dto.CategoriesPaginatedResponseDto
-import org.evolutionsoftware.bookly.services.categories.data.repository.requireSuccess
+import org.evolutionsoftware.bookly.services.categories.data.error.requireSuccess
 
 class CategoriesAPI(
     private val httpClient: HttpClient,

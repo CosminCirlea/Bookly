@@ -1,11 +1,11 @@
-package org.evolutionsoftware.bookly.services.languages.data.repository
+package org.evolutionsoftware.bookly.services.profiles.data.error
 
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 import kotlinx.io.IOException
-import org.evolutionsoftware.bookly.services.languages.domain.exception.LanguagesServiceException
+import org.evolutionsoftware.bookly.services.profiles.domain.exception.ProfilesServiceException
 
 internal inline fun <T> withExceptionWrapping(block: () -> T): T =
     try {
@@ -25,24 +25,25 @@ internal fun HttpResponse.requireSuccess(): HttpResponse {
 
 private fun Throwable.mapToDomainException(): Throwable =
     when (this) {
-        is LanguagesServiceException -> this
+        is ProfilesServiceException -> this
         is IOException ->
-            LanguagesServiceException.NetworkError(
+            ProfilesServiceException.NetworkError(
                 message = "Network error: ${this.message}",
                 cause = this,
             )
-        else -> LanguagesServiceException.ServerError(message ?: "Unknown error")
+        else -> ProfilesServiceException.ServerError(message ?: "Unknown error")
     }
 
-private fun HttpStatusCode.mapToDomain(): LanguagesServiceException =
+private fun HttpStatusCode.mapToDomain(): ProfilesServiceException =
     when (this) {
         HttpStatusCode.Unauthorized,
         HttpStatusCode.Forbidden,
-        -> LanguagesServiceException.Unauthorized()
+        -> ProfilesServiceException.Unauthorized()
+        HttpStatusCode.NotFound -> ProfilesServiceException.NotFound()
         else ->
             if (value in 500..599) {
-                LanguagesServiceException.ServerError()
+                ProfilesServiceException.ServerError()
             } else {
-                LanguagesServiceException.NetworkError("Request failed with status $value")
+                ProfilesServiceException.NetworkError("Request failed with status $value")
             }
     }

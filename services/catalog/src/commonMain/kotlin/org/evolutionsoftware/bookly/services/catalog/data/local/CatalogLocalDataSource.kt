@@ -4,110 +4,97 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.evolutionsoftware.bookly.core.logging.Logger
-import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCard
-import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCategory
-import org.evolutionsoftware.bookly.services.catalog.domain.model.BookDetails
-import org.evolutionsoftware.bookly.services.catalog.domain.model.BookSummary
 
+/**
+ * SQLDelight-backed [CatalogCache].
+ *
+ * Deals only in stored rows — translating those into domain models is the mappers'
+ * job, which keeps SQL out of the domain.
+ */
 class CatalogLocalDataSource(
     driverFactory: DatabaseDriverFactory,
-) {
+) : CatalogCache {
     private val database = CatalogDatabase(driverFactory.createDriver())
     private val queries = database.bookEntityQueries
-    private val json = Json { ignoreUnknownKeys = true }
 
-    suspend fun getBooks(): List<BookSummary> = withContext(Dispatchers.IO) {
-        val entities = queries.selectAllBooks().executeAsList()
-        logger.d("LocalDataSource.getBooks: found ${entities.size} entities in DB")
-        entities.map { it.toBookSummary() }
-    }
-
-    suspend fun saveBooks(books: List<BookSummary>): Unit = withContext(Dispatchers.IO) {
-        logger.d("LocalDataSource.saveBooks: saving ${books.size} books")
-        val now = Clock.System.now().toEpochMilliseconds()
-        queries.transaction {
-            queries.deleteAllBooks()
-            books.forEach { book ->
-                queries.insertBook(
-                    id = book.id,
-                    title = book.title,
-                    description = book.description,
-                    category = book.category.name,
-                    emoji = book.emoji,
-                    imageUrl = book.imageUrl,
-                    updatedAt = now,
-                )
-            }
+    override suspend fun getBooks(): List<BookRow> =
+        withContext(Dispatchers.IO) {
+            queries.selectAllBooks().executeAsList().map { it.toRow() }
         }
-        val savedCount = queries.selectAllBooks().executeAsList().size
-        logger.d("LocalDataSource.saveBooks: verified $savedCount books in DB after save")
-    }
 
-    suspend fun getBookDetails(bookId: String): BookDetails? = withContext(Dispatchers.IO) {
-        queries.selectBookDetailById(bookId).executeAsOneOrNull()?.toBookDetails()
-    }
+    override suspend fun hasBooks(): Boolean =
+        withContext(Dispatchers.IO) {
+            queries.countBooks().executeAsOne() > 0L
+        }
 
-    suspend fun saveBookDetails(details: BookDetails): Unit = withContext(Dispatchers.IO) {
-        val cardsJson = json.encodeToString(details.cards.map { CardJson(it) })
-        queries.insertBookDetail(
-            id = details.id,
-            title = details.title,
-            category = details.category.name,
-            cardsJson = cardsJson,
-            updatedAt = Clock.System.now().toEpochMilliseconds(),
-        )
-    }
+    override suspend fun replaceBooks(books: List<BookRow>): Unit =
+        withContext(Dispatchers.IO) {
+            val now = Clock.System.now().toEpochMilliseconds()
+            queries.transaction {
+                queries.deleteAllBooks()
+                books.forEach { book ->
+                    queries.insertBook(
+                        id = book.id,
+                        title = book.title,
+                        description = book.description,
+                        category = book.category,
+                        emoji = book.emoji,
+                        imageUrl = book.imageUrl,
+                        revision = book.revision,
+                        updatedAt = now,
+                    )
+                }
+                // Keeps the cache from growing without bound as the catalog changes.
+                queries.deleteOrphanedBookDetails()
+            }
+            logger.d("replaceBooks: cached ${books.size} books")
+        }
 
-    companion object {
-        private val logger = Logger.withTag("CatalogLocalDataSource")
-    }
+    override suspend fun getBookRevision(bookId: String): String? =
+        withContext(Dispatchers.IO) {
+            queries.selectBookRevision(bookId).executeAsOneOrNull()?.revision
+        }
 
-    private fun BookEntity.toBookSummary(): BookSummary =
-        BookSummary(
+    override suspend fun getBookDetails(bookId: String): BookDetailRow? =
+        withContext(Dispatchers.IO) {
+            queries.selectBookDetailById(bookId).executeAsOneOrNull()?.toRow()
+        }
+
+    override suspend fun saveBookDetails(details: BookDetailRow): Unit =
+        withContext(Dispatchers.IO) {
+            queries.insertBookDetail(
+                id = details.id,
+                title = details.title,
+                category = details.category,
+                cardsJson = details.cardsJson,
+                revision = details.revision,
+                updatedAt = Clock.System.now().toEpochMilliseconds(),
+            )
+            logger.d("saveBookDetails: cached ${details.id} at revision ${details.revision}")
+        }
+
+    private fun BookEntity.toRow(): BookRow =
+        BookRow(
             id = id,
             title = title,
             description = description,
-            category = BookCategory.entries.find { it.name == category } ?: BookCategory.All,
+            category = category,
             emoji = emoji,
             imageUrl = imageUrl,
+            revision = revision,
         )
 
-    private fun BookDetailEntity.toBookDetails(): BookDetails {
-        val cards = json.decodeFromString<List<CardJson>>(cardsJson).map { it.toBookCard() }
-        return BookDetails(
+    private fun BookDetailEntity.toRow(): BookDetailRow =
+        BookDetailRow(
             id = id,
             title = title,
-            category = BookCategory.entries.find { it.name == category } ?: BookCategory.All,
-            cards = cards,
-        )
-    }
-
-    @kotlinx.serialization.Serializable
-    private data class CardJson(
-        val id: String,
-        val title: String,
-        val description: String,
-        val emoji: String,
-        val imageUrl: String?,
-    ) {
-        constructor(card: BookCard) : this(
-            id = card.id,
-            title = card.title,
-            description = card.description,
-            emoji = card.emoji,
-            imageUrl = card.imageUrl,
+            category = category,
+            cardsJson = cardsJson,
+            revision = revision,
         )
 
-        fun toBookCard(): BookCard =
-            BookCard(
-                id = id,
-                title = title,
-                description = description,
-                emoji = emoji,
-                imageUrl = imageUrl,
-            )
+    private companion object {
+        val logger = Logger.withTag("CatalogLocalDataSource")
     }
 }

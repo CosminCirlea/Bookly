@@ -188,7 +188,7 @@ private fun HomeScreen(
                                 mainAction =
                                     FeedbackAction(
                                         text = stringResource(Res.string.home_error_retry),
-                                        onClick = { onIntent(HomeIntent.Load) },
+                                        onClick = { onIntent(HomeIntent.Refresh) },
                                     ),
                             ),
                         title = stringResource(Res.string.home_error_title),

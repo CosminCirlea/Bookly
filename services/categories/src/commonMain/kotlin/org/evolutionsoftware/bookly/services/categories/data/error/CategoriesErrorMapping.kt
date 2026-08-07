@@ -1,11 +1,11 @@
-package org.evolutionsoftware.bookly.services.profiles.data.repository
+package org.evolutionsoftware.bookly.services.categories.data.error
 
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 import kotlinx.io.IOException
-import org.evolutionsoftware.bookly.services.profiles.domain.exception.ProfilesServiceException
+import org.evolutionsoftware.bookly.services.categories.domain.exception.CategoriesServiceException
 
 internal inline fun <T> withExceptionWrapping(block: () -> T): T =
     try {
@@ -25,25 +25,24 @@ internal fun HttpResponse.requireSuccess(): HttpResponse {
 
 private fun Throwable.mapToDomainException(): Throwable =
     when (this) {
-        is ProfilesServiceException -> this
+        is CategoriesServiceException -> this
         is IOException ->
-            ProfilesServiceException.NetworkError(
+            CategoriesServiceException.NetworkError(
                 message = "Network error: ${this.message}",
                 cause = this,
             )
-        else -> ProfilesServiceException.ServerError(message ?: "Unknown error")
+        else -> CategoriesServiceException.ServerError(message ?: "Unknown error")
     }
 
-private fun HttpStatusCode.mapToDomain(): ProfilesServiceException =
+private fun HttpStatusCode.mapToDomain(): CategoriesServiceException =
     when (this) {
         HttpStatusCode.Unauthorized,
         HttpStatusCode.Forbidden,
-        -> ProfilesServiceException.Unauthorized()
-        HttpStatusCode.NotFound -> ProfilesServiceException.NotFound()
+        -> CategoriesServiceException.Unauthorized()
         else ->
             if (value in 500..599) {
-                ProfilesServiceException.ServerError()
+                CategoriesServiceException.ServerError()
             } else {
-                ProfilesServiceException.NetworkError("Request failed with status $value")
+                CategoriesServiceException.NetworkError("Request failed with status $value")
             }
     }

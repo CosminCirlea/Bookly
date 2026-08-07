@@ -1,3 +1,7 @@
+-- Local cache of the catalog. Everything here is re-downloadable, so the schema
+-- carries no migrations: a schema change ships under a new database filename and
+-- the cache simply rebuilds on first launch.
+
 CREATE TABLE BookEntity (
     id TEXT NOT NULL PRIMARY KEY,
     title TEXT NOT NULL,
@@ -5,6 +9,9 @@ CREATE TABLE BookEntity (
     category TEXT NOT NULL,
     emoji TEXT NOT NULL,
     imageUrl TEXT,
+    -- Content revision reported by the list endpoint. Compared against the value
+    -- stored on BookDetailEntity to decide whether cached pages are stale.
+    revision TEXT,
     updatedAt INTEGER NOT NULL
 );
 
@@ -13,6 +20,8 @@ CREATE TABLE BookDetailEntity (
     title TEXT NOT NULL,
     category TEXT NOT NULL,
     cardsJson TEXT NOT NULL,
+    -- Revision these pages were downloaded at.
+    revision TEXT,
     updatedAt INTEGER NOT NULL
 );
 
@@ -22,19 +31,28 @@ SELECT * FROM BookEntity ORDER BY title;
 selectBookById:
 SELECT * FROM BookEntity WHERE id = ?;
 
+selectBookRevision:
+SELECT revision FROM BookEntity WHERE id = ?;
+
 insertBook:
-INSERT OR REPLACE INTO BookEntity(id, title, description, category, emoji, imageUrl, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO BookEntity(id, title, description, category, emoji, imageUrl, revision, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteAllBooks:
 DELETE FROM BookEntity;
+
+countBooks:
+SELECT COUNT(*) FROM BookEntity;
 
 selectBookDetailById:
 SELECT * FROM BookDetailEntity WHERE id = ?;
 
 insertBookDetail:
-INSERT OR REPLACE INTO BookDetailEntity(id, title, category, cardsJson, updatedAt)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO BookDetailEntity(id, title, category, cardsJson, revision, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?);
 
 deleteBookDetailById:
 DELETE FROM BookDetailEntity WHERE id = ?;
+
+deleteOrphanedBookDetails:
+DELETE FROM BookDetailEntity WHERE id NOT IN (SELECT id FROM BookEntity);

@@ -1,11 +1,11 @@
-package org.evolutionsoftware.bookly.services.catalog.data.repository
+package org.evolutionsoftware.bookly.services.favorites.data.error
 
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 import kotlinx.io.IOException
-import org.evolutionsoftware.bookly.services.catalog.domain.exception.CatalogServiceException
+import org.evolutionsoftware.bookly.services.favorites.domain.exception.FavoritesServiceException
 
 internal inline fun <T> withExceptionWrapping(block: () -> T): T =
     try {
@@ -25,25 +25,25 @@ internal fun HttpResponse.requireSuccess(): HttpResponse {
 
 private fun Throwable.mapToDomainException(): Throwable =
     when (this) {
-        is CatalogServiceException -> this
+        is FavoritesServiceException -> this
         is IOException ->
-            CatalogServiceException.NetworkError(
+            FavoritesServiceException.NetworkError(
                 message = "Network error: ${this.message}",
                 cause = this,
             )
-        else -> CatalogServiceException.ServerError(message ?: "Unknown error")
+        else -> FavoritesServiceException.ServerError(message ?: "Unknown error")
     }
 
-private fun HttpStatusCode.mapToDomain(): CatalogServiceException =
+private fun HttpStatusCode.mapToDomain(): FavoritesServiceException =
     when (this) {
         HttpStatusCode.Unauthorized,
         HttpStatusCode.Forbidden,
-        -> CatalogServiceException.Unauthorized()
-        HttpStatusCode.NotFound -> CatalogServiceException.NotFound()
+        -> FavoritesServiceException.Unauthorized()
+        HttpStatusCode.NotFound -> FavoritesServiceException.NotFound()
         else ->
             if (value in 500..599) {
-                CatalogServiceException.ServerError()
+                FavoritesServiceException.ServerError()
             } else {
-                CatalogServiceException.NetworkError("Request failed with status $value")
+                FavoritesServiceException.NetworkError("Request failed with status $value")
             }
     }

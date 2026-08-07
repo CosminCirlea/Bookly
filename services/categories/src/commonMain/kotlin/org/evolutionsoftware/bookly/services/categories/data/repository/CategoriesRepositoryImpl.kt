@@ -1,5 +1,6 @@
 package org.evolutionsoftware.bookly.services.categories.data.repository
 
+import org.evolutionsoftware.bookly.services.categories.data.error.withExceptionWrapping
 import org.evolutionsoftware.bookly.services.categories.data.api.CategoriesAPI
 import org.evolutionsoftware.bookly.services.categories.data.mapper.toDomain
 import org.evolutionsoftware.bookly.services.categories.domain.model.Category

@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.evolutionsoftware.bookly.core.mvi.IntentProcessor
 import org.evolutionsoftware.bookly.core.usecase.utils.Result
+import org.evolutionsoftware.bookly.services.catalog.domain.model.CatalogRefresh
 import org.evolutionsoftware.bookly.services.catalog.domain.usecase.GetBooksUseCase
 import org.evolutionsoftware.bookly.services.favorites.domain.usecase.AddFavoriteUseCase
 import org.evolutionsoftware.bookly.services.favorites.domain.usecase.GetFavoritesUseCase
@@ -20,41 +21,9 @@ internal class HomeIntentProcessor(
 ) : IntentProcessor<HomeIntent, HomeAction> {
     override fun invoke(intent: HomeIntent): Flow<HomeAction> =
         when (intent) {
-            HomeIntent.Load ->
-                flow {
-                    emit(HomeAction.LoadingStarted)
-                    val books =
-                        try {
-                            getBooksUseCase()
-                        } catch (e: Exception) {
-                            emit(HomeAction.LoadingFailed(e.message ?: "Failed to load books"))
-                            return@flow
-                        }
-                    // Cache-first: surface the books immediately; profile and favorites
-                    // arrive afterwards without blocking the list.
-                    emit(HomeAction.BooksLoaded(books))
-                    val profile =
-                        try {
-                            getCurrentProfileUseCase()
-                        } catch (e: Exception) {
-                            null
-                        }
-                    val favoriteBookIds =
-                        if (profile != null) {
-                            when (val favorites = getFavoritesUseCase(profile.id)) {
-                                is Result.Success -> favorites.data.map { it.bookId }.toSet()
-                                is Result.Error -> emptySet()
-                            }
-                        } else {
-                            emptySet()
-                        }
-                    emit(
-                        HomeAction.ProfileLoaded(
-                            profile = profile,
-                            favoriteBookIds = favoriteBookIds,
-                        ),
-                    )
-                }
+            HomeIntent.Load -> loadCatalog(CatalogRefresh.Automatic)
+
+            HomeIntent.Refresh -> loadCatalog(CatalogRefresh.Force)
 
             is HomeIntent.FilterSelected -> flowOf(HomeAction.FilterChanged(intent.category))
 
@@ -79,5 +48,41 @@ internal class HomeIntentProcessor(
                         emit(HomeAction.FavoriteUpdateReverted(intent.bookId, !intent.makeFavorite))
                     }
                 }
+        }
+
+    private fun loadCatalog(refresh: CatalogRefresh): Flow<HomeAction> =
+        flow {
+            emit(HomeAction.LoadingStarted)
+            val books =
+                try {
+                    getBooksUseCase(refresh)
+                } catch (e: Exception) {
+                    emit(HomeAction.LoadingFailed(e.message ?: "Failed to load books"))
+                    return@flow
+                }
+            // Cache-first: surface the books immediately; profile and favourites
+            // arrive afterwards without blocking the list.
+            emit(HomeAction.BooksLoaded(books))
+            val profile =
+                try {
+                    getCurrentProfileUseCase()
+                } catch (e: Exception) {
+                    null
+                }
+            val favoriteBookIds =
+                if (profile != null) {
+                    when (val favorites = getFavoritesUseCase(profile.id)) {
+                        is Result.Success -> favorites.data.map { it.bookId }.toSet()
+                        is Result.Error -> emptySet()
+                    }
+                } else {
+                    emptySet()
+                }
+            emit(
+                HomeAction.ProfileLoaded(
+                    profile = profile,
+                    favoriteBookIds = favoriteBookIds,
+                ),
+            )
         }
 }

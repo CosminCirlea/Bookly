@@ -4,7 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import org.evolutionsoftware.bookly.services.languages.data.dto.LanguageDto
-import org.evolutionsoftware.bookly.services.languages.data.repository.requireSuccess
+import org.evolutionsoftware.bookly.services.languages.data.error.requireSuccess
 
 class LanguagesAPI(
     private val httpClient: HttpClient,

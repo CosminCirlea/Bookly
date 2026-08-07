@@ -1,5 +1,6 @@
 package org.evolutionsoftware.bookly.services.favorites.data.repository
 
+import org.evolutionsoftware.bookly.services.favorites.data.error.withExceptionWrapping
 import org.evolutionsoftware.bookly.services.favorites.data.api.FavoritesAPI
 import org.evolutionsoftware.bookly.services.favorites.data.dto.AddFavoriteRequestDto
 import org.evolutionsoftware.bookly.services.favorites.data.mapper.toDomain

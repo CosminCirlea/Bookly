@@ -31,7 +31,11 @@ internal sealed interface HomeSideEffect : SideEffect {
 }
 
 internal sealed interface HomeIntent : UserIntent {
+    /** Normal entry. Revalidates the catalog once per app session, cache otherwise. */
     data object Load : HomeIntent
+
+    /** Explicit user request — retry or pull-to-refresh — which always hits the network. */
+    data object Refresh : HomeIntent
 
     data class FilterSelected(val category: BookCategory) : HomeIntent
 

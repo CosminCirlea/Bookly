@@ -1,6 +1,7 @@
 package org.evolutionsoftware.bookly.services.catalog.domain.usecase
 
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookDetails
+import org.evolutionsoftware.bookly.services.catalog.domain.model.CatalogRefresh
 import org.evolutionsoftware.bookly.services.catalog.domain.repository.CatalogRepository
 
 class GetBookDetailsUseCase(
@@ -8,6 +9,6 @@ class GetBookDetailsUseCase(
 ) {
     suspend operator fun invoke(
         bookId: String,
-        forceRefresh: Boolean = false,
-    ): BookDetails? = repository.getBookDetails(bookId, forceRefresh)
+        refresh: CatalogRefresh = CatalogRefresh.Automatic,
+    ): BookDetails? = repository.getBookDetails(bookId, refresh)
 }

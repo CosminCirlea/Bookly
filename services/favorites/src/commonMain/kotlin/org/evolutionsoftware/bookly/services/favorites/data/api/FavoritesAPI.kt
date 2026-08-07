@@ -8,7 +8,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import org.evolutionsoftware.bookly.services.favorites.data.dto.AddFavoriteRequestDto
 import org.evolutionsoftware.bookly.services.favorites.data.dto.FavoriteDto
-import org.evolutionsoftware.bookly.services.favorites.data.repository.requireSuccess
+import org.evolutionsoftware.bookly.services.favorites.data.error.requireSuccess
 
 class FavoritesAPI(
     private val httpClient: HttpClient,
