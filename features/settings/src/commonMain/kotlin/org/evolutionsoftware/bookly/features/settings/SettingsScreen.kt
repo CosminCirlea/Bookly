@@ -453,8 +453,10 @@ private fun RateAppSheet(
     var stars by remember { mutableIntStateOf(0) }
     var feedback by remember { mutableStateOf("") }
 
+    // Cleared on open rather than on close. Resetting on close removes the conditional
+    // feedback field while the sheet is still sliding out, so it visibly shrinks first.
     LaunchedEffect(visible) {
-        if (!visible) {
+        if (visible) {
             stars = 0
             feedback = ""
         }
