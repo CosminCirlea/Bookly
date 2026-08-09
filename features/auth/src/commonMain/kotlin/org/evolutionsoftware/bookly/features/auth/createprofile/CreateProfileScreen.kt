@@ -119,9 +119,8 @@ internal fun CreateProfileContent(
                     properties =
                         HeaderProperties(
                             title = stringResource(Res.string.auth_create_profile_title),
-                            variant = HeaderProperties.Variant.Compact,
                         ),
-                    onBackClick = { onIntent(CreateProfileIntent.Skip) },
+                    onLeadingClick = { onIntent(CreateProfileIntent.Skip) },
                 )
             },
         ) { innerPadding ->

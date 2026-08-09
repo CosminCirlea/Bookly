@@ -26,14 +26,17 @@ internal class SettingsIntentProcessor(
             SettingsIntent.Load ->
                 flow {
                     // ===================== TEMPORARY STUB — DELETE ME =====================
-                    // Forces a signed-in state so the settings menu can be tested without
-                    // a working backend. Nothing here touches the network.
+                    // Fakes the session so the settings menu can be exercised without a
+                    // working backend. Nothing here touches the network.
+                    //
+                    // Flip STUB_AS_SIGNED_IN to switch between the profile card and the
+                    // "Log in or sign up" banner.
                     //
                     // TO RESTORE THE REAL API CALL:
-                    //   1. delete these two emit(...) lines and this comment block, and
-                    //   2. un-comment the original implementation directly below.
-                    emit(SettingsAction.SessionChecked(true))
-                    emit(SettingsAction.ProfileLoaded(STUB_PROFILE))
+                    //   1. delete this comment block and the emit(...) lines below, and
+                    //   2. un-comment the original implementation further down.
+                    emit(SettingsAction.SessionChecked(STUB_AS_SIGNED_IN))
+                    emit(SettingsAction.ProfileLoaded(if (STUB_AS_SIGNED_IN) STUB_PROFILE else null))
                     // =================== END TEMPORARY STUB — DELETE ME ===================
 
                     /* ORIGINAL IMPLEMENTATION — UN-COMMENT TO RESTORE
@@ -47,9 +50,7 @@ internal class SettingsIntentProcessor(
                     }
                      */
                 }
-            SettingsIntent.JoinClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignUp))
             SettingsIntent.LoginClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignIn))
-            SettingsIntent.FacebookContinueClicked -> flowOf(SettingsAction.OnboardingRequested)
             SettingsIntent.ChangePasswordClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.ChangePassword))
             SettingsIntent.ResetPasswordClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.ResetPassword))
             SettingsIntent.EditProfileClicked -> flowOf(SettingsAction.EditProfileOpened)
@@ -98,8 +99,11 @@ internal class SettingsIntentProcessor(
                 }
         }
 
-    // TEMPORARY STUB — DELETE ME: stand-in profile for the forced signed-in state.
+    // TEMPORARY STUB — DELETE ME: stand-in session for testing without a backend.
     private companion object {
+        /** false shows the signed-out banner, true shows the profile card. */
+        const val STUB_AS_SIGNED_IN = false
+
         val STUB_PROFILE =
             ParentProfile(
                 id = "stub-profile",

@@ -28,6 +28,5 @@ internal class SettingsStateMapper : StateMapper<SettingsAction, SettingsViewSta
             SettingsAction.NotificationsOpened -> currentState
             SettingsAction.ContactUsOpened -> currentState
             SettingsAction.EditProfileOpened -> currentState
-            SettingsAction.OnboardingRequested -> currentState
         }
 }

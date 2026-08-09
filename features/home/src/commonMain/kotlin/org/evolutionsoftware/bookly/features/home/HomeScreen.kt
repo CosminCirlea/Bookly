@@ -81,10 +81,12 @@ import org.evolutionsoftware.bookly.components.ui.BooklyToastKind
 import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.Feedback
+import org.evolutionsoftware.bookly.design.components.Header
 import org.evolutionsoftware.bookly.design.components.IconButton
 import org.evolutionsoftware.bookly.design.components.properties.ButtonProperties
 import org.evolutionsoftware.bookly.design.components.properties.FeedbackAction
 import org.evolutionsoftware.bookly.design.components.properties.FeedbackProperties
+import org.evolutionsoftware.bookly.design.components.properties.HeaderProperties
 import org.evolutionsoftware.bookly.design.components.properties.IconButtonProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCategory
@@ -320,26 +322,12 @@ private fun HomeToolbar(
             settingsButton()
         }
     } else {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = TokenProvider.spacings.horizontalSpacing,
-                        vertical = TokenProvider.spacings.sm,
-                    ),
-        ) {
-            Text(
-                text = stringResource(Res.string.home_title),
-                modifier = Modifier.align(Alignment.Center),
-                style = TokenProvider.textStyles.title,
-                color = TokenProvider.colors.borderAccent,
-                textAlign = TextAlign.Center,
-            )
-            Box(modifier = Modifier.align(Alignment.CenterEnd)) {
-                settingsButton()
-            }
-        }
+        // Signed out the toolbar is just a centred title plus the settings action, so
+        // it uses the shared component and inherits its metrics.
+        Header(
+            properties = HeaderProperties(title = stringResource(Res.string.home_title)),
+            trailingContent = settingsButton,
+        )
     }
 }
 

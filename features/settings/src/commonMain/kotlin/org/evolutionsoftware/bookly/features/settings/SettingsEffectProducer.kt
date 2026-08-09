@@ -20,7 +20,6 @@ internal class SettingsEffectProducer :
             SettingsAction.NotificationsOpened -> SettingsSideEffect.OpenNotifications
             SettingsAction.ContactUsOpened -> SettingsSideEffect.OpenContactUs
             SettingsAction.EditProfileOpened -> SettingsSideEffect.OpenEditProfile
-            SettingsAction.OnboardingRequested -> SettingsSideEffect.OpenOnboarding
             else -> null
         }
 }

@@ -4,47 +4,38 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 
+/**
+ * The app's single toolbar.
+ *
+ * Metrics are deliberately fixed rather than varied per screen: the leading button
+ * must land in the same place everywhere, so navigating between screens never shifts
+ * it. Anything that needs to differ goes in the title or the trailing slot.
+ */
 data class HeaderProperties(
     val title: String,
-    val variant: Variant = Variant.Screen,
+    /** Leading glyph. The reader closes rather than goes back, hence the override. */
+    val leadingIcon: Icons = Icons.ArrowLeft,
+    val leadingAriaLabel: String = "Back",
 ) {
-    enum class Variant {
-        Compact,
-        Screen,
-    }
-
-    fun getButtonSize(): Dp =
-        when (variant) {
-            Variant.Compact -> 40.dp
-            Variant.Screen -> 48.dp
-        }
+    /** Matches the design system's circular icon button. */
+    fun getButtonSize(): Dp = BUTTON_SIZE
 
     @Composable
-    fun getHorizontalPadding(): Dp =
-        when (variant) {
-            Variant.Compact -> TokenProvider.spacings.lg
-            Variant.Screen -> TokenProvider.spacings.xl
-        }
+    fun getHorizontalPadding(): Dp = TokenProvider.spacings.lg
 
     @Composable
-    fun getVerticalPadding(): Dp =
-        when (variant) {
-            Variant.Compact -> TokenProvider.spacings.sm
-            Variant.Screen -> TokenProvider.spacings.lg
-        }
+    fun getVerticalPadding(): Dp = TokenProvider.spacings.sm
 
     @Composable
-    fun getBackgroundColor(): Color =
-        TokenProvider.colors.bgBase.copy(
-            alpha =
-                when (variant) {
-                    Variant.Compact -> 0.82f
-                    Variant.Screen -> 1f
-                },
-        )
+    fun getBackgroundColor(): Color = TokenProvider.colors.bgBase
 
     @Composable
     fun getTitleColor(): Color = TokenProvider.colors.borderAccent
+
+    private companion object {
+        val BUTTON_SIZE = 44.dp
+    }
 }

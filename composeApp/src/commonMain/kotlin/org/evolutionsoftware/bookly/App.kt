@@ -100,7 +100,6 @@ fun App(startWithDebugMenu: Boolean = false) {
                                     AppDestination.Auth(
                                         when (authDestination) {
                                             SettingsAuthDestination.SignIn -> AuthDestination.SignIn
-                                            SettingsAuthDestination.SignUp -> AuthDestination.SignUp
                                             SettingsAuthDestination.ChangePassword -> AuthDestination.ChangePassword
                                             SettingsAuthDestination.ResetPassword -> AuthDestination.ForgotPassword
                                         },
@@ -111,7 +110,6 @@ fun App(startWithDebugMenu: Boolean = false) {
                             onOpenNotifications = { destination = AppDestination.Notifications },
                             onOpenContactUs = { destination = AppDestination.ContactUs },
                             onOpenEditProfile = { destination = AppDestination.CreateProfile(fromSettings = true) },
-                            onOpenOnboarding = { destination = AppDestination.Auth(AuthDestination.Onboarding) },
                         )
                     }
 

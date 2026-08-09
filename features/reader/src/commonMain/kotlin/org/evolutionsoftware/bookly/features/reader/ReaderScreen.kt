@@ -65,8 +65,10 @@ import kotlinx.coroutines.flow.collectLatest
 import org.evolutionsoftware.bookly.components.ui.BooklyToastKind
 import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.Feedback
+import org.evolutionsoftware.bookly.design.components.Header
 import org.evolutionsoftware.bookly.design.components.IconButton
 import org.evolutionsoftware.bookly.design.components.properties.FeedbackProperties
+import org.evolutionsoftware.bookly.design.components.properties.HeaderProperties
 import org.evolutionsoftware.bookly.design.components.properties.IconButtonProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCard
@@ -161,7 +163,9 @@ private fun ReaderScreen(
         pagerState.animateScrollToPage(state.currentPage.coerceIn(0, cards.lastIndex))
     }
 
-    Box(
+    // The toolbar is a sibling of the content rather than an overlay, so it keeps the
+    // shared metrics and the content no longer needs a hand-tuned top inset to clear it.
+    Column(
         modifier =
             Modifier
                 .fillMaxSize()
@@ -184,23 +188,11 @@ private fun ReaderScreen(
                     )
                 }
             },
-            modifier =
-                Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .padding(
-                        start = TokenProvider.spacings.horizontalSpacing,
-                        top = TokenProvider.spacings.md,
-                        end = TokenProvider.spacings.horizontalSpacing,
-                    ),
         )
 
         if (state.isLoading || cards.isEmpty()) {
             Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(top = 80.dp),
+                modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center,
             ) {
                 ReaderEmptyState(
@@ -212,12 +204,7 @@ private fun ReaderScreen(
         } else {
             // Content and footer are siblings in a column so a long card title can
             // never overlap the page indicator.
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(top = 112.dp),
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 BoxWithConstraints(
                     modifier =
                         Modifier
@@ -526,31 +513,24 @@ private fun ReaderTopBar(
     onFavoriteToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier) {
-        ReaderActionButton(
-            icon = Icons.Close,
-            ariaLabel = closeAriaLabel,
-            onClick = onBack,
-            modifier = Modifier.align(Alignment.CenterStart),
-        )
-        Text(
-            text = title,
-            modifier =
-                Modifier
-                    .align(Alignment.Center)
-                    .padding(horizontal = 56.dp),
-            style = TokenProvider.textStyles.title,
-            color = TokenProvider.colors.borderAccent,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        ReaderFavoriteButton(
-            isFavorite = isFavorite,
-            onClick = onFavoriteToggle,
-            modifier = Modifier.align(Alignment.CenterEnd),
-        )
-    }
+    // Shares the app toolbar so the leading button lines up with every other screen;
+    // only the glyph differs, since closing a book is not the same as going back.
+    Header(
+        modifier = modifier,
+        properties =
+            HeaderProperties(
+                title = title,
+                leadingIcon = Icons.Close,
+                leadingAriaLabel = closeAriaLabel,
+            ),
+        onLeadingClick = onBack,
+        trailingContent = {
+            ReaderFavoriteButton(
+                isFavorite = isFavorite,
+                onClick = onFavoriteToggle,
+            )
+        },
+    )
 }
 
 @Composable

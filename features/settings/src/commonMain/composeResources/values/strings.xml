@@ -1,5 +1,4 @@
 <resources>
-    <string name="settings_done">Done</string>
     <string name="settings_title">Settings</string>
     <string name="settings_account">ACCOUNT</string>
     <string name="settings_preferences">PREFERENCES</string>
@@ -18,23 +17,9 @@
     <string name="settings_log_out">Log Out</string>
     <string name="settings_help_center_message">Help Center coming next.</string>
     <string name="settings_sound_message">Sound settings coming next.</string>
-    <string name="settings_signed_in_as_prefix">Signed in as</string>
-    <string name="settings_menu_offline_library">Offline library</string>
-    <string name="settings_menu_download_preferences">Download preferences</string>
-    <string name="settings_menu_parent_tips">Parent tips</string>
-    <string name="settings_sign_out">Sign out</string>
-    <string name="settings_guest_title">Login or register</string>
-    <string name="settings_guest_body">Create a parent profile to sync favorites and show your family name in the toolbar.</string>
-    <string name="settings_open_auth">Open auth</string>
-    <string name="settings_guest_playroom_title">Welcome to the
-Playroom!</string>
-    <string name="settings_guest_playroom_body">Create an account to save your favorite books and track your progress.</string>
-    <string name="settings_join_playroom">Join the Playroom</string>
-    <string name="settings_guest_existing_account">Already have an account? Log in</string>
-    <string name="settings_continue_google">Continue with Google</string>
-    <string name="settings_continue_facebook">Continue with Facebook</string>
     <string name="settings_signed_out_message">Signed out.</string>
-    <string name="settings_guest_privacy">Bookly is built with privacy in mind. Books are cached on-device, so your little one can read offline anywhere.</string>
+    <string name="settings_login_banner_title">Log in or sign up</string>
+    <string name="settings_login_banner_body">Save favorites and sync across devices.</string>
     <string name="settings_free_plan">Free plan</string>
     <string name="settings_edit_profile_aria">Edit profile</string>
     <string name="settings_version">Bookly · v1.0</string>

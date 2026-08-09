@@ -99,7 +99,7 @@ fun ContactUsRoute(
     ) {
         Header(
             properties = HeaderProperties(title = stringResource(Res.string.contact_title)),
-            onBackClick = onBack,
+            onLeadingClick = onBack,
         )
 
         Column(

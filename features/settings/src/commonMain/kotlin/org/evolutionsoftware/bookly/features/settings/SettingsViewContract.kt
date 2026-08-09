@@ -10,8 +10,6 @@ import org.jetbrains.compose.resources.StringResource
 sealed interface SettingsAuthDestination {
     data object SignIn : SettingsAuthDestination
 
-    data object SignUp : SettingsAuthDestination
-
     data object ChangePassword : SettingsAuthDestination
 
     data object ResetPassword : SettingsAuthDestination
@@ -43,18 +41,13 @@ internal sealed interface SettingsSideEffect : SideEffect {
     data object OpenContactUs : SettingsSideEffect
 
     data object OpenEditProfile : SettingsSideEffect
-
-    data object OpenOnboarding : SettingsSideEffect
 }
 
 internal sealed interface SettingsIntent : UserIntent {
     data object Load : SettingsIntent
 
-    data object JoinClicked : SettingsIntent
-
+    /** The signed-out banner. Sign-up is reached from the sign-in screen itself. */
     data object LoginClicked : SettingsIntent
-
-    data object FacebookContinueClicked : SettingsIntent
 
     data object SignOutClicked : SettingsIntent
 
@@ -103,6 +96,4 @@ internal sealed interface SettingsAction : UserIntentAction {
     data object ContactUsOpened : SettingsAction
 
     data object EditProfileOpened : SettingsAction
-
-    data object OnboardingRequested : SettingsAction
 }

@@ -10,16 +10,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import org.evolutionsoftware.bookly.design.Icons
+import androidx.compose.ui.text.style.TextOverflow
 import org.evolutionsoftware.bookly.design.components.properties.HeaderProperties
 import org.evolutionsoftware.bookly.design.components.properties.IconButtonProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 
+/**
+ * The app's toolbar. Every screen with a leading action uses this, so that action sits
+ * at an identical offset throughout.
+ *
+ * @param onLeadingClick omit for a screen with no leading action; the slot is still
+ *   reserved so the title stays optically centred.
+ */
 @Composable
 fun Header(
     properties: HeaderProperties,
-    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLeadingClick: (() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val buttonSize = properties.getButtonSize()
@@ -34,27 +41,36 @@ fun Header(
                     vertical = properties.getVerticalPadding(),
                 ),
     ) {
-        IconButton(
+        Box(
             modifier =
                 Modifier
-                    .align(Alignment.CenterStart),
-            properties =
-                IconButtonProperties(
-                    icon = Icons.ArrowLeft,
-                    ariaLabel = "Back",
-                ),
-            onClick = onBackClick,
-        )
+                    .align(Alignment.CenterStart)
+                    .size(buttonSize),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (onLeadingClick != null) {
+                IconButton(
+                    properties =
+                        IconButtonProperties(
+                            icon = properties.leadingIcon,
+                            ariaLabel = properties.leadingAriaLabel,
+                        ),
+                    onClick = onLeadingClick,
+                )
+            }
+        }
 
         Text(
             text = properties.title,
             modifier =
                 Modifier
                     .align(Alignment.Center)
-                    .padding(horizontal = buttonSize),
+                    .padding(horizontal = buttonSize + TokenProvider.spacings.xs),
             style = TokenProvider.textStyles.title,
             color = properties.getTitleColor(),
             textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
 
         Box(

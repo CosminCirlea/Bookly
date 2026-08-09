@@ -90,7 +90,7 @@ fun NotificationsRoute(
     ) {
         Header(
             properties = HeaderProperties(title = stringResource(Res.string.notifications_title)),
-            onBackClick = onBack,
+            onLeadingClick = onBack,
         )
 
         Column(

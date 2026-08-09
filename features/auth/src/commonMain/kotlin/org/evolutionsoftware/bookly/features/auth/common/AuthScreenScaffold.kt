@@ -40,9 +40,8 @@ internal fun AuthScreenScaffold(
                     properties =
                         HeaderProperties(
                             title = title,
-                            variant = HeaderProperties.Variant.Compact,
                         ),
-                    onBackClick = onBack,
+                    onLeadingClick = onBack,
                 )
             },
         ) { innerPadding ->

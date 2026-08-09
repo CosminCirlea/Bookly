@@ -1,8 +1,10 @@
 package org.evolutionsoftware.bookly.features.settings
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -45,15 +48,9 @@ import bookly.features.settings.generated.resources.Res
 import bookly.features.settings.generated.resources.settings_account
 import bookly.features.settings.generated.resources.settings_change_password
 import bookly.features.settings.generated.resources.settings_contact_us
-import bookly.features.settings.generated.resources.settings_continue_facebook
-import bookly.features.settings.generated.resources.settings_continue_google
 import bookly.features.settings.generated.resources.settings_edit_profile
 import bookly.features.settings.generated.resources.settings_edit_profile_aria
 import bookly.features.settings.generated.resources.settings_free_plan
-import bookly.features.settings.generated.resources.settings_guest_existing_account
-import bookly.features.settings.generated.resources.settings_guest_playroom_body
-import bookly.features.settings.generated.resources.settings_guest_playroom_title
-import bookly.features.settings.generated.resources.settings_guest_privacy
 import bookly.features.settings.generated.resources.settings_help_center
 import bookly.features.settings.generated.resources.settings_invite_body
 import bookly.features.settings.generated.resources.settings_invite_close
@@ -64,11 +61,12 @@ import bookly.features.settings.generated.resources.settings_invite_link
 import bookly.features.settings.generated.resources.settings_invite_message
 import bookly.features.settings.generated.resources.settings_invite_more
 import bookly.features.settings.generated.resources.settings_invite_title
-import bookly.features.settings.generated.resources.settings_join_playroom
 import bookly.features.settings.generated.resources.settings_language
 import bookly.features.settings.generated.resources.settings_language_subtitle
 import bookly.features.settings.generated.resources.settings_language_title
 import bookly.features.settings.generated.resources.settings_log_out
+import bookly.features.settings.generated.resources.settings_login_banner_body
+import bookly.features.settings.generated.resources.settings_login_banner_title
 import bookly.features.settings.generated.resources.settings_logout_body
 import bookly.features.settings.generated.resources.settings_logout_cancel
 import bookly.features.settings.generated.resources.settings_logout_confirm
@@ -116,7 +114,6 @@ fun SettingsRoute(
     onOpenNotifications: () -> Unit = {},
     onOpenContactUs: () -> Unit = {},
     onOpenEditProfile: () -> Unit = {},
-    onOpenOnboarding: () -> Unit = {},
 ) {
     val viewModel = rememberSettingsViewModel()
     val state by viewModel.viewState.collectAsState()
@@ -139,7 +136,6 @@ fun SettingsRoute(
                 SettingsSideEffect.OpenNotifications -> onOpenNotifications()
                 SettingsSideEffect.OpenContactUs -> onOpenContactUs()
                 SettingsSideEffect.OpenEditProfile -> onOpenEditProfile()
-                SettingsSideEffect.OpenOnboarding -> onOpenOnboarding()
             }
         }
     }
@@ -159,16 +155,6 @@ private fun SettingsScreen(
 ) {
     if (state.isLoading && !state.isAuthenticated) return
 
-    if (!state.isAuthenticated) {
-        GuestSettingsScreen(
-            onBack = onClose,
-            onJoin = { onIntent(SettingsIntent.JoinClicked) },
-            onLogin = { onIntent(SettingsIntent.LoginClicked) },
-            onContinueWithFacebook = { onIntent(SettingsIntent.FacebookContinueClicked) },
-        )
-        return
-    }
-
     var showRateSheet by remember { mutableStateOf(false) }
     var showInviteSheet by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
@@ -185,7 +171,7 @@ private fun SettingsScreen(
     ) {
         Header(
             properties = HeaderProperties(title = stringResource(Res.string.settings_title)),
-            onBackClick = onClose,
+            onLeadingClick = onClose,
         )
 
         Column(
@@ -198,28 +184,35 @@ private fun SettingsScreen(
                     ),
             verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xxl),
         ) {
-            state.profile?.let { profile ->
+            // Signed out, the profile card's slot invites the parent to sign in rather
+            // than hiding the whole menu behind a wall.
+            val profile = state.profile
+            if (profile != null) {
                 ProfileCard(
                     profile = profile,
                     onEditClick = { onIntent(SettingsIntent.EditProfileClicked) },
                 )
+            } else {
+                LoginBanner(onClick = { onIntent(SettingsIntent.LoginClicked) })
             }
 
-            SettingsSection(
-                title = stringResource(Res.string.settings_account),
-                items =
-                    listOf(
-                        SettingsRowItem(stringResource(Res.string.settings_edit_profile), Icons.SettingsEditProfile, SettingsRowStyles.Info) {
-                            onIntent(SettingsIntent.EditProfileClicked)
-                        },
-                        SettingsRowItem(stringResource(Res.string.settings_change_password), Icons.SettingsChangePassword, SettingsRowStyles.Accent) {
-                            onIntent(SettingsIntent.ChangePasswordClicked)
-                        },
-                        SettingsRowItem(stringResource(Res.string.settings_reset_password), Icons.SettingsResetPassword, SettingsRowStyles.Danger) {
-                            onIntent(SettingsIntent.ResetPasswordClicked)
-                        },
-                    ),
-            )
+            if (state.isAuthenticated) {
+                SettingsSection(
+                    title = stringResource(Res.string.settings_account),
+                    items =
+                        listOf(
+                            SettingsRowItem(stringResource(Res.string.settings_edit_profile), Icons.SettingsEditProfile, SettingsRowStyles.Info) {
+                                onIntent(SettingsIntent.EditProfileClicked)
+                            },
+                            SettingsRowItem(stringResource(Res.string.settings_change_password), Icons.SettingsChangePassword, SettingsRowStyles.Accent) {
+                                onIntent(SettingsIntent.ChangePasswordClicked)
+                            },
+                            SettingsRowItem(stringResource(Res.string.settings_reset_password), Icons.SettingsResetPassword, SettingsRowStyles.Danger) {
+                                onIntent(SettingsIntent.ResetPasswordClicked)
+                            },
+                        ),
+                )
+            }
 
             SettingsSection(
                 title = stringResource(Res.string.settings_preferences),
@@ -268,34 +261,36 @@ private fun SettingsScreen(
                     ),
             )
 
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Row(
-                    modifier =
-                        Modifier
-                            .clip(CircleShape)
-                            .background(TokenProvider.colors.bgDangerSoft)
-                            .clickable { showLogoutSheet = true }
-                            .padding(
-                                horizontal = TokenProvider.spacings.lg,
-                                vertical = TokenProvider.spacings.sm,
-                            ),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xs),
+            if (state.isAuthenticated) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        painter = painterResource(Icons.SettingsLogout.icon),
-                        contentDescription = null,
-                        tint = TokenProvider.colors.textDanger,
-                        modifier = Modifier.size(13.5.dp),
-                    )
-                    Text(
-                        text = stringResource(Res.string.settings_log_out),
-                        style = TokenProvider.textStyles.bodyStrong,
-                        color = TokenProvider.colors.textDanger,
-                    )
+                    Row(
+                        modifier =
+                            Modifier
+                                .clip(CircleShape)
+                                .background(TokenProvider.colors.bgDangerSoft)
+                                .clickable { showLogoutSheet = true }
+                                .padding(
+                                    horizontal = TokenProvider.spacings.lg,
+                                    vertical = TokenProvider.spacings.sm,
+                                ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xs),
+                    ) {
+                        Icon(
+                            painter = painterResource(Icons.SettingsLogout.icon),
+                            contentDescription = null,
+                            tint = TokenProvider.colors.textDanger,
+                            modifier = Modifier.size(13.5.dp),
+                        )
+                        Text(
+                            text = stringResource(Res.string.settings_log_out),
+                            style = TokenProvider.textStyles.bodyStrong,
+                            color = TokenProvider.colors.textDanger,
+                        )
+                    }
                 }
             }
 
@@ -353,6 +348,76 @@ private fun SettingsScreen(
 }
 
 // === Profile card =========================================================
+
+/**
+ * Occupies the profile card's slot when signed out: a pressable card inviting the
+ * parent to sign in, rather than hiding the whole menu behind an auth wall.
+ */
+@Composable
+private fun LoginBanner(onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.99f else 1f,
+        label = "loginBannerScale",
+    )
+
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .scale(scale)
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(TokenProvider.borderRadius.lg),
+                    ambientColor = Color(0x0F392E00),
+                    spotColor = Color(0x0F392E00),
+                ).clip(RoundedCornerShape(TokenProvider.borderRadius.lg))
+                .background(TokenProvider.colors.bgSurface)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick,
+                ).padding(TokenProvider.spacings.lg - TokenProvider.spacings.xxs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.md),
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(TokenProvider.colors.bgElevated),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(Icons.SettingsEditProfile.icon),
+                contentDescription = null,
+                tint = TokenProvider.colors.textSubtle,
+                modifier = Modifier.size(32.dp),
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(Res.string.settings_login_banner_title),
+                style = TokenProvider.textStyles.title,
+                color = TokenProvider.colors.text,
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = stringResource(Res.string.settings_login_banner_body),
+                style = TokenProvider.textStyles.eyebrow,
+                color = TokenProvider.colors.textSubtle,
+            )
+        }
+        Icon(
+            painter = painterResource(Icons.SettingsChevron.icon),
+            contentDescription = null,
+            tint = TokenProvider.colors.textSubtle.copy(alpha = 0.6f),
+            modifier = Modifier.size(20.dp),
+        )
+    }
+}
 
 @Composable
 private fun ProfileCard(
@@ -885,109 +950,6 @@ internal fun SheetTextArea(
     )
 }
 
-// === Guest ================================================================
-
-@Composable
-private fun GuestSettingsScreen(
-    onBack: () -> Unit,
-    onJoin: () -> Unit,
-    onLogin: () -> Unit,
-    onContinueWithFacebook: () -> Unit,
-) {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(TokenProvider.colors.bgBase)
-                .verticalScroll(rememberScrollState())
-                .statusBarsPadding()
-                .navigationBarsPadding(),
-    ) {
-        Header(
-            properties =
-                HeaderProperties(
-                    title = stringResource(Res.string.settings_title),
-                    variant = HeaderProperties.Variant.Compact,
-                ),
-            onBackClick = onBack,
-        )
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = TokenProvider.spacings.horizontalSpacing,
-                        vertical = TokenProvider.spacings.sectionGap,
-                    ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = stringResource(Res.string.settings_guest_playroom_title),
-                style = TokenProvider.textStyles.headline.copy(fontWeight = FontWeight.ExtraBold),
-                color = TokenProvider.colors.text,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
-            Text(
-                text = stringResource(Res.string.settings_guest_playroom_body),
-                style = TokenProvider.textStyles.body,
-                color = TokenProvider.colors.textMuted,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.screenBottomSpacing))
-            Button(
-                properties = primaryButtonProperties(label = stringResource(Res.string.settings_join_playroom), enabled = true),
-                onClick = onJoin,
-            )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
-            Text(
-                text = stringResource(Res.string.settings_guest_existing_account),
-                modifier = Modifier.clickable(onClick = onLogin),
-                style = TokenProvider.textStyles.bodyStrong,
-                color = TokenProvider.colors.textAccent,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
-            PlayroomDivider()
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
-            PlayroomSocialButton(
-                label = stringResource(Res.string.settings_continue_google),
-                textColor = TokenProvider.colors.socialGoogle,
-                icon = Icons.Google,
-            )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapSm))
-            PlayroomSocialButton(
-                label = stringResource(Res.string.settings_continue_facebook),
-                textColor = TokenProvider.colors.socialFacebook,
-                icon = Icons.Facebook,
-                onClick = onContinueWithFacebook,
-            )
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(TokenProvider.borderRadius.md))
-                        .background(TokenProvider.colors.bgElevated)
-                        .padding(TokenProvider.spacings.md),
-                horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.sm),
-                verticalAlignment = Alignment.Top,
-            ) {
-                Icon(
-                    painter = painterResource(Icons.InfoCircle.icon),
-                    contentDescription = null,
-                    tint = TokenProvider.colors.textAccent,
-                    modifier = Modifier.size(20.dp),
-                )
-                Text(
-                    text = stringResource(Res.string.settings_guest_privacy),
-                    style = TokenProvider.textStyles.body.copy(fontSize = 12.sp, lineHeight = 18.sp),
-                    color = TokenProvider.colors.textMuted,
-                )
-            }
-        }
-    }
-}
 
 // === Rows =================================================================
 
