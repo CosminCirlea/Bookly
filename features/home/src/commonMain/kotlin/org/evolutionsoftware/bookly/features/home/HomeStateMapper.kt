@@ -14,18 +14,27 @@ internal class HomeStateMapper : StateMapper<HomeAction, HomeViewState> {
                 // Cache-first: keep showing already-loaded books instead of a spinner;
                 // only show the loading state when there is nothing to display yet.
                 currentState.copy(isLoading = currentState.allBooks.isEmpty(), error = null)
-            is HomeAction.BooksLoaded ->
+            is HomeAction.BooksLoaded -> {
+                val categories = action.books.toFilterOptions()
                 currentState.copy(
                     isLoading = false,
                     error = null,
                     allBooks = action.books,
+                    categories = categories,
+                    // A category that no longer exists after a refresh would filter
+                    // everything out, so fall back to showing all books.
+                    selectedCategory =
+                        currentState.selectedCategory.takeIf { it in categories } ?: BookCategory.All,
                     visibleBooks =
                         filterBooks(
                             books = action.books,
-                            category = currentState.selectedCategory,
+                            category =
+                                currentState.selectedCategory.takeIf { it in categories }
+                                    ?: BookCategory.All,
                             query = currentState.searchQuery,
                         ),
                 )
+            }
             is HomeAction.ProfileLoaded ->
                 currentState.copy(
                     profile = action.profile,
@@ -84,3 +93,12 @@ private fun filterBooks(
         val matchesQuery = query.isBlank() || book.title.contains(query.trim(), ignoreCase = true)
         matchesCategory && matchesQuery
     }
+
+/**
+ * Filter options present in the catalogue: All, followed by the categories the cached
+ * books actually belong to. Offering a category with nothing behind it would be a
+ * dead end.
+ */
+private fun List<BookSummary>.toFilterOptions(): List<BookCategory> =
+    listOf(BookCategory.All) +
+        map { it.category }.distinct().filterNot { it == BookCategory.All }

@@ -78,7 +78,7 @@ private fun ReaderScreenPreview() {
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun ReaderScreenLoadingPreview() {
+private fun ReaderSkeletonPreview() {
     BooklyTheme {
         ReaderScreenContent(
             state = previewStateLoading,
@@ -169,5 +169,13 @@ private fun ReaderEmptyStatePreview() {
                 unavailableMessage = "This book is not available offline",
             )
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Reader - shimmer skeleton")
+@Composable
+private fun ReaderSkeletonOnlyPreview() {
+    BooklyTheme {
+        ReaderSkeletonContent()
     }
 }

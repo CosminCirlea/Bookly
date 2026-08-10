@@ -52,17 +52,40 @@ internal class HomeIntentProcessor(
 
     private fun loadCatalog(refresh: CatalogRefresh): Flow<HomeAction> =
         flow {
-            emit(HomeAction.LoadingStarted)
+            // Serve whatever is on disk before touching the network. After the first
+            // successful load this means the books and their filter options are on
+            // screen immediately, with no loading state at all.
+            val cached =
+                try {
+                    getBooksUseCase(CatalogRefresh.CacheOnly)
+                } catch (e: Exception) {
+                    emptyList()
+                }
+
+            if (cached.isNotEmpty()) {
+                emit(HomeAction.BooksLoaded(cached))
+            } else {
+                emit(HomeAction.LoadingStarted)
+            }
+
+            // Then revalidate. The repository decides whether that costs a request.
             val books =
                 try {
                     getBooksUseCase(refresh)
                 } catch (e: Exception) {
-                    emit(HomeAction.LoadingFailed(e.message ?: "Failed to load books"))
-                    return@flow
+                    if (cached.isEmpty()) {
+                        emit(HomeAction.LoadingFailed(e.message ?: "Failed to load books"))
+                        return@flow
+                    }
+                    // A failed refresh must not disturb books already on screen.
+                    cached
                 }
-            // Cache-first: surface the books immediately; profile and favourites
-            // arrive afterwards without blocking the list.
-            emit(HomeAction.BooksLoaded(books))
+
+            // Only re-emit when the refresh actually changed something, so the grid
+            // does not recompose for an identical list.
+            if (books != cached) {
+                emit(HomeAction.BooksLoaded(books))
+            }
             val profile =
                 try {
                     getCurrentProfileUseCase()

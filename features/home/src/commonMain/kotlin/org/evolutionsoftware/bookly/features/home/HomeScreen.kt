@@ -142,6 +142,14 @@ private fun HomeScreen(
 ) {
     var showFilterSheet by remember { mutableStateOf(false) }
 
+    // The skeleton stands in for the whole screen rather than just the grid: with no
+    // books there are no categories either, so a real toolbar and filter row would
+    // render half-empty and then reflow once content arrives.
+    if (state.isLoading) {
+        HomeSkeleton()
+        return
+    }
+
     Column(
         modifier =
             Modifier
@@ -175,14 +183,6 @@ private fun HomeScreen(
 
         Box(modifier = Modifier.weight(1f)) {
             when {
-                state.isLoading -> {
-                    Feedback(
-                        properties = FeedbackProperties.Loading,
-                        title = stringResource(Res.string.home_loading_title),
-                        description = stringResource(Res.string.home_loading_body),
-                    )
-                }
-
                 state.error != null -> {
                     Feedback(
                         properties =
@@ -723,7 +723,7 @@ private fun FilterSheetItem(
 
 // === Book card ============================================================
 
-private val organicShapes: List<Shape> =
+internal val organicShapes: List<Shape> =
     listOf(
         RoundedCornerShape(topStart = 56.dp, topEnd = 100.dp, bottomStart = 44.dp, bottomEnd = 100.dp),
         RoundedCornerShape(topStart = 84.dp, topEnd = 28.dp, bottomStart = 48.dp, bottomEnd = 90.dp),
@@ -735,6 +735,9 @@ private fun organicShapeFor(bookId: String): Shape {
     val index = bookId.hashCode().let { if (it < 0) -it else it } % organicShapes.size
     return organicShapes[index]
 }
+
+/** Cover shape by position, so the skeleton varies the same way the real grid does. */
+internal fun skeletonCoverShape(index: Int): Shape = organicShapes[index % organicShapes.size]
 
 @Composable
 private fun PlayroomBookCard(

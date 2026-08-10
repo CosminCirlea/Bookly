@@ -17,12 +17,12 @@ internal data class HomeViewState(
     val selectedCategory: BookCategory = BookCategory.All,
     val searchQuery: String = "",
     val favoriteBookIds: Set<String> = emptySet(),
-) : ViewState {
-    val categories: List<BookCategory>
-        get() =
-            listOf(BookCategory.All) +
-                allBooks.map { it.category }.distinct().filterNot { it == BookCategory.All }
-}
+    /**
+     * Filter options for the cached catalogue. Held in state rather than derived on
+     * read, so they land with the books and are not recomputed on every recomposition.
+     */
+    val categories: List<BookCategory> = listOf(BookCategory.All),
+) : ViewState
 
 internal sealed interface HomeSideEffect : SideEffect {
     data class FavoriteToggled(val added: Boolean) : HomeSideEffect

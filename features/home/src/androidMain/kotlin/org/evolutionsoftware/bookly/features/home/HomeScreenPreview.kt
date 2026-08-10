@@ -58,6 +58,7 @@ private val previewStateWithContent =
         allBooks = previewBooks,
         visibleBooks = previewBooks,
         selectedCategory = BookCategory.All,
+        categories = listOf(BookCategory.All) + previewBooks.map { it.category }.distinct(),
         favoriteBookIds = setOf("forest-animals"),
     )
 
@@ -185,5 +186,13 @@ private fun HomeErrorStatePreview() {
         ) {
             HomeErrorContent(onRetry = {})
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Home - shimmer skeleton")
+@Composable
+private fun HomeSkeletonPreview() {
+    BooklyTheme {
+        HomeSkeleton()
     }
 }

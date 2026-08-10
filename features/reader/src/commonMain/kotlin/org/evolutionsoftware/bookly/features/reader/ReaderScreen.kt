@@ -1,8 +1,8 @@
 package org.evolutionsoftware.bookly.features.reader
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -190,13 +189,16 @@ private fun ReaderScreen(
             },
         )
 
-        if (state.isLoading || cards.isEmpty()) {
+        if (state.isLoading) {
+            // Shimmering the real page layout, rather than a spinner, so the book
+            // appears in place instead of replacing a centred graphic.
+            ReaderSkeleton(modifier = Modifier.weight(1f))
+        } else if (cards.isEmpty()) {
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center,
             ) {
                 ReaderEmptyState(
-                    isLoading = state.isLoading,
                     title = state.book?.title ?: openingBook,
                     unavailableMessage = unavailableMessage,
                 )
@@ -460,27 +462,42 @@ private fun ReaderProgressIndicator(
     modifier: Modifier = Modifier,
     onDotSelected: ((Int) -> Unit)? = null,
 ) {
-    // Long books overflow the available width, so the dots scroll and keep the
-    // current page visible instead of sliding under the action button.
-    val scrollState = rememberScrollState()
-    LaunchedEffect(current, total) {
-        val target = scrollState.maxValue * current / (total - 1).coerceAtLeast(1)
-        scrollState.animateScrollTo(target)
-    }
+    if (total <= 0) return
+
+    // A window of at most MAX_VISIBLE_DOTS slides to keep the current page centred, so
+    // a twenty-page book reads the same as a five-page one. The outermost dot on a side
+    // that still has pages beyond it tapers down, hinting there is more in that
+    // direction without spelling out how much.
+    val windowStart = (current - MAX_VISIBLE_DOTS / 2).coerceIn(0, maxOf(0, total - MAX_VISIBLE_DOTS))
+    val windowEnd = minOf(total, windowStart + MAX_VISIBLE_DOTS)
 
     Row(
-        modifier = modifier.horizontalScroll(scrollState),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xs, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        repeat(total) { index ->
+        for (index in windowStart until windowEnd) {
             val isActive = index == current
+            val isTapered =
+                (index == windowStart && windowStart > 0) ||
+                    (index == windowEnd - 1 && windowEnd < total)
+
+            // Animated so paging glides the window rather than snapping it.
+            val diameter by animateDpAsState(
+                targetValue = if (isTapered) DOT_SIZE_EDGE else DOT_SIZE,
+                label = "readerDotDiameter",
+            )
+            val width by animateDpAsState(
+                targetValue = if (isActive) DOT_WIDTH_ACTIVE else diameter,
+                label = "readerDotWidth",
+            )
             val interactionSource = remember { MutableInteractionSource() }
+
             Box(
                 modifier =
                     Modifier
-                        .height(10.dp)
-                        .width(if (isActive) 24.dp else 10.dp)
+                        .height(diameter)
+                        .width(width)
                         .clip(CircleShape)
                         .background(
                             if (isActive) {
@@ -503,6 +520,14 @@ private fun ReaderProgressIndicator(
         }
     }
 }
+
+/** Instagram-style indicator: a fixed-width window regardless of page count. */
+private const val MAX_VISIBLE_DOTS = 5
+private val DOT_SIZE = 10.dp
+
+/** Outermost dot when more pages lie beyond it. */
+private val DOT_SIZE_EDGE = 6.dp
+private val DOT_WIDTH_ACTIVE = 24.dp
 
 @Composable
 private fun ReaderTopBar(
@@ -621,13 +646,12 @@ private fun ReaderActionButton(
 
 @Composable
 private fun ReaderEmptyState(
-    isLoading: Boolean,
     title: String,
     unavailableMessage: String,
     modifier: Modifier = Modifier,
 ) {
     Feedback(
-        properties = if (isLoading) FeedbackProperties.Loading else FeedbackProperties.Empty(),
+        properties = FeedbackProperties.Empty(),
         title = title,
         description = unavailableMessage,
         modifier = modifier.widthIn(max = 420.dp),
@@ -694,15 +718,19 @@ internal fun ReaderTopBarContent(
 
 @Composable
 internal fun ReaderEmptyStateContent(
-    isLoading: Boolean = true,
     title: String,
     unavailableMessage: String,
     modifier: Modifier = Modifier,
 ) {
     ReaderEmptyState(
-        isLoading = isLoading,
         title = title,
         unavailableMessage = unavailableMessage,
         modifier = modifier,
     )
+}
+
+/** Preview seam for the loading skeleton. */
+@Composable
+internal fun ReaderSkeletonContent(modifier: Modifier = Modifier) {
+    ReaderSkeleton(modifier = modifier)
 }
