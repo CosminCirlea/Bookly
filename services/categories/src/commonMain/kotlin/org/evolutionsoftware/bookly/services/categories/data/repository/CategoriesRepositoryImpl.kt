@@ -11,6 +11,14 @@ class CategoriesRepositoryImpl(
 ) : CategoriesRepository {
 
     override suspend fun getCategories(languageId: Int): List<Category> = withExceptionWrapping {
-        api.getCategories(languageId).data.map { it.toDomain(languageId) }
+        api
+            .getCategories(languageId)
+            .data
+            .asSequence()
+            .filter { it.status }
+            .map { it.toDomain(languageId) }
+            .filter { it.name.isNotBlank() }
+            .sortedBy { it.name }
+            .toList()
     }
 }

@@ -2,24 +2,21 @@ package org.evolutionsoftware.bookly.services.profiles.data.repository
 
 import org.evolutionsoftware.bookly.services.profiles.data.error.withExceptionWrapping
 import org.evolutionsoftware.bookly.core.network.AuthTokenStore
-import org.evolutionsoftware.bookly.core.network.UserSession
 import org.evolutionsoftware.bookly.core.network.UserSessionStore
-import org.evolutionsoftware.bookly.services.profiles.data.api.ProfilesAPI
+import org.evolutionsoftware.bookly.services.profiles.data.api.ProfilesRemoteDataSource
 import org.evolutionsoftware.bookly.services.profiles.data.mapper.toDomain
 import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 import org.evolutionsoftware.bookly.services.profiles.domain.repository.ProfileRepository
 
 class ProfileRepositoryImpl(
-    private val api: ProfilesAPI,
+    private val api: ProfilesRemoteDataSource,
     private val authTokenStore: AuthTokenStore,
     private val userSessionStore: UserSessionStore,
 ) : ProfileRepository {
 
     override suspend fun getCurrentProfile(): ParentProfile? {
         val session = userSessionStore.read() ?: return null
-        return runCatching { fetchProfile(session.userId) }
-            .getOrNull()
-            ?: session.toDomain()
+        return fetchProfile(session.userId)
     }
 
     override suspend fun login(displayName: String): ParentProfile {
@@ -51,7 +48,4 @@ class ProfileRepositoryImpl(
     private suspend fun fetchProfile(userId: String): ParentProfile? = withExceptionWrapping {
         api.getProfilesByUserId(userId).firstOrNull()?.toDomain()
     }
-
-    private fun UserSession.toDomain(): ParentProfile =
-        ParentProfile(id = userId, displayName = displayName)
 }

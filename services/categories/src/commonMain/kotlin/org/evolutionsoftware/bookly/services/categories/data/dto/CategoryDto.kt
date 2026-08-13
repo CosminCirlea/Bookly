@@ -18,7 +18,13 @@ data class CategoryTranslationDto(
     val id: Int,
     val name: String,
     @SerialName("language_id")
-    val languageId: Int,
+    val languageId: Int? = null,
+    val language: CategoryLanguageDto? = null,
+)
+
+@Serializable
+data class CategoryLanguageDto(
+    val id: Int,
 )
 
 @Serializable

@@ -91,6 +91,7 @@ import org.evolutionsoftware.bookly.design.components.properties.IconButtonPrope
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCategory
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookSummary
+import org.evolutionsoftware.bookly.services.categories.domain.model.Category
 import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
@@ -176,7 +177,7 @@ private fun HomeScreen(
 
         HomeFilterRow(
             categories = state.categories,
-            selectedCategory = state.selectedCategory,
+            selectedCategoryId = state.selectedCategoryId,
             onCategorySelected = { onIntent(HomeIntent.FilterSelected(it)) },
             onOpenFilterSheet = { showFilterSheet = true },
         )
@@ -224,6 +225,7 @@ private fun HomeScreen(
                             PlayroomBookCard(
                                 book = book,
                                 isFavorite = book.id in state.favoriteBookIds,
+                                showFavorite = state.profile != null,
                                 onToggleFavorite = {
                                     onIntent(
                                         HomeIntent.FavoriteToggled(
@@ -244,12 +246,12 @@ private fun HomeScreen(
     HomeFilterSheet(
         visible = showFilterSheet,
         categories = state.categories,
-        selectedCategory = state.selectedCategory,
+        selectedCategoryId = state.selectedCategoryId,
         onCategorySelected = {
             onIntent(HomeIntent.FilterSelected(it))
             showFilterSheet = false
         },
-        onReset = { onIntent(HomeIntent.FilterSelected(BookCategory.All)) },
+        onReset = { onIntent(HomeIntent.FilterSelected(null)) },
         onDismiss = { showFilterSheet = false },
     )
 }
@@ -398,6 +400,31 @@ private data class CategoryStyle(
     val accent: Color,
 )
 
+private data class CategoryFilterOption(
+    val id: String?,
+    val label: String,
+    val imageUrl: String?,
+    val style: BookCategory,
+)
+
+private fun List<Category>.toFilterOptions(): List<CategoryFilterOption> =
+    listOf(
+        CategoryFilterOption(
+            id = null,
+            label = BookCategory.All.label,
+            imageUrl = null,
+            style = BookCategory.All,
+        ),
+    ) +
+        map { category ->
+            CategoryFilterOption(
+                id = category.id,
+                label = category.name,
+                imageUrl = category.imageUrl,
+                style = BookCategory.fromName(category.name),
+            )
+        }
+
 private fun categoryStyle(category: BookCategory): CategoryStyle =
     when (category) {
         BookCategory.All -> CategoryStyle(Icons.CategoryAll, null, Color(0xFFFFE0B2), Color(0xFF874E00))
@@ -414,11 +441,12 @@ private fun categoryStyle(category: BookCategory): CategoryStyle =
 
 @Composable
 private fun HomeFilterRow(
-    categories: List<BookCategory>,
-    selectedCategory: BookCategory,
-    onCategorySelected: (BookCategory) -> Unit,
+    categories: List<Category>,
+    selectedCategoryId: String?,
+    onCategorySelected: (String?) -> Unit,
     onOpenFilterSheet: () -> Unit,
 ) {
+    val filters = categories.toFilterOptions()
     LazyRow(
         modifier =
             Modifier
@@ -432,7 +460,7 @@ private fun HomeFilterRow(
                 label = stringResource(Res.string.home_filters_label),
                 isActive = false,
                 tileColor = TokenProvider.colors.text,
-                showBadge = selectedCategory != BookCategory.All,
+                showBadge = selectedCategoryId != null,
                 onClick = onOpenFilterSheet,
             ) {
                 Icon(
@@ -443,18 +471,28 @@ private fun HomeFilterRow(
                 )
             }
         }
-        lazyItems(categories, key = { it.name }) { category ->
-            val style = categoryStyle(category)
-            val active = category == selectedCategory
+        lazyItems(filters, key = { it.id ?: "all" }) { category ->
+            val style = categoryStyle(category.style)
+            val active = category.id == selectedCategoryId
             // Muted until selected, then the tile tints and the glyph takes its accent.
             val glyphTint = if (active) style.accent else TokenProvider.colors.textSubtle
             FilterTile(
                 label = category.label,
                 isActive = active,
                 tileColor = if (active) style.tileColor else TokenProvider.colors.bgElevated,
-                onClick = { onCategorySelected(category) },
+                onClick = { onCategorySelected(category.id) },
             ) {
-                if (style.icon != null) {
+                if (!category.imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = category.imageUrl,
+                        contentDescription = null,
+                        modifier =
+                            Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(TokenProvider.borderRadius.sm)),
+                        contentScale = ContentScale.Crop,
+                    )
+                } else if (style.icon != null) {
                     Icon(
                         painter = painterResource(style.icon.icon),
                         contentDescription = null,
@@ -563,12 +601,13 @@ private fun FilterTile(
 @Composable
 private fun HomeFilterSheet(
     visible: Boolean,
-    categories: List<BookCategory>,
-    selectedCategory: BookCategory,
-    onCategorySelected: (BookCategory) -> Unit,
+    categories: List<Category>,
+    selectedCategoryId: String?,
+    onCategorySelected: (String?) -> Unit,
     onReset: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val filters = categories.toFilterOptions()
     BooklySheet(visible = visible, onDismiss = onDismiss) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -595,7 +634,7 @@ private fun HomeFilterSheet(
             color = TokenProvider.colors.textMuted,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
-        categories.chunked(3).forEach { row ->
+        filters.chunked(3).forEach { row ->
             Row(
                 modifier =
                     Modifier
@@ -606,8 +645,8 @@ private fun HomeFilterSheet(
                 row.forEach { category ->
                     FilterSheetItem(
                         category = category,
-                        isActive = category == selectedCategory,
-                        onClick = { onCategorySelected(category) },
+                        isActive = category.id == selectedCategoryId,
+                        onClick = { onCategorySelected(category.id) },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -630,12 +669,12 @@ private fun HomeFilterSheet(
 
 @Composable
 private fun FilterSheetItem(
-    category: BookCategory,
+    category: CategoryFilterOption,
     isActive: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val style = categoryStyle(category)
+    val style = categoryStyle(category.style)
     Box(modifier = modifier) {
         Column(
             modifier =
@@ -670,7 +709,17 @@ private fun FilterSheetItem(
                 contentAlignment = Alignment.Center,
             ) {
                 // In the sheet every tile shows its full category colour, selected or not.
-                if (style.icon != null) {
+                if (!category.imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = category.imageUrl,
+                        contentDescription = null,
+                        modifier =
+                            Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(TokenProvider.borderRadius.sm)),
+                        contentScale = ContentScale.Crop,
+                    )
+                } else if (style.icon != null) {
                     Icon(
                         painter = painterResource(style.icon.icon),
                         contentDescription = null,
@@ -743,6 +792,7 @@ internal fun skeletonCoverShape(index: Int): Shape = organicShapes[index % organ
 private fun PlayroomBookCard(
     book: BookSummary,
     isFavorite: Boolean,
+    showFavorite: Boolean,
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit,
 ) {
@@ -821,14 +871,16 @@ private fun PlayroomBookCard(
             )
         }
 
-        FavoriteButton(
-            isFavorite = isFavorite,
-            onClick = onToggleFavorite,
-            modifier =
-                Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(TokenProvider.spacings.md),
-        )
+        if (showFavorite) {
+            FavoriteButton(
+                isFavorite = isFavorite,
+                onClick = onToggleFavorite,
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(TokenProvider.spacings.md),
+            )
+        }
     }
 }
 

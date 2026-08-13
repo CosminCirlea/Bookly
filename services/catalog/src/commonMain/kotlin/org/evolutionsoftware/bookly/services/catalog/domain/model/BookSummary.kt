@@ -7,4 +7,5 @@ data class BookSummary(
     val category: BookCategory,
     val emoji: String,
     val imageUrl: String? = null,
+    val categoryIds: Set<String> = emptySet(),
 )

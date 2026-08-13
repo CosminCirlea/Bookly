@@ -30,6 +30,7 @@ kotlin {
             implementation(projects.design)
             implementation(projects.components)
             implementation(projects.services.catalog)
+            implementation(projects.services.categories)
             implementation(projects.services.favorites)
             implementation(projects.services.profiles)
             implementation(libs.coil.compose)

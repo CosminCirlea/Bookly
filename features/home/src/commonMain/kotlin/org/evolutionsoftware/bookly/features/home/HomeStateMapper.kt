@@ -1,7 +1,6 @@
 package org.evolutionsoftware.bookly.features.home
 
 import org.evolutionsoftware.bookly.core.mvi.StateMapper
-import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCategory
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookSummary
 
 internal class HomeStateMapper : StateMapper<HomeAction, HomeViewState> {
@@ -15,22 +14,28 @@ internal class HomeStateMapper : StateMapper<HomeAction, HomeViewState> {
                 // only show the loading state when there is nothing to display yet.
                 currentState.copy(isLoading = currentState.allBooks.isEmpty(), error = null)
             is HomeAction.BooksLoaded -> {
-                val categories = action.books.toFilterOptions()
                 currentState.copy(
                     isLoading = false,
                     error = null,
                     allBooks = action.books,
-                    categories = categories,
-                    // A category that no longer exists after a refresh would filter
-                    // everything out, so fall back to showing all books.
-                    selectedCategory =
-                        currentState.selectedCategory.takeIf { it in categories } ?: BookCategory.All,
                     visibleBooks =
                         filterBooks(
                             books = action.books,
-                            category =
-                                currentState.selectedCategory.takeIf { it in categories }
-                                    ?: BookCategory.All,
+                            categoryId = currentState.selectedCategoryId,
+                            query = currentState.searchQuery,
+                        ),
+                )
+            }
+            is HomeAction.CategoriesLoaded -> {
+                val categoryIds = action.categories.map { it.id }.toSet()
+                val selectedCategoryId = currentState.selectedCategoryId?.takeIf { it in categoryIds }
+                currentState.copy(
+                    categories = action.categories,
+                    selectedCategoryId = selectedCategoryId,
+                    visibleBooks =
+                        filterBooks(
+                            books = currentState.allBooks,
+                            categoryId = selectedCategoryId,
                             query = currentState.searchQuery,
                         ),
                 )
@@ -49,11 +54,11 @@ internal class HomeStateMapper : StateMapper<HomeAction, HomeViewState> {
                 )
             is HomeAction.FilterChanged ->
                 currentState.copy(
-                    selectedCategory = action.category,
+                    selectedCategoryId = action.categoryId,
                     visibleBooks =
                         filterBooks(
                             books = currentState.allBooks,
-                            category = action.category,
+                            categoryId = action.categoryId,
                             query = currentState.searchQuery,
                         ),
                 )
@@ -63,7 +68,7 @@ internal class HomeStateMapper : StateMapper<HomeAction, HomeViewState> {
                     visibleBooks =
                         filterBooks(
                             books = currentState.allBooks,
-                            category = currentState.selectedCategory,
+                            categoryId = currentState.selectedCategoryId,
                             query = action.query,
                         ),
                 )
@@ -85,20 +90,11 @@ private fun Set<String>.update(
 
 private fun filterBooks(
     books: List<BookSummary>,
-    category: BookCategory,
+    categoryId: String?,
     query: String,
 ): List<BookSummary> =
     books.filter { book ->
-        val matchesCategory = category == BookCategory.All || book.category == category
+        val matchesCategory = categoryId == null || categoryId in book.categoryIds
         val matchesQuery = query.isBlank() || book.title.contains(query.trim(), ignoreCase = true)
         matchesCategory && matchesQuery
     }
-
-/**
- * Filter options present in the catalogue: All, followed by the categories the cached
- * books actually belong to. Offering a category with nothing behind it would be a
- * dead end.
- */
-private fun List<BookSummary>.toFilterOptions(): List<BookCategory> =
-    listOf(BookCategory.All) +
-        map { it.category }.distinct().filterNot { it == BookCategory.All }

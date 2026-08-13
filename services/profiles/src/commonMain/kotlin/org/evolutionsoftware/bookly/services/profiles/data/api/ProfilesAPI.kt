@@ -10,16 +10,30 @@ import io.ktor.client.request.setBody
 import org.evolutionsoftware.bookly.services.profiles.data.dto.ProfileDto
 import org.evolutionsoftware.bookly.services.profiles.data.error.requireSuccess
 
+interface ProfilesRemoteDataSource {
+    suspend fun getProfilesByUserId(userId: String): List<ProfileDto>
+
+    suspend fun createProfile(
+        name: String,
+        dateOfBirth: String,
+        gender: Boolean,
+    ): ProfileDto
+}
+
 class ProfilesAPI(
     private val httpClient: HttpClient,
-) {
-    suspend fun getProfilesByUserId(userId: String): List<ProfileDto> =
+) : ProfilesRemoteDataSource {
+    override suspend fun getProfilesByUserId(userId: String): List<ProfileDto> =
         httpClient
             .get("$PROFILES_USERS_PATH/$userId")
             .requireSuccess()
             .body()
 
-    suspend fun createProfile(name: String, dateOfBirth: String, gender: Boolean): ProfileDto =
+    override suspend fun createProfile(
+        name: String,
+        dateOfBirth: String,
+        gender: Boolean,
+    ): ProfileDto =
         httpClient
             .post(PROFILES_PATH) {
                 setBody(

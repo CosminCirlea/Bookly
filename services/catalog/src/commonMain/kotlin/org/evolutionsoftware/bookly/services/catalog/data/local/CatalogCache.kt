@@ -26,6 +26,7 @@ data class BookRow(
     val title: String,
     val description: String,
     val category: String,
+    val categoryIds: Set<String>,
     val emoji: String,
     val imageUrl: String?,
     val revision: String?,

@@ -7,6 +7,7 @@ import org.evolutionsoftware.bookly.core.mvi.IntentProcessor
 import org.evolutionsoftware.bookly.core.usecase.utils.Result
 import org.evolutionsoftware.bookly.services.catalog.domain.model.CatalogRefresh
 import org.evolutionsoftware.bookly.services.catalog.domain.usecase.GetBooksUseCase
+import org.evolutionsoftware.bookly.services.categories.domain.usecase.GetCategoriesUseCase
 import org.evolutionsoftware.bookly.services.favorites.domain.usecase.AddFavoriteUseCase
 import org.evolutionsoftware.bookly.services.favorites.domain.usecase.GetFavoritesUseCase
 import org.evolutionsoftware.bookly.services.favorites.domain.usecase.RemoveFavoriteUseCase
@@ -14,6 +15,7 @@ import org.evolutionsoftware.bookly.services.profiles.domain.usecase.GetCurrentP
 
 internal class HomeIntentProcessor(
     private val getBooksUseCase: GetBooksUseCase,
+    private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getCurrentProfileUseCase: GetCurrentProfileUseCase,
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val addFavoriteUseCase: AddFavoriteUseCase,
@@ -25,19 +27,23 @@ internal class HomeIntentProcessor(
 
             HomeIntent.Refresh -> loadCatalog(CatalogRefresh.Force)
 
-            is HomeIntent.FilterSelected -> flowOf(HomeAction.FilterChanged(intent.category))
+            is HomeIntent.FilterSelected -> flowOf(HomeAction.FilterChanged(intent.categoryId))
 
             is HomeIntent.SearchChanged -> flowOf(HomeAction.SearchChanged(intent.query))
 
             is HomeIntent.FavoriteToggled ->
                 flow {
-                    emit(HomeAction.FavoriteUpdated(intent.bookId, intent.makeFavorite))
                     val profile =
                         try {
                             getCurrentProfileUseCase()
                         } catch (e: Exception) {
                             null
-                        } ?: return@flow
+                        }
+                    if (profile == null) {
+                        emit(HomeAction.FavoriteUpdateReverted(intent.bookId, !intent.makeFavorite))
+                        return@flow
+                    }
+                    emit(HomeAction.FavoriteUpdated(intent.bookId, intent.makeFavorite))
                     val result =
                         if (intent.makeFavorite) {
                             addFavoriteUseCase(intent.bookId, profile.id)
@@ -66,6 +72,11 @@ internal class HomeIntentProcessor(
                 emit(HomeAction.BooksLoaded(cached))
             } else {
                 emit(HomeAction.LoadingStarted)
+            }
+
+            when (val categories = getCategoriesUseCase()) {
+                is Result.Success -> emit(HomeAction.CategoriesLoaded(categories.data))
+                is Result.Error -> Unit
             }
 
             // Then revalidate. The repository decides whether that costs a request.

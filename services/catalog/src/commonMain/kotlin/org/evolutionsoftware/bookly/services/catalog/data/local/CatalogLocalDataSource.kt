@@ -39,6 +39,7 @@ class CatalogLocalDataSource(
                         title = book.title,
                         description = book.description,
                         category = book.category,
+                        categoryIds = book.categoryIds.joinToString(CATEGORY_ID_SEPARATOR),
                         emoji = book.emoji,
                         imageUrl = book.imageUrl,
                         revision = book.revision,
@@ -80,6 +81,11 @@ class CatalogLocalDataSource(
             title = title,
             description = description,
             category = category,
+            categoryIds =
+                categoryIds
+                    .split(CATEGORY_ID_SEPARATOR)
+                    .filter { it.isNotBlank() }
+                    .toSet(),
             emoji = emoji,
             imageUrl = imageUrl,
             revision = revision,
@@ -95,6 +101,7 @@ class CatalogLocalDataSource(
         )
 
     private companion object {
+        const val CATEGORY_ID_SEPARATOR = ","
         val logger = Logger.withTag("CatalogLocalDataSource")
     }
 }

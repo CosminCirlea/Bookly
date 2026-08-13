@@ -13,4 +13,4 @@ expect class DatabaseDriverFactory() {
  * migrations: a schema change bumps this name instead, and the next launch rebuilds
  * the cache from the network. Bump it whenever `BookEntity.sq` changes shape.
  */
-internal const val CATALOG_DATABASE_NAME = "catalog_v2.db"
+internal const val CATALOG_DATABASE_NAME = "catalog_v3.db"

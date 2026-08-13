@@ -7,6 +7,7 @@ CREATE TABLE BookEntity (
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     category TEXT NOT NULL,
+    categoryIds TEXT NOT NULL,
     emoji TEXT NOT NULL,
     imageUrl TEXT,
     -- Content revision reported by the list endpoint. Compared against the value
@@ -35,8 +36,8 @@ selectBookRevision:
 SELECT revision FROM BookEntity WHERE id = ?;
 
 insertBook:
-INSERT OR REPLACE INTO BookEntity(id, title, description, category, emoji, imageUrl, revision, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO BookEntity(id, title, description, category, categoryIds, emoji, imageUrl, revision, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteAllBooks:
 DELETE FROM BookEntity;

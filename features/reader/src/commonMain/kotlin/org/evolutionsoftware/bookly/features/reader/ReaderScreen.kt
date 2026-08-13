@@ -176,6 +176,7 @@ private fun ReaderScreen(
             title = state.book?.title.orEmpty(),
             closeAriaLabel = closeBookAria,
             onBack = onBack,
+            showFavorite = state.canFavorite,
             isFavorite = state.isFavorite,
             onFavoriteToggle = {
                 state.book?.let { book ->
@@ -534,6 +535,7 @@ private fun ReaderTopBar(
     title: String,
     closeAriaLabel: String,
     onBack: () -> Unit,
+    showFavorite: Boolean,
     isFavorite: Boolean,
     onFavoriteToggle: () -> Unit,
     modifier: Modifier = Modifier,
@@ -549,12 +551,17 @@ private fun ReaderTopBar(
                 leadingAriaLabel = closeAriaLabel,
             ),
         onLeadingClick = onBack,
-        trailingContent = {
-            ReaderFavoriteButton(
-                isFavorite = isFavorite,
-                onClick = onFavoriteToggle,
-            )
-        },
+        trailingContent =
+            if (showFavorite) {
+                {
+                    ReaderFavoriteButton(
+                        isFavorite = isFavorite,
+                        onClick = onFavoriteToggle,
+                    )
+                }
+            } else {
+                null
+            },
     )
 }
 
@@ -702,6 +709,7 @@ internal fun ReaderTopBarContent(
     title: String,
     closeAriaLabel: String,
     onBack: () -> Unit,
+    showFavorite: Boolean,
     isFavorite: Boolean,
     onFavoriteToggle: () -> Unit,
     modifier: Modifier = Modifier,
@@ -710,6 +718,7 @@ internal fun ReaderTopBarContent(
         title = title,
         closeAriaLabel = closeAriaLabel,
         onBack = onBack,
+        showFavorite = showFavorite,
         isFavorite = isFavorite,
         onFavoriteToggle = onFavoriteToggle,
         modifier = modifier,

@@ -9,6 +9,9 @@ import org.evolutionsoftware.bookly.services.catalog.domain.model.BookSummary
 import org.evolutionsoftware.bookly.services.catalog.domain.model.CatalogRefresh
 import org.evolutionsoftware.bookly.services.catalog.domain.repository.CatalogRepository
 import org.evolutionsoftware.bookly.services.catalog.domain.usecase.GetBooksUseCase
+import org.evolutionsoftware.bookly.services.categories.domain.model.Category
+import org.evolutionsoftware.bookly.services.categories.domain.usecase.GetCategoriesError
+import org.evolutionsoftware.bookly.services.categories.domain.usecase.GetCategoriesUseCase
 import org.evolutionsoftware.bookly.services.favorites.domain.model.Favorite
 import org.evolutionsoftware.bookly.services.favorites.domain.usecase.AddFavoriteUseCase
 import org.evolutionsoftware.bookly.services.favorites.domain.usecase.FavoritesError
@@ -35,6 +38,24 @@ class HomeIntentProcessorTest {
                 "cached books must render immediately, with no loading state",
             )
             assertTrue(actions.first() is HomeAction.BooksLoaded)
+        }
+
+    @Test
+    fun `load emits filters from the categories API use case`() =
+        runTest {
+            val categories = listOf(Category(id = "10", name = "Animals"))
+            val processor =
+                processor(
+                    catalog = FakeCatalog(cached = emptyList(), remote = emptyList()),
+                    categories = StaticCategories(categories),
+                )
+
+            val actions = processor(HomeIntent.Load).toList()
+
+            assertEquals(
+                categories,
+                actions.filterIsInstance<HomeAction.CategoriesLoaded>().single().categories,
+            )
         }
 
     @Test
@@ -103,44 +124,73 @@ class HomeIntentProcessorTest {
             assertTrue(actions.any { it is HomeAction.LoadingFailed })
         }
 
-    // === Filter options ===================================================
-
     @Test
-    fun `filter options come from the cached books`() =
+    fun `favorite toggle is reverted when there is no active profile`() =
         runTest {
-            val cached =
-                listOf(
-                    book("1", BookCategory.Animals),
-                    book("2", BookCategory.Food),
-                    book("3", BookCategory.Animals),
-                )
-            val mapper = HomeStateMapper()
-            val state = mapper(HomeAction.BooksLoaded(cached), HomeViewState())
+            val processor = processor(FakeCatalog(cached = emptyList()))
+
+            val actions =
+                processor(
+                    HomeIntent.FavoriteToggled(
+                        bookId = "1",
+                        makeFavorite = true,
+                    ),
+                ).toList()
 
             assertEquals(
-                listOf(BookCategory.All, BookCategory.Animals, BookCategory.Food),
-                state.categories,
-                "options should be All plus each category present, without duplicates",
+                listOf(
+                    HomeAction.FavoriteUpdateReverted(bookId = "1", isFavorite = false),
+                ),
+                actions,
             )
         }
 
+    // === Filter options ===================================================
+
     @Test
-    fun `a selected category that disappears falls back to All`() =
+    fun `filter options come from the categories API`() =
+        runTest {
+            val categories =
+                listOf(
+                    Category(id = "10", name = "Animals"),
+                    Category(id = "20", name = "Food"),
+                )
+            val mapper = HomeStateMapper()
+            val state = mapper(HomeAction.CategoriesLoaded(categories), HomeViewState())
+
+            assertEquals(categories, state.categories)
+        }
+
+    @Test
+    fun `a selected API category that disappears falls back to all books`() =
         runTest {
             val mapper = HomeStateMapper()
+            val books =
+                listOf(
+                    book("1", BookCategory.Food, categoryId = "20"),
+                    book("2", BookCategory.Animals, categoryId = "10"),
+                )
+            val withBooks =
+                mapper(
+                    HomeAction.BooksLoaded(books),
+                    HomeViewState(selectedCategoryId = "20"),
+                )
             val withFood =
                 mapper(
-                    HomeAction.BooksLoaded(listOf(book("1", BookCategory.Food))),
-                    HomeViewState(selectedCategory = BookCategory.Food),
+                    HomeAction.CategoriesLoaded(listOf(Category(id = "20", name = "Food"))),
+                    withBooks,
                 )
-            assertEquals(BookCategory.Food, withFood.selectedCategory)
+            assertEquals("20", withFood.selectedCategoryId)
+            assertEquals(listOf("1"), withFood.visibleBooks.map { it.id })
 
-            // The refresh drops every Food book.
             val afterRefresh =
-                mapper(HomeAction.BooksLoaded(listOf(book("2", BookCategory.Animals))), withFood)
+                mapper(
+                    HomeAction.CategoriesLoaded(listOf(Category(id = "10", name = "Animals"))),
+                    withFood,
+                )
 
-            assertEquals(BookCategory.All, afterRefresh.selectedCategory)
-            assertEquals(1, afterRefresh.visibleBooks.size, "books must not be filtered away")
+            assertEquals(null, afterRefresh.selectedCategoryId)
+            assertEquals(books, afterRefresh.visibleBooks)
         }
 }
 
@@ -149,6 +199,7 @@ class HomeIntentProcessorTest {
 private fun book(
     id: String,
     category: BookCategory,
+    categoryId: String = category.name,
 ) = BookSummary(
     id = id,
     title = "Book $id",
@@ -156,16 +207,33 @@ private fun book(
     category = category,
     emoji = "",
     imageUrl = null,
+    categoryIds = setOf(categoryId),
 )
 
-private fun processor(catalog: CatalogRepository) =
+private fun processor(
+    catalog: CatalogRepository,
+    categories: GetCategoriesUseCase = NoCategories,
+) =
     HomeIntentProcessor(
         getBooksUseCase = GetBooksUseCase(catalog),
+        getCategoriesUseCase = categories,
         getCurrentProfileUseCase = GetCurrentProfileUseCase(NoProfile),
         getFavoritesUseCase = NoFavorites,
         addFavoriteUseCase = NoAddFavorite,
         removeFavoriteUseCase = NoRemoveFavorite,
     )
+
+private object NoCategories : GetCategoriesUseCase {
+    override suspend fun invoke(languageId: Int): Result<List<Category>, GetCategoriesError> =
+        Result.Success(emptyList())
+}
+
+private class StaticCategories(
+    private val categories: List<Category>,
+) : GetCategoriesUseCase {
+    override suspend fun invoke(languageId: Int): Result<List<Category>, GetCategoriesError> =
+        Result.Success(categories)
+}
 
 private class FakeCatalog(
     private val cached: List<BookSummary>,

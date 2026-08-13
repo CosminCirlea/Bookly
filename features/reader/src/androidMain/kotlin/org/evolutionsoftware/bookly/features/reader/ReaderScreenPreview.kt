@@ -48,6 +48,7 @@ private val previewStateWithContent =
         book = previewBook,
         currentPage = 0,
         isAutoplayEnabled = false,
+        canFavorite = true,
     )
 
 private val previewStateLoading =
@@ -62,6 +63,7 @@ private val previewStateAutoplay =
         book = previewBook,
         currentPage = 1,
         isAutoplayEnabled = true,
+        canFavorite = true,
     )
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -147,6 +149,7 @@ private fun ReaderTopBarPreview() {
                 title = "Forest Animals",
                 closeAriaLabel = "Close",
                 onBack = {},
+                showFavorite = true,
                 isFavorite = true,
                 onFavoriteToggle = {},
             )

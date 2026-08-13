@@ -32,6 +32,7 @@ internal class ReaderIntentProcessor(
                             } catch (e: Exception) {
                                 null
                             }
+                        emit(ReaderAction.FavoriteAvailabilityLoaded(canFavorite = profile != null))
                         if (profile != null) {
                             when (val favorites = getFavoritesUseCase(profile.id)) {
                                 is Result.Success ->
@@ -56,13 +57,17 @@ internal class ReaderIntentProcessor(
                 }
             is ReaderIntent.FavoriteToggled ->
                 flow {
-                    emit(ReaderAction.FavoriteUpdated(intent.makeFavorite))
                     val profile =
                         try {
                             getCurrentProfileUseCase()
                         } catch (e: Exception) {
                             null
-                        } ?: return@flow
+                        }
+                    if (profile == null) {
+                        emit(ReaderAction.FavoriteUpdateReverted(!intent.makeFavorite))
+                        return@flow
+                    }
+                    emit(ReaderAction.FavoriteUpdated(intent.makeFavorite))
                     val result =
                         if (intent.makeFavorite) {
                             addFavoriteUseCase(intent.bookId, profile.id)

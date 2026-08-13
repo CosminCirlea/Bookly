@@ -11,6 +11,7 @@ internal data class ReaderViewState(
     val book: BookDetails? = null,
     val currentPage: Int = 0,
     val isAutoplayEnabled: Boolean = false,
+    val canFavorite: Boolean = false,
     val isFavorite: Boolean = false,
 ) : ViewState
 
@@ -50,6 +51,8 @@ internal sealed interface ReaderAction : UserIntentAction {
     data class AutoplayUpdated(val isEnabled: Boolean) : ReaderAction
 
     data class CurrentPageUpdated(val page: Int) : ReaderAction
+
+    data class FavoriteAvailabilityLoaded(val canFavorite: Boolean) : ReaderAction
 
     data class FavoriteStatusLoaded(val isFavorite: Boolean) : ReaderAction
 

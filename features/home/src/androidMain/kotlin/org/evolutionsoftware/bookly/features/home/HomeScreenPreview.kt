@@ -10,6 +10,7 @@ import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.evolutionsoftware.bookly.design.theme.bookly.BooklyTheme
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCategory
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookSummary
+import org.evolutionsoftware.bookly.services.categories.domain.model.Category
 import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 
 private val previewBooks =
@@ -20,6 +21,7 @@ private val previewBooks =
             description = "Learn about animals in the forest",
             category = BookCategory.Animals,
             emoji = "🦊",
+            categoryIds = setOf("1"),
         ),
         BookSummary(
             id = "birds",
@@ -27,6 +29,7 @@ private val previewBooks =
             description = "Discover different birds",
             category = BookCategory.Animals,
             emoji = "🐦",
+            categoryIds = setOf("1"),
         ),
         BookSummary(
             id = "garden-veggies",
@@ -34,6 +37,7 @@ private val previewBooks =
             description = "Explore vegetables in the garden",
             category = BookCategory.Plants,
             emoji = "🥕",
+            categoryIds = setOf("2"),
         ),
         BookSummary(
             id = "bugs-insects",
@@ -41,6 +45,7 @@ private val previewBooks =
             description = "Meet tiny creatures",
             category = BookCategory.Animals,
             emoji = "🐛",
+            categoryIds = setOf("1"),
         ),
     )
 
@@ -57,8 +62,12 @@ private val previewStateWithContent =
         profile = previewProfile,
         allBooks = previewBooks,
         visibleBooks = previewBooks,
-        selectedCategory = BookCategory.All,
-        categories = listOf(BookCategory.All) + previewBooks.map { it.category }.distinct(),
+        selectedCategoryId = null,
+        categories =
+            listOf(
+                Category(id = "1", name = "Animals"),
+                Category(id = "2", name = "Plants"),
+            ),
         favoriteBookIds = setOf("forest-animals"),
     )
 
@@ -69,7 +78,7 @@ private val previewStateLoading =
         profile = null,
         allBooks = emptyList(),
         visibleBooks = emptyList(),
-        selectedCategory = BookCategory.All,
+        selectedCategoryId = null,
     )
 
 private val previewStateEmpty =
@@ -79,7 +88,7 @@ private val previewStateEmpty =
         profile = previewProfile,
         allBooks = emptyList(),
         visibleBooks = emptyList(),
-        selectedCategory = BookCategory.All,
+        selectedCategoryId = null,
     )
 
 private val previewStateError =
@@ -89,7 +98,7 @@ private val previewStateError =
         profile = null,
         allBooks = emptyList(),
         visibleBooks = emptyList(),
-        selectedCategory = BookCategory.All,
+        selectedCategoryId = null,
     )
 
 @Preview(showBackground = true, showSystemUi = true)

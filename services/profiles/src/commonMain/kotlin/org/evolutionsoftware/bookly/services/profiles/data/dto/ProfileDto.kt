@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class ProfileDto(
     val id: Int,
     @SerialName("user_id")
-    val userId: String,
+    val userId: String? = null,
     val name: String,
     @SerialName("date_of_birth")
     val dateOfBirth: String? = null,

@@ -14,14 +14,24 @@ internal fun BookListItemDto.toSummary(languageId: Int = DEFAULT_LANGUAGE_ID): B
         bookTranslations
             .firstOrNull { it.languageId == languageId }
             ?: bookTranslations.firstOrNull()
+    val categories = bookCategories.mapNotNull { it.category }
+    val categoryName =
+        categories
+            .firstOrNull()
+            ?.translations
+            ?.let { translations ->
+                translations.firstOrNull { (it.languageId ?: it.language?.id) == languageId }
+                    ?: translations.firstOrNull()
+            }?.name
 
     return BookSummary(
         id = id.toString(),
         title = translation?.title ?: "",
         description = translation?.description ?: "",
-        category = BookCategory.All,
+        category = BookCategory.fromName(categoryName),
         emoji = "",
         imageUrl = photoUrl,
+        categoryIds = categories.map { it.id.toString() }.toSet(),
     )
 }
 
@@ -37,6 +47,7 @@ internal fun BookListItemDto.toRow(languageId: Int = DEFAULT_LANGUAGE_ID): BookR
         title = summary.title,
         description = summary.description,
         category = summary.category.name,
+        categoryIds = summary.categoryIds,
         emoji = summary.emoji,
         imageUrl = summary.imageUrl,
         revision = revision,

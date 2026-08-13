@@ -80,6 +80,12 @@ data class CategoryTranslationRefDto(
     val name: String,
     @SerialName("language_id")
     val languageId: Int? = null,
+    val language: CategoryLanguageRefDto? = null,
+)
+
+@Serializable
+data class CategoryLanguageRefDto(
+    val id: Int,
 )
 
 @Serializable

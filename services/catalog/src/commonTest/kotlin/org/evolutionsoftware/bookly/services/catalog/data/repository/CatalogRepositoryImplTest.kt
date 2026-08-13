@@ -2,12 +2,16 @@ package org.evolutionsoftware.bookly.services.catalog.data.repository
 
 import kotlinx.coroutines.test.runTest
 import org.evolutionsoftware.bookly.services.catalog.data.api.CatalogRemoteDataSource
+import org.evolutionsoftware.bookly.services.catalog.data.dto.BookCategoryDetailDto
+import org.evolutionsoftware.bookly.services.catalog.data.dto.BookCategoryItemDto
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookDetailDto
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookListItemDto
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookPageDto
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookPaginationDto
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookTranslationDto
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BooksPaginatedResponseDto
+import org.evolutionsoftware.bookly.services.catalog.data.dto.CategoryLanguageRefDto
+import org.evolutionsoftware.bookly.services.catalog.data.dto.CategoryTranslationRefDto
 import org.evolutionsoftware.bookly.services.catalog.data.local.BookDetailRow
 import org.evolutionsoftware.bookly.services.catalog.data.local.BookRow
 import org.evolutionsoftware.bookly.services.catalog.data.local.CatalogCache
@@ -93,6 +97,29 @@ class CatalogRepositoryImplTest {
 
             // Transport failures surface as the domain's error type, not the raw cause.
             assertFailsWith<CatalogServiceException> { repository.getBooks() }
+        }
+
+    @Test
+    fun `list preserves backend category IDs and translated style through cache`() =
+        runTest {
+            val remote =
+                FakeRemote(
+                    books =
+                        listOf(
+                            bookDto(
+                                id = 1,
+                                revision = 1,
+                                categoryId = 42,
+                                categoryName = "Animals",
+                            ),
+                        ),
+                )
+            val repository = CatalogRepositoryImpl(remote, InMemoryCache())
+
+            val book = repository.getBooks().single()
+
+            assertEquals(setOf("42"), book.categoryIds)
+            assertEquals("Animals", book.category.label)
         }
 
     // === Details: downloaded only when the revision changes ================
@@ -269,9 +296,32 @@ private class InMemoryCache(
 private fun bookDto(
     id: Int,
     revision: Int?,
+    categoryId: Int? = null,
+    categoryName: String? = null,
 ) = BookListItemDto(
     id = id,
     bookTranslations = listOf(BookTranslationDto(id = id, title = "Book $id", description = "d", languageId = 1)),
+    bookCategories =
+        if (categoryId != null && categoryName != null) {
+            listOf(
+                BookCategoryItemDto(
+                    category =
+                        BookCategoryDetailDto(
+                            id = categoryId,
+                            translations =
+                                listOf(
+                                    CategoryTranslationRefDto(
+                                        id = categoryId,
+                                        name = categoryName,
+                                        language = CategoryLanguageRefDto(id = 1),
+                                    ),
+                                ),
+                        ),
+                ),
+            )
+        } else {
+            emptyList()
+        },
     contentVersion = revision,
 )
 
@@ -290,6 +340,7 @@ private fun bookRow(
     title = "Book $id",
     description = "d",
     category = "All",
+    categoryIds = emptySet(),
     emoji = "",
     imageUrl = null,
     revision = revision,

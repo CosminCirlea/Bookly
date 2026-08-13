@@ -7,13 +7,13 @@ import org.evolutionsoftware.bookly.services.categories.domain.model.Category
 import org.evolutionsoftware.bookly.services.categories.domain.repository.CategoriesRepository
 
 interface GetCategoriesUseCase {
-    suspend operator fun invoke(): Result<List<Category>, GetCategoriesError>
+    suspend operator fun invoke(languageId: Int = 1): Result<List<Category>, GetCategoriesError>
 }
 
 class GetCategoriesUseCaseImpl(
     private val repository: CategoriesRepository,
 ) : GetCategoriesUseCase {
-    override suspend fun invoke(): Result<List<Category>, GetCategoriesError> =
+    override suspend fun invoke(languageId: Int): Result<List<Category>, GetCategoriesError> =
         withExceptionHandling(
             errorMapper = { exception ->
                 when (exception) {
@@ -24,7 +24,7 @@ class GetCategoriesUseCaseImpl(
                 }
             },
         ) {
-            repository.getCategories()
+            repository.getCategories(languageId)
         }
 }
 

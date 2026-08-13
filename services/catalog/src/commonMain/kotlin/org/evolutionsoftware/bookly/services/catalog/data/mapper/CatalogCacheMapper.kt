@@ -29,6 +29,7 @@ internal fun BookRow.toSummary(): BookSummary =
         title = title,
         description = description,
         category = category.toBookCategory(),
+        categoryIds = categoryIds,
         emoji = emoji,
         imageUrl = imageUrl,
     )
@@ -60,6 +61,7 @@ internal fun BookSummary.toRow(revision: String?): BookRow =
         title = title,
         description = description,
         category = category.name,
+        categoryIds = categoryIds,
         emoji = emoji,
         imageUrl = imageUrl,
         revision = revision,

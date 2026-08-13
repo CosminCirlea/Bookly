@@ -5,7 +5,7 @@ import org.evolutionsoftware.bookly.services.categories.domain.model.Category
 
 internal fun CategoryDto.toDomain(languageId: Int = DEFAULT_LANGUAGE_ID): Category {
     val name = translations
-        .firstOrNull { it.languageId == languageId }
+        .firstOrNull { (it.languageId ?: it.language?.id) == languageId }
         ?.name
         ?: translations.firstOrNull()?.name
         ?: ""
