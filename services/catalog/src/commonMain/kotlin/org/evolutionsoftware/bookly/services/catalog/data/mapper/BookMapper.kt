@@ -54,9 +54,9 @@ internal fun BookListItemDto.toRow(languageId: Int = DEFAULT_LANGUAGE_ID): BookR
     )
 }
 
-internal fun BookDetailDto.toDetails(): BookDetails =
+internal fun BookDetailDto.toDetails(bookId: String): BookDetails =
     BookDetails(
-        id = id.toString(),
+        id = bookId,
         title = title,
         category = BookCategory.All,
         cards = bookPages.sortedBy { it.pageNumber }.map { it.toCard() },

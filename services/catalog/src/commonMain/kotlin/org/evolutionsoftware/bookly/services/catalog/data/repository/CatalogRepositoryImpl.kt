@@ -116,7 +116,7 @@ class CatalogRepositoryImpl(
                 withExceptionWrapping {
                     remote.getBookDetails(bookId, DEFAULT_LANGUAGE_ID)
                         ?.firstOrNull()
-                        ?.toDetails()
+                        ?.toDetails(bookId)
                 }
             if (downloaded != null) {
                 cache.saveBookDetails(downloaded.toRow(advertisedRevision))

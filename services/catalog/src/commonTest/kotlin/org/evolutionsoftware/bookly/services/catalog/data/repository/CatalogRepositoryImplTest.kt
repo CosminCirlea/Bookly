@@ -142,6 +142,22 @@ class CatalogRepositoryImplTest {
         }
 
     @Test
+    fun `details are cached by book ID rather than translation ID`() =
+        runTest {
+            val cache = InMemoryCache(books = mutableListOf(bookRow(id = "10", revision = null)))
+            val remote = FakeRemote(details = listOf(detailDto(id = 999)))
+            val repository = CatalogRepositoryImpl(remote, cache)
+
+            val first = repository.getBookDetails("10")
+            val second = repository.getBookDetails("10")
+
+            assertEquals("10", first?.id)
+            assertEquals(first, second)
+            assertEquals(setOf("10"), cache.details.keys)
+            assertEquals(1, remote.detailRequests, "reopening the book must use the cached pages")
+        }
+
+    @Test
     fun `details are re-downloaded when the catalog reports a new revision`() =
         runTest {
             val cache = InMemoryCache(books = mutableListOf(bookRow(id = "1", revision = "7")))
