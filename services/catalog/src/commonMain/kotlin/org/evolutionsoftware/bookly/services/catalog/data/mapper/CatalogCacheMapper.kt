@@ -19,6 +19,7 @@ private data class BookCardPayload(
     val description: String,
     val emoji: String,
     val imageUrl: String?,
+    val imageLastUpdated: String? = null,
 )
 
 // === Cache -> domain ======================================================
@@ -32,13 +33,16 @@ internal fun BookRow.toSummary(): BookSummary =
         categoryIds = categoryIds,
         emoji = emoji,
         imageUrl = imageUrl,
+        lastUpdated = lastUpdated,
     )
 
-internal fun BookDetailRow.toDetails(): BookDetails =
-    BookDetails(
+internal fun BookDetailRow.toDetails(): BookDetails {
+    val detailLastUpdated = lastUpdated
+    return BookDetails(
         id = id,
         title = title,
         category = category.toBookCategory(),
+        lastUpdated = detailLastUpdated,
         cards =
             cacheJson
                 .decodeFromString<List<BookCardPayload>>(cardsJson)
@@ -49,13 +53,17 @@ internal fun BookDetailRow.toDetails(): BookDetails =
                         description = payload.description,
                         emoji = payload.emoji,
                         imageUrl = payload.imageUrl,
+                        imageLastUpdated =
+                            payload.imageLastUpdated
+                                ?: detailLastUpdated.takeIf { !payload.imageUrl.isNullOrBlank() },
                     )
                 },
     )
+}
 
 // === Domain -> cache ======================================================
 
-internal fun BookSummary.toRow(revision: String?): BookRow =
+internal fun BookSummary.toRow(): BookRow =
     BookRow(
         id = id,
         title = title,
@@ -64,10 +72,10 @@ internal fun BookSummary.toRow(revision: String?): BookRow =
         categoryIds = categoryIds,
         emoji = emoji,
         imageUrl = imageUrl,
-        revision = revision,
+        lastUpdated = lastUpdated,
     )
 
-internal fun BookDetails.toRow(revision: String?): BookDetailRow =
+internal fun BookDetails.toRow(): BookDetailRow =
     BookDetailRow(
         id = id,
         title = title,
@@ -81,10 +89,11 @@ internal fun BookDetails.toRow(revision: String?): BookDetailRow =
                         description = card.description,
                         emoji = card.emoji,
                         imageUrl = card.imageUrl,
+                        imageLastUpdated = card.imageLastUpdated,
                     )
                 },
             ),
-        revision = revision,
+        lastUpdated = lastUpdated,
     )
 
 private fun String.toBookCategory(): BookCategory =

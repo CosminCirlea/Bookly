@@ -42,8 +42,8 @@ class CatalogLocalDataSource(
                         categoryIds = book.categoryIds.joinToString(CATEGORY_ID_SEPARATOR),
                         emoji = book.emoji,
                         imageUrl = book.imageUrl,
-                        revision = book.revision,
-                        updatedAt = now,
+                        lastUpdated = book.lastUpdated,
+                        cachedAt = now,
                     )
                 }
                 // Keeps the cache from growing without bound as the catalog changes.
@@ -52,9 +52,9 @@ class CatalogLocalDataSource(
             logger.d("replaceBooks: cached ${books.size} books")
         }
 
-    override suspend fun getBookRevision(bookId: String): String? =
+    override suspend fun getBookLastUpdated(bookId: String): String? =
         withContext(Dispatchers.IO) {
-            queries.selectBookRevision(bookId).executeAsOneOrNull()?.revision
+            queries.selectBookLastUpdated(bookId).executeAsOneOrNull()?.lastUpdated
         }
 
     override suspend fun getBookDetails(bookId: String): BookDetailRow? =
@@ -69,10 +69,10 @@ class CatalogLocalDataSource(
                 title = details.title,
                 category = details.category,
                 cardsJson = details.cardsJson,
-                revision = details.revision,
-                updatedAt = Clock.System.now().toEpochMilliseconds(),
+                lastUpdated = details.lastUpdated,
+                cachedAt = Clock.System.now().toEpochMilliseconds(),
             )
-            logger.d("saveBookDetails: cached ${details.id} at revision ${details.revision}")
+            logger.d("saveBookDetails: cached ${details.id} at ${details.lastUpdated}")
         }
 
     private fun BookEntity.toRow(): BookRow =
@@ -88,7 +88,7 @@ class CatalogLocalDataSource(
                     .toSet(),
             emoji = emoji,
             imageUrl = imageUrl,
-            revision = revision,
+            lastUpdated = lastUpdated,
         )
 
     private fun BookDetailEntity.toRow(): BookDetailRow =
@@ -97,7 +97,7 @@ class CatalogLocalDataSource(
             title = title,
             category = category,
             cardsJson = cardsJson,
-            revision = revision,
+            lastUpdated = lastUpdated,
         )
 
     private companion object {

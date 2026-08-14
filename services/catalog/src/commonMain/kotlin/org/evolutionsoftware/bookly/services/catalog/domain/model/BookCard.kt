@@ -6,4 +6,5 @@ data class BookCard(
     val description: String,
     val emoji: String,
     val imageUrl: String? = null,
+    val imageLastUpdated: String? = null,
 )

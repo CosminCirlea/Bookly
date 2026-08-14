@@ -25,8 +25,8 @@ import org.evolutionsoftware.bookly.services.catalog.domain.repository.CatalogRe
  *
  * - **The list** is revalidated once per app session. Navigating around the app, or
  *   returning to the home screen, costs nothing.
- * - **A book's pages** are downloaded once and then served from disk forever, until
- *   the list reports a different content revision for that book. This is where the
+ * - **A book's pages** are downloaded once and then served from disk until the
+ *   backend reports a different last-updated value for that book. This is where the
  *   bulk of the payload lives, so it is the saving that matters most.
  */
 class CatalogRepositoryImpl(
@@ -89,8 +89,21 @@ class CatalogRepositoryImpl(
         refresh: CatalogRefresh,
     ): BookDetails? {
         val cached = cache.getBookDetails(bookId)
-        // The revision the catalog last advertised for this book.
-        val advertisedRevision = cache.getBookRevision(bookId)
+        val cachedCatalogLastUpdated = cache.getBookLastUpdated(bookId)
+        val latestLastUpdated =
+            if (refresh == CatalogRefresh.CacheOnly) {
+                cachedCatalogLastUpdated
+            } else {
+                try {
+                    remote.getBookLastUpdated(bookId) ?: cachedCatalogLastUpdated
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    logger.d("getBookDetails($bookId): last-updated check failed (${e.message})")
+                    if (cached != null) return cached.toDetails()
+                    cachedCatalogLastUpdated
+                }
+            }
 
         val shouldDownload =
             when (refresh) {
@@ -99,15 +112,15 @@ class CatalogRepositoryImpl(
                 CatalogRefresh.Automatic ->
                     when {
                         cached == null -> true
-                        // Backend reports no revision, so we have no basis to call the
+                        // Backend reports no timestamp, so we have no basis to call the
                         // cache stale. Keeping it costs no traffic, which is the point.
-                        advertisedRevision == null -> false
-                        else -> cached.revision != advertisedRevision
+                        latestLastUpdated == null -> false
+                        else -> cached.lastUpdated != latestLastUpdated
                     }
             }
 
         if (!shouldDownload) {
-            logger.d("getBookDetails($bookId): served from cache at revision ${cached?.revision}")
+            logger.d("getBookDetails($bookId): served from cache at ${cached?.lastUpdated}")
             return cached?.toDetails()
         }
 
@@ -116,11 +129,12 @@ class CatalogRepositoryImpl(
                 withExceptionWrapping {
                     remote.getBookDetails(bookId, DEFAULT_LANGUAGE_ID)
                         ?.firstOrNull()
-                        ?.toDetails(bookId)
+                        ?.toDetails(bookId, latestLastUpdated)
+                        ?.preservingCachedImages(cached?.toDetails())
                 }
             if (downloaded != null) {
-                cache.saveBookDetails(downloaded.toRow(advertisedRevision))
-                logger.d("getBookDetails($bookId): downloaded at revision $advertisedRevision")
+                cache.saveBookDetails(downloaded.toRow())
+                logger.d("getBookDetails($bookId): downloaded at $latestLastUpdated")
             }
             // A book missing upstream should not evict a copy the child can still read.
             downloaded ?: cached?.toDetails()
@@ -141,6 +155,28 @@ class CatalogRepositoryImpl(
             logger.d("cachedBooks: read failed (${e.message})")
             emptyList()
         }
+
+    private fun BookDetails.preservingCachedImages(cached: BookDetails?): BookDetails {
+        if (cached == null) return this
+        val cachedCards = cached.cards.associateBy { it.id }
+        return copy(
+            cards =
+                cards.map { card ->
+                    if (!card.imageUrl.isNullOrBlank()) {
+                        card
+                    } else {
+                        cachedCards[card.id]
+                            ?.takeIf { !it.imageUrl.isNullOrBlank() }
+                            ?.let { cachedCard ->
+                                card.copy(
+                                    imageUrl = cachedCard.imageUrl,
+                                    imageLastUpdated = cachedCard.imageLastUpdated,
+                                )
+                            } ?: card
+                    }
+                },
+        )
+    }
 
     private companion object {
         val logger = Logger.withTag("CatalogRepository")

@@ -15,7 +15,7 @@ enum class CatalogRefresh {
     /**
      * The default. Serves the cache and spends network only where it earns its keep:
      * the book list is revalidated once per app session, and a book's pages are
-     * re-downloaded only when the list reports a new content revision for it.
+     * re-downloaded only when the list reports a new last-updated value for it.
      */
     Automatic,
 

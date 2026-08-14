@@ -8,7 +8,23 @@ import org.evolutionsoftware.bookly.services.catalog.data.dto.BooksPaginatedResp
  * policy can be tested without a transport.
  */
 interface CatalogRemoteDataSource {
-    suspend fun getBooks(limit: Int = DEFAULT_PAGE_SIZE): BooksPaginatedResponseDto
+    suspend fun getBooks(
+        limit: Int = DEFAULT_PAGE_SIZE,
+        page: Int = 1,
+    ): BooksPaginatedResponseDto
+
+    suspend fun getBookLastUpdated(bookId: String): String? {
+        var page = 1
+        while (true) {
+            val response = getBooks(page = page)
+            response.data
+                .firstOrNull { it.id.toString() == bookId }
+                ?.let { return it.cacheLastUpdated }
+
+            if (page >= response.pagination.totalPages) return null
+            page++
+        }
+    }
 
     /** @return null when the book does not exist upstream. */
     suspend fun getBookDetails(

@@ -32,12 +32,13 @@ internal fun BookListItemDto.toSummary(languageId: Int = DEFAULT_LANGUAGE_ID): B
         emoji = "",
         imageUrl = photoUrl,
         categoryIds = categories.map { it.id.toString() }.toSet(),
+        lastUpdated = cacheLastUpdated,
     )
 }
 
 /**
  * Maps a catalog entry straight to the row that will be cached, carrying the
- * server's content revision so [org.evolutionsoftware.bookly.services.catalog.data.repository.CatalogRepositoryImpl]
+ * server's last-updated timestamp so [org.evolutionsoftware.bookly.services.catalog.data.repository.CatalogRepositoryImpl]
  * can later tell whether the book's pages need re-downloading.
  */
 internal fun BookListItemDto.toRow(languageId: Int = DEFAULT_LANGUAGE_ID): BookRow {
@@ -50,25 +51,30 @@ internal fun BookListItemDto.toRow(languageId: Int = DEFAULT_LANGUAGE_ID): BookR
         categoryIds = summary.categoryIds,
         emoji = summary.emoji,
         imageUrl = summary.imageUrl,
-        revision = revision,
+        lastUpdated = summary.lastUpdated,
     )
 }
 
-internal fun BookDetailDto.toDetails(bookId: String): BookDetails =
+internal fun BookDetailDto.toDetails(
+    bookId: String,
+    lastUpdated: String?,
+): BookDetails =
     BookDetails(
         id = bookId,
         title = title,
         category = BookCategory.All,
-        cards = bookPages.sortedBy { it.pageNumber }.map { it.toCard() },
+        cards = bookPages.sortedBy { it.pageNumber }.map { it.toCard(lastUpdated) },
+        lastUpdated = lastUpdated,
     )
 
-private fun BookPageDto.toCard(): BookCard =
+private fun BookPageDto.toCard(lastUpdated: String?): BookCard =
     BookCard(
         id = id.toString(),
         title = textContent,
         description = textContent,
         emoji = "",
         imageUrl = photoUrl,
+        imageLastUpdated = lastUpdated.takeIf { !photoUrl.isNullOrBlank() },
     )
 
 internal const val DEFAULT_LANGUAGE_ID = 1

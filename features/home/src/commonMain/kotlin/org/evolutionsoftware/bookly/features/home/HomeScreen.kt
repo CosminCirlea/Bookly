@@ -78,6 +78,7 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.collectLatest
 import org.evolutionsoftware.bookly.components.ui.BooklySheet
 import org.evolutionsoftware.bookly.components.ui.BooklyToastKind
+import org.evolutionsoftware.bookly.components.ui.versionedImageUrl
 import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.Feedback
@@ -823,9 +824,10 @@ private fun PlayroomBookCard(
                         .clip(organicShapeFor(book.id))
                         .background(TokenProvider.colors.bgElevated),
             ) {
-                if (!book.imageUrl.isNullOrBlank()) {
+                val imageUrl = book.imageUrl
+                if (!imageUrl.isNullOrBlank()) {
                     AsyncImage(
-                        model = book.imageUrl,
+                        model = versionedImageUrl(imageUrl, book.lastUpdated),
                         contentDescription = book.title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,

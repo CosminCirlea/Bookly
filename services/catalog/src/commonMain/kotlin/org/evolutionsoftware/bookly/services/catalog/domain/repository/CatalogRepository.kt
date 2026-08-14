@@ -17,7 +17,7 @@ interface CatalogRepository {
     /**
      * A book's pages. Under [CatalogRefresh.Automatic] these are downloaded once and
      * then served from disk indefinitely, until the catalog list reports a different
-     * content revision for the book.
+     * last-updated value for the book.
      *
      * @return null when the book exists in neither the cache nor the catalog.
      */

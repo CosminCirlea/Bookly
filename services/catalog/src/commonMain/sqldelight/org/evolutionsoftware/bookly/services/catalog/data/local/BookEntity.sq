@@ -10,10 +10,8 @@ CREATE TABLE BookEntity (
     categoryIds TEXT NOT NULL,
     emoji TEXT NOT NULL,
     imageUrl TEXT,
-    -- Content revision reported by the list endpoint. Compared against the value
-    -- stored on BookDetailEntity to decide whether cached pages are stale.
-    revision TEXT,
-    updatedAt INTEGER NOT NULL
+    lastUpdated TEXT,
+    cachedAt INTEGER NOT NULL
 );
 
 CREATE TABLE BookDetailEntity (
@@ -21,9 +19,8 @@ CREATE TABLE BookDetailEntity (
     title TEXT NOT NULL,
     category TEXT NOT NULL,
     cardsJson TEXT NOT NULL,
-    -- Revision these pages were downloaded at.
-    revision TEXT,
-    updatedAt INTEGER NOT NULL
+    lastUpdated TEXT,
+    cachedAt INTEGER NOT NULL
 );
 
 selectAllBooks:
@@ -32,11 +29,11 @@ SELECT * FROM BookEntity ORDER BY title;
 selectBookById:
 SELECT * FROM BookEntity WHERE id = ?;
 
-selectBookRevision:
-SELECT revision FROM BookEntity WHERE id = ?;
+selectBookLastUpdated:
+SELECT lastUpdated FROM BookEntity WHERE id = ?;
 
 insertBook:
-INSERT OR REPLACE INTO BookEntity(id, title, description, category, categoryIds, emoji, imageUrl, revision, updatedAt)
+INSERT OR REPLACE INTO BookEntity(id, title, description, category, categoryIds, emoji, imageUrl, lastUpdated, cachedAt)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteAllBooks:
@@ -49,7 +46,7 @@ selectBookDetailById:
 SELECT * FROM BookDetailEntity WHERE id = ?;
 
 insertBookDetail:
-INSERT OR REPLACE INTO BookDetailEntity(id, title, category, cardsJson, revision, updatedAt)
+INSERT OR REPLACE INTO BookDetailEntity(id, title, category, cardsJson, lastUpdated, cachedAt)
 VALUES (?, ?, ?, ?, ?, ?);
 
 deleteBookDetailById:

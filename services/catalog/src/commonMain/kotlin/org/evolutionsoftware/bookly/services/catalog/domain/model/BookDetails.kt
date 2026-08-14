@@ -5,4 +5,5 @@ data class BookDetails(
     val title: String,
     val category: BookCategory,
     val cards: List<BookCard>,
+    val lastUpdated: String? = null,
 )

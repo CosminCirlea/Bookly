@@ -12,8 +12,8 @@ interface CatalogCache {
     /** Replaces the cached catalog and drops detail rows for books that no longer exist. */
     suspend fun replaceBooks(books: List<BookRow>)
 
-    /** The content revision the catalog last reported for this book, if any. */
-    suspend fun getBookRevision(bookId: String): String?
+    /** The backend's last-updated value from the catalog list, if any. */
+    suspend fun getBookLastUpdated(bookId: String): String?
 
     suspend fun getBookDetails(bookId: String): BookDetailRow?
 
@@ -29,7 +29,7 @@ data class BookRow(
     val categoryIds: Set<String>,
     val emoji: String,
     val imageUrl: String?,
-    val revision: String?,
+    val lastUpdated: String?,
 )
 
 /** A cached book's pages, serialised. */
@@ -38,5 +38,5 @@ data class BookDetailRow(
     val title: String,
     val category: String,
     val cardsJson: String,
-    val revision: String?,
+    val lastUpdated: String?,
 )

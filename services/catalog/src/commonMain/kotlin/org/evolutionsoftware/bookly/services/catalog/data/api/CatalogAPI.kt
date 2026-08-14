@@ -12,9 +12,15 @@ import org.evolutionsoftware.bookly.services.catalog.data.error.requireSuccess
 class CatalogAPI(
     private val httpClient: HttpClient,
 ) : CatalogRemoteDataSource {
-    override suspend fun getBooks(limit: Int): BooksPaginatedResponseDto =
+    override suspend fun getBooks(
+        limit: Int,
+        page: Int,
+    ): BooksPaginatedResponseDto =
         httpClient
-            .get(BOOKS_PATH) { parameter("limit", limit) }
+            .get(BOOKS_PATH) {
+                parameter("limit", limit)
+                parameter("page", page)
+            }
             .requireSuccess()
             .body()
 

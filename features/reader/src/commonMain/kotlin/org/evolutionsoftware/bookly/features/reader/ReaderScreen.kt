@@ -62,6 +62,7 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import org.evolutionsoftware.bookly.components.ui.BooklyToastKind
+import org.evolutionsoftware.bookly.components.ui.versionedImageUrl
 import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.Feedback
 import org.evolutionsoftware.bookly.design.components.Header
@@ -322,6 +323,7 @@ private fun ReaderIllustrationCard(
     showAutoplayBadge: Boolean = false,
 ) {
     val shape = RoundedCornerShape(TokenProvider.borderRadius.xl)
+    val imageUrl = card.imageUrl
 
     Box(
         modifier =
@@ -336,9 +338,9 @@ private fun ReaderIllustrationCard(
         contentAlignment = Alignment.Center,
     ) {
         when {
-            !card.imageUrl.isNullOrBlank() -> {
+            !imageUrl.isNullOrBlank() -> {
                 AsyncImage(
-                    model = card.imageUrl,
+                    model = versionedImageUrl(imageUrl, card.imageLastUpdated),
                     contentDescription = card.title,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,

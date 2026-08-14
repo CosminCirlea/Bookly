@@ -1,6 +1,7 @@
 package org.evolutionsoftware.bookly.services.catalog.data.repository
 
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
 import org.evolutionsoftware.bookly.services.catalog.data.api.CatalogRemoteDataSource
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookCategoryDetailDto
 import org.evolutionsoftware.bookly.services.catalog.data.dto.BookCategoryItemDto
@@ -122,7 +123,40 @@ class CatalogRepositoryImplTest {
             assertEquals("Animals", book.category.label)
         }
 
-    // === Details: downloaded only when the revision changes ================
+    @Test
+    fun `list decodes and caches the backend last updated field`() =
+        runTest {
+            val response =
+                Json.decodeFromString<BooksPaginatedResponseDto>(
+                    """
+                    {
+                      "data": [
+                        {
+                          "id": 1,
+                          "last_updated": "2026-08-14T10:15:30.000Z",
+                          "bookCategories": [],
+                          "bookTranslations": []
+                        }
+                      ],
+                      "pagination": {"total": 1, "page": 1, "limit": 20, "totalPages": 1}
+                    }
+                    """.trimIndent(),
+                )
+            val repository = CatalogRepositoryImpl(FakeRemote(books = response.data), InMemoryCache())
+
+            assertEquals("2026-08-14T10:15:30.000Z", repository.getBooks().single().lastUpdated)
+        }
+
+    @Test
+    fun `freshness lookup searches every catalog page`() =
+        runTest {
+            val remote = FakeRemote(books = (1..101).map { bookDto(id = it, revision = it) })
+
+            assertEquals("101", remote.getBookLastUpdated("101"))
+            assertEquals(2, remote.bookRequests)
+        }
+
+    // === Details: downloaded only when last_updated changes =================
 
     @Test
     fun `details are downloaded the first time and then served from cache`() =
@@ -158,24 +192,135 @@ class CatalogRepositoryImplTest {
         }
 
     @Test
-    fun `details are re-downloaded when the catalog reports a new revision`() =
+    fun `details are re-downloaded when the API reports a new last update`() =
         runTest {
-            val cache = InMemoryCache(books = mutableListOf(bookRow(id = "1", revision = "7")))
-            val remote = FakeRemote(details = listOf(detailDto(id = 1)))
+            val cache =
+                InMemoryCache(
+                    books = mutableListOf(bookRow(id = "1", revision = "2026-08-13T10:00:00Z")),
+                    details =
+                        mutableMapOf(
+                            "1" to detailRow(id = "1", revision = "2026-08-13T10:00:00Z"),
+                        ),
+                )
+            val remote =
+                FakeRemote(
+                    books =
+                        listOf(
+                            bookDto(
+                                id = 1,
+                                revision = null,
+                                lastUpdated = "2026-08-14T10:00:00Z",
+                            ),
+                        ),
+                    details = listOf(detailDto(id = 1)),
+                )
             val repository = CatalogRepositoryImpl(remote, cache)
 
-            repository.getBookDetails("1")
-            assertEquals(1, remote.detailRequests)
+            val details = repository.getBookDetails("1")
 
-            // The server publishes new content for this book.
-            cache.books[0] = cache.books[0].copy(revision = "8")
-            repository.getBookDetails("1")
-
-            assertEquals(2, remote.detailRequests, "a new revision must invalidate the cached pages")
+            assertEquals("2026-08-14T10:00:00Z", details?.lastUpdated)
+            assertEquals(1, remote.detailRequests, "a new last update must invalidate the cached pages")
+            assertEquals("2026-08-14T10:00:00Z", cache.details["1"]?.lastUpdated)
         }
 
     @Test
-    fun `details are kept when the catalog advertises no revision`() =
+    fun `unchanged API last update serves cached details`() =
+        runTest {
+            val timestamp = "2026-08-14T10:00:00Z"
+            val cache =
+                InMemoryCache(
+                    books = mutableListOf(bookRow(id = "1", revision = timestamp)),
+                    details = mutableMapOf("1" to detailRow(id = "1", revision = timestamp)),
+                )
+            val remote =
+                FakeRemote(
+                    books = listOf(bookDto(id = 1, revision = null, lastUpdated = timestamp)),
+                    details = listOf(detailDto(id = 1)),
+                )
+            val repository = CatalogRepositoryImpl(remote, cache)
+
+            val details = repository.getBookDetails("1")
+
+            assertEquals("Cached", details?.title)
+            assertEquals(0, remote.detailRequests)
+        }
+
+    @Test
+    fun `partial refresh preserves cached page images and their cache versions`() =
+        runTest {
+            val oldTimestamp = "2026-08-13T10:00:00Z"
+            val newTimestamp = "2026-08-14T10:00:00Z"
+            val cachedCards =
+                """
+                [
+                  {
+                    "id":"41",
+                    "title":"Cat",
+                    "description":"Cat",
+                    "emoji":"",
+                    "imageUrl":"https://cdn.example/cat.png"
+                  }
+                ]
+                """.trimIndent()
+            val cache =
+                InMemoryCache(
+                    books = mutableListOf(bookRow(id = "10", revision = oldTimestamp)),
+                    details =
+                        mutableMapOf(
+                            "10" to
+                                detailRow(
+                                    id = "10",
+                                    revision = oldTimestamp,
+                                    cardsJson = cachedCards,
+                                ),
+                        ),
+                )
+            val remote =
+                FakeRemote(
+                    books =
+                        listOf(
+                            bookDto(
+                                id = 10,
+                                revision = null,
+                                lastUpdated = newTimestamp,
+                            ),
+                        ),
+                    details =
+                        listOf(
+                            detailDto(
+                                id = 11,
+                                pages =
+                                    listOf(
+                                        BookPageDto(
+                                            id = 41,
+                                            pageNumber = 1,
+                                            textContent = "Cat",
+                                            photoUrl = null,
+                                        ),
+                                        BookPageDto(
+                                            id = 44,
+                                            pageNumber = 4,
+                                            textContent = "Duck",
+                                            photoUrl = "https://cdn.example/duck.png",
+                                        ),
+                                    ),
+                            ),
+                        ),
+                )
+            val repository = CatalogRepositoryImpl(remote, cache)
+
+            val refreshed = repository.getBookDetails("10")
+            val persisted = repository.getBookDetails("10", CatalogRefresh.CacheOnly)
+
+            assertEquals("https://cdn.example/cat.png", refreshed?.cards?.first()?.imageUrl)
+            assertEquals(oldTimestamp, refreshed?.cards?.first()?.imageLastUpdated)
+            assertEquals("https://cdn.example/duck.png", refreshed?.cards?.last()?.imageUrl)
+            assertEquals(newTimestamp, refreshed?.cards?.last()?.imageLastUpdated)
+            assertEquals(refreshed, persisted)
+        }
+
+    @Test
+    fun `details are kept when the catalog advertises no last update`() =
         runTest {
             val cache = InMemoryCache(books = mutableListOf(bookRow(id = "1", revision = null)))
             val remote = FakeRemote(details = listOf(detailDto(id = 1)))
@@ -187,25 +332,26 @@ class CatalogRepositoryImplTest {
             assertEquals(
                 1,
                 remote.detailRequests,
-                "without a revision there is no evidence of staleness, so no traffic should be spent",
+                "without a timestamp there is no evidence of staleness, so no traffic should be spent",
             )
         }
 
     @Test
-    fun `details fall back to cache when the download fails`() =
+    fun `details fall back to cache when the freshness check fails`() =
         runTest {
             val cache =
                 InMemoryCache(
                     books = mutableListOf(bookRow(id = "1", revision = "8")),
                     details = mutableMapOf("1" to detailRow(id = "1", revision = "7")),
                 )
-            val repository = CatalogRepositoryImpl(FakeRemote(failDetails = true), cache)
+            val remote = FakeRemote(failBooks = true, failDetails = true)
+            val repository = CatalogRepositoryImpl(remote, cache)
 
-            // Revision differs, so a download is attempted and fails.
             val details = repository.getBookDetails("1")
 
             assertNotNull(details, "a failed download must not take the book away from the child")
             assertEquals("Cached", details.title)
+            assertEquals(0, remote.detailRequests, "a failed freshness check should keep cached pages")
         }
 
     @Test
@@ -263,12 +409,23 @@ private class FakeRemote(
     var detailRequests = 0
         private set
 
-    override suspend fun getBooks(limit: Int): BooksPaginatedResponseDto {
+    override suspend fun getBooks(
+        limit: Int,
+        page: Int,
+    ): BooksPaginatedResponseDto {
         bookRequests++
         if (failBooks) error("network down")
+        val totalPages = maxOf(1, (books.size + limit - 1) / limit)
+        val pageBooks = books.drop((page - 1) * limit).take(limit)
         return BooksPaginatedResponseDto(
-            data = books,
-            pagination = BookPaginationDto(total = books.size, page = 1, limit = limit, totalPages = 1),
+            data = pageBooks,
+            pagination =
+                BookPaginationDto(
+                    total = books.size,
+                    page = page,
+                    limit = limit,
+                    totalPages = totalPages,
+                ),
         )
     }
 
@@ -297,8 +454,8 @@ private class InMemoryCache(
         details.keys.retainAll(ids)
     }
 
-    override suspend fun getBookRevision(bookId: String): String? =
-        books.firstOrNull { it.id == bookId }?.revision
+    override suspend fun getBookLastUpdated(bookId: String): String? =
+        books.firstOrNull { it.id == bookId }?.lastUpdated
 
     override suspend fun getBookDetails(bookId: String): BookDetailRow? = details[bookId]
 
@@ -312,6 +469,7 @@ private class InMemoryCache(
 private fun bookDto(
     id: Int,
     revision: Int?,
+    lastUpdated: String? = revision?.toString(),
     categoryId: Int? = null,
     categoryName: String? = null,
 ) = BookListItemDto(
@@ -338,14 +496,17 @@ private fun bookDto(
         } else {
             emptyList()
         },
-    contentVersion = revision,
+    lastUpdated = lastUpdated,
 )
 
-private fun detailDto(id: Int) =
+private fun detailDto(
+    id: Int,
+    pages: List<BookPageDto> = listOf(BookPageDto(id = 1, pageNumber = 1, textContent = "Fox")),
+) =
     BookDetailDto(
         id = id,
         title = "Downloaded",
-        bookPages = listOf(BookPageDto(id = 1, pageNumber = 1, textContent = "Fox")),
+        bookPages = pages,
     )
 
 private fun bookRow(
@@ -359,16 +520,17 @@ private fun bookRow(
     categoryIds = emptySet(),
     emoji = "",
     imageUrl = null,
-    revision = revision,
+    lastUpdated = revision,
 )
 
 private fun detailRow(
     id: String,
     revision: String?,
+    cardsJson: String = "[]",
 ) = BookDetailRow(
     id = id,
     title = "Cached",
     category = "All",
-    cardsJson = "[]",
-    revision = revision,
+    cardsJson = cardsJson,
+    lastUpdated = revision,
 )

@@ -8,4 +8,5 @@ data class BookSummary(
     val emoji: String,
     val imageUrl: String? = null,
     val categoryIds: Set<String> = emptySet(),
+    val lastUpdated: String? = null,
 )
