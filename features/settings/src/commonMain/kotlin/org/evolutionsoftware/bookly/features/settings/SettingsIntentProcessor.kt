@@ -74,16 +74,13 @@ internal class SettingsIntentProcessor(
                     ),
                 )
             is SettingsIntent.LanguageSelected ->
-                flow {
-                    emit(SettingsAction.LanguageUpdated(intent.language))
-                    emit(
-                        SettingsAction.MessageRequested(
-                            message = Res.string.settings_language_changed,
-                            args = listOf(intent.language),
-                            isSuccess = true,
-                        ),
-                    )
-                }
+                flowOf(
+                    SettingsAction.MessageRequested(
+                        message = Res.string.settings_language_changed,
+                        args = listOf(intent.displayName),
+                        isSuccess = true,
+                    ),
+                )
             SettingsIntent.SignOutClicked ->
                 flow {
                     // TEMPORARY STUB — DELETE ME: swallow backend failures so the logout

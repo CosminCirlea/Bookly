@@ -14,6 +14,8 @@
     <string name="settings_invite_friend">Invite a friend</string>
     <string name="settings_rate_app">Rate the app</string>
     <string name="settings_language">Language</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_romanian">Română</string>
     <string name="settings_log_out">Log Out</string>
     <string name="settings_help_center_message">Help Center coming next.</string>
     <string name="settings_sound_message">Sound settings coming next.</string>
@@ -40,7 +42,7 @@
     <string name="settings_invite_more">More</string>
     <string name="settings_invite_close">Close</string>
     <string name="settings_language_title">Choose Language</string>
-    <string name="settings_language_subtitle">Books and menus will translate.</string>
+    <string name="settings_language_subtitle">App menus will translate.</string>
     <string name="settings_language_changed">Language: %1$s</string>
     <string name="settings_logout_title">Log out?</string>
     <string name="settings_logout_body">You can sign back in anytime.</string>

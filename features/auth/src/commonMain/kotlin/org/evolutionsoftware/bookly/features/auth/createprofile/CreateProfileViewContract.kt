@@ -4,6 +4,7 @@ import org.evolutionsoftware.bookly.core.mvi.SideEffect
 import org.evolutionsoftware.bookly.core.mvi.UserIntent
 import org.evolutionsoftware.bookly.core.mvi.UserIntentAction
 import org.evolutionsoftware.bookly.core.mvi.ViewState
+import org.jetbrains.compose.resources.StringResource
 
 val PROFILE_AVATARS =
     listOf("🧒", "👦", "👧", "👶", "🐻", "🦊", "🐰", "🦄", "🐼", "🐯", "🦁", "🐨")
@@ -24,7 +25,7 @@ internal data class CreateProfileViewState(
 internal sealed interface CreateProfileSideEffect : SideEffect {
     data object ProfileCreated : CreateProfileSideEffect
     data object Skipped : CreateProfileSideEffect
-    data class ShowError(val message: String) : CreateProfileSideEffect
+    data class ShowError(val message: StringResource) : CreateProfileSideEffect
 }
 
 internal sealed interface CreateProfileIntent : UserIntent {

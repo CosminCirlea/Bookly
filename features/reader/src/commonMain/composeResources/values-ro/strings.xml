@@ -1,0 +1,15 @@
+<resources>
+    <string name="reader_opening_book">Se deschide cartea...</string>
+    <string name="reader_autoplay_start_aria">Pornește redarea automată</string>
+    <string name="reader_autoplay_stop_aria">Oprește redarea automată</string>
+    <string name="reader_close_book_aria">Închide cartea</string>
+    <string name="reader_unavailable_offline">Această carte nu este încă disponibilă offline.</string>
+    <string name="reader_missing_cached_message">Această carte nu este încă salvată.</string>
+    <string name="reader_empty_symbol">📖</string>
+    <string name="reader_autoplay_badge">REDARE AUTOMATĂ</string>
+    <string name="reader_favorite_add_aria">Adaugă la favorite</string>
+    <string name="reader_favorite_remove_aria">Elimină din favorite</string>
+    <string name="reader_favorite_added">Adăugată la favorite!</string>
+    <string name="reader_favorite_removed">Eliminată din favorite</string>
+    <string name="reader_favorite_failed">Favoritele nu au putut fi actualizate. Încearcă din nou.</string>
+</resources>

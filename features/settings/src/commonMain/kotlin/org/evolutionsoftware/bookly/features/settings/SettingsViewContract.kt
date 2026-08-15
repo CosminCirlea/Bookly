@@ -19,7 +19,6 @@ internal data class SettingsViewState(
     val isLoading: Boolean = true,
     val isSessionActive: Boolean = false,
     val profile: ParentProfile? = null,
-    val selectedLanguage: String = "English",
 ) : ViewState {
     val isAuthenticated: Boolean
         get() = profile != null || isSessionActive
@@ -69,7 +68,7 @@ internal sealed interface SettingsIntent : UserIntent {
 
     data object InviteLinkCopied : SettingsIntent
 
-    data class LanguageSelected(val language: String) : SettingsIntent
+    data class LanguageSelected(val displayName: String) : SettingsIntent
 }
 
 internal sealed interface SettingsAction : UserIntentAction {
@@ -88,8 +87,6 @@ internal sealed interface SettingsAction : UserIntentAction {
         val args: List<String> = emptyList(),
         val isSuccess: Boolean = false,
     ) : SettingsAction
-
-    data class LanguageUpdated(val language: String) : SettingsAction
 
     data object NotificationsOpened : SettingsAction
 

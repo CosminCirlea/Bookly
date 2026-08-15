@@ -15,8 +15,6 @@ internal class SettingsStateMapper : StateMapper<SettingsAction, SettingsViewSta
                     isLoading = false,
                     profile = action.profile,
                 )
-            is SettingsAction.LanguageUpdated ->
-                currentState.copy(selectedLanguage = action.language)
             is SettingsAction.AuthenticationRequested -> currentState
             SettingsAction.SignedOut ->
                 currentState.copy(

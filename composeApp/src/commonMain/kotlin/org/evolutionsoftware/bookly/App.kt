@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +43,29 @@ import org.evolutionsoftware.bookly.features.settings.SettingsRoute
 @Preview
 fun App(startWithDebugMenu: Boolean = false) {
     remember { AppKoin.start() }
+    var appLanguage by remember {
+        mutableStateOf(AppLanguage.fromLanguageTag(AppLocaleController.currentLanguageTag()))
+    }
 
+    key(appLanguage) {
+        BooklyContent(
+            startWithDebugMenu = startWithDebugMenu,
+            selectedLanguageTag = appLanguage.languageTag,
+            onLanguageSelected = { languageTag ->
+                val language = AppLanguage.fromLanguageTag(languageTag)
+                AppLocaleController.setLanguageTag(language.languageTag)
+                appLanguage = language
+            },
+        )
+    }
+}
+
+@Composable
+private fun BooklyContent(
+    startWithDebugMenu: Boolean,
+    selectedLanguageTag: String,
+    onLanguageSelected: (String) -> Unit,
+) {
     BooklyTheme {
         val toastState = rememberBooklyToastState()
         val saveableStateHolder = rememberSaveableStateHolder()
@@ -94,6 +117,7 @@ fun App(startWithDebugMenu: Boolean = false) {
                         }
                         SettingsRoute(
                             refreshKey = refreshKey,
+                            selectedLanguageTag = selectedLanguageTag,
                             onClose = { destination = AppDestination.Home },
                             onRequireAuthentication = { authDestination ->
                                 destination =
@@ -110,6 +134,7 @@ fun App(startWithDebugMenu: Boolean = false) {
                             onOpenNotifications = { destination = AppDestination.Notifications },
                             onOpenContactUs = { destination = AppDestination.ContactUs },
                             onOpenEditProfile = { destination = AppDestination.CreateProfile(fromSettings = true) },
+                            onLanguageSelected = onLanguageSelected,
                         )
                     }
 

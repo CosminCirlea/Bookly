@@ -48,8 +48,8 @@ private fun SettingsLanguagePreview() {
                     isLoading = false,
                     isSessionActive = true,
                     profile = previewProfile,
-                    selectedLanguage = "Romanian",
                 ),
+            selectedLanguageTag = "ro",
         )
     }
 }

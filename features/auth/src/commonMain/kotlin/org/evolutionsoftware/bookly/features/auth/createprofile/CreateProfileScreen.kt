@@ -59,6 +59,7 @@ import org.evolutionsoftware.bookly.design.components.properties.HeaderPropertie
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.getString
 
 private val AVATAR_BACKGROUNDS = listOf(
     Color(0xFFFFE796),
@@ -89,7 +90,7 @@ fun CreateProfileRoute(
             when (effect) {
                 CreateProfileSideEffect.ProfileCreated -> onProfileCreated()
                 CreateProfileSideEffect.Skipped -> onSkip()
-                is CreateProfileSideEffect.ShowError -> onShowMessage(effect.message)
+                is CreateProfileSideEffect.ShowError -> onShowMessage(getString(effect.message))
             }
         }
     }

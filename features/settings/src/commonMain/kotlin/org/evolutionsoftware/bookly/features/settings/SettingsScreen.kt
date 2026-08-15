@@ -62,6 +62,8 @@ import bookly.features.settings.generated.resources.settings_invite_message
 import bookly.features.settings.generated.resources.settings_invite_more
 import bookly.features.settings.generated.resources.settings_invite_title
 import bookly.features.settings.generated.resources.settings_language
+import bookly.features.settings.generated.resources.settings_language_english
+import bookly.features.settings.generated.resources.settings_language_romanian
 import bookly.features.settings.generated.resources.settings_language_subtitle
 import bookly.features.settings.generated.resources.settings_language_title
 import bookly.features.settings.generated.resources.settings_log_out
@@ -107,6 +109,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun SettingsRoute(
     refreshKey: Int,
+    selectedLanguageTag: String,
     onClose: () -> Unit,
     onRequireAuthentication: (SettingsAuthDestination) -> Unit,
     onShowMessage: (String) -> Unit,
@@ -114,6 +117,7 @@ fun SettingsRoute(
     onOpenNotifications: () -> Unit = {},
     onOpenContactUs: () -> Unit = {},
     onOpenEditProfile: () -> Unit = {},
+    onLanguageSelected: (String) -> Unit = {},
 ) {
     val viewModel = rememberSettingsViewModel()
     val state by viewModel.viewState.collectAsState()
@@ -142,16 +146,20 @@ fun SettingsRoute(
 
     SettingsScreen(
         state = state,
+        selectedLanguageTag = selectedLanguageTag,
         onIntent = viewModel::onUserIntent,
         onClose = onClose,
+        onLanguageSelected = onLanguageSelected,
     )
 }
 
 @Composable
 private fun SettingsScreen(
     state: SettingsViewState,
+    selectedLanguageTag: String,
     onIntent: (SettingsIntent) -> Unit,
     onClose: () -> Unit,
+    onLanguageSelected: (String) -> Unit,
 ) {
     if (state.isLoading && !state.isAuthenticated) return
 
@@ -254,7 +262,7 @@ private fun SettingsScreen(
                             title = stringResource(Res.string.settings_language),
                             icon = Icons.SettingsLanguage,
                             style = SettingsRowStyles.Success,
-                            trailingText = state.selectedLanguage,
+                            trailingText = languageDisplayName(selectedLanguageTag),
                         ) {
                             showLanguageSheet = true
                         },
@@ -329,11 +337,12 @@ private fun SettingsScreen(
 
     LanguageSheet(
         visible = showLanguageSheet,
-        selectedLanguage = state.selectedLanguage,
+        selectedLanguageTag = selectedLanguageTag,
         onDismiss = { showLanguageSheet = false },
-        onLanguageSelected = { language ->
+        onLanguageSelected = { languageTag, displayName ->
             showLanguageSheet = false
-            onIntent(SettingsIntent.LanguageSelected(language))
+            onLanguageSelected(languageTag)
+            onIntent(SettingsIntent.LanguageSelected(displayName))
         },
     )
 
@@ -752,28 +761,33 @@ private fun InviteShareOption(
 }
 
 private data class LanguageOption(
-    val nativeName: String,
+    val languageTag: String,
+    val displayName: org.jetbrains.compose.resources.StringResource,
     val flag: String,
 )
 
 private val languageOptions =
     listOf(
-        LanguageOption("English", "🇬🇧"),
-        LanguageOption("Español", "🇪🇸"),
-        LanguageOption("Français", "🇫🇷"),
-        LanguageOption("Deutsch", "🇩🇪"),
-        LanguageOption("Italiano", "🇮🇹"),
-        LanguageOption("Português", "🇵🇹"),
-        LanguageOption("Română", "🇷🇴"),
-        LanguageOption("日本語", "🇯🇵"),
+        LanguageOption("en", Res.string.settings_language_english, "🇬🇧"),
+        LanguageOption("ro", Res.string.settings_language_romanian, "🇷🇴"),
+    )
+
+@Composable
+private fun languageDisplayName(languageTag: String): String =
+    stringResource(
+        if (languageTag.substringBefore('-') == "ro") {
+            Res.string.settings_language_romanian
+        } else {
+            Res.string.settings_language_english
+        },
     )
 
 @Composable
 private fun LanguageSheet(
     visible: Boolean,
-    selectedLanguage: String,
+    selectedLanguageTag: String,
     onDismiss: () -> Unit,
-    onLanguageSelected: (String) -> Unit,
+    onLanguageSelected: (String, String) -> Unit,
 ) {
     BooklySheet(visible = visible, onDismiss = onDismiss) {
         Text(
@@ -793,7 +807,8 @@ private fun LanguageSheet(
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.md + TokenProvider.spacings.xxs))
         languageOptions.forEach { option ->
-            val active = option.nativeName == selectedLanguage
+            val displayName = stringResource(option.displayName)
+            val active = option.languageTag == selectedLanguageTag.substringBefore('-')
             Row(
                 modifier =
                     Modifier
@@ -807,14 +822,14 @@ private fun LanguageSheet(
                                 TokenProvider.colors.bgElevated
                             },
                         )
-                        .clickable { onLanguageSelected(option.nativeName) }
+                        .clickable { onLanguageSelected(option.languageTag, displayName) }
                         .padding(TokenProvider.spacings.sm),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.sm),
             ) {
                 Text(text = option.flag, fontSize = 24.sp)
                 Text(
-                    text = option.nativeName,
+                    text = displayName,
                     modifier = Modifier.weight(1f),
                     style = TokenProvider.textStyles.bodyStrong,
                     color = TokenProvider.colors.text,
@@ -1071,12 +1086,15 @@ private fun primaryButtonProperties(
 @Composable
 internal fun SettingsScreenContent(
     state: SettingsViewState,
+    selectedLanguageTag: String = "en",
     onIntent: (SettingsIntent) -> Unit = {},
     onClose: () -> Unit = {},
 ) {
     SettingsScreen(
         state = state,
+        selectedLanguageTag = selectedLanguageTag,
         onIntent = onIntent,
         onClose = onClose,
+        onLanguageSelected = {},
     )
 }
