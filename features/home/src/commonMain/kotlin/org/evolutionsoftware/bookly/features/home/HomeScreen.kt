@@ -162,6 +162,7 @@ private fun HomeScreen(
     ) {
         HomeToolbar(
             profile = state.profile,
+            accountDisplayName = state.accountDisplayName,
             onSettingsClick = onSettingsClick,
         )
 
@@ -262,6 +263,7 @@ private fun HomeScreen(
 @Composable
 private fun HomeToolbar(
     profile: ParentProfile?,
+    accountDisplayName: String?,
     onSettingsClick: () -> Unit,
 ) {
     val settingsButton: @Composable () -> Unit = {
@@ -275,7 +277,8 @@ private fun HomeToolbar(
         )
     }
 
-    if (profile != null) {
+    val displayName = profile?.displayName ?: accountDisplayName
+    if (displayName != null) {
         Row(
             modifier =
                 Modifier
@@ -298,7 +301,7 @@ private fun HomeToolbar(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = profile.initials,
+                    text = profile?.initials ?: displayName.toInitials(),
                     color = TokenProvider.colors.text,
                     style = TokenProvider.textStyles.bodyStrong,
                 )
@@ -315,7 +318,7 @@ private fun HomeToolbar(
                     color = TokenProvider.colors.textMuted,
                 )
                 Text(
-                    text = profile.displayName + stringResource(Res.string.home_playroom_suffix),
+                    text = displayName + stringResource(Res.string.home_playroom_suffix),
                     style = TokenProvider.textStyles.title,
                     color = TokenProvider.colors.borderAccent,
                     maxLines = 1,
@@ -333,6 +336,13 @@ private fun HomeToolbar(
         )
     }
 }
+
+private fun String.toInitials(): String =
+    split(" ")
+        .filter { it.isNotBlank() }
+        .take(2)
+        .joinToString(separator = "") { it.first().uppercase() }
+        .ifBlank { "G" }
 
 // === Search ===============================================================
 
@@ -813,7 +823,10 @@ private fun PlayroomBookCard(
                     .clip(RoundedCornerShape(TokenProvider.borderRadius.md))
                     .background(TokenProvider.colors.bgSurface)
                     .clickable(onClick = onClick)
-                    .padding(TokenProvider.spacings.sm),
+                    .padding(
+                        horizontal = TokenProvider.spacings.sm,
+                        vertical = TokenProvider.spacings.xs,
+                    ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(

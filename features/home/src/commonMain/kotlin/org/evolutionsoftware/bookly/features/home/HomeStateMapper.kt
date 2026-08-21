@@ -40,9 +40,15 @@ internal class HomeStateMapper : StateMapper<HomeAction, HomeViewState> {
                         ),
                 )
             }
+            is HomeAction.SessionLoaded ->
+                currentState.copy(
+                        accountDisplayName = action.displayName,
+                        profile = currentState.profile.takeIf { action.displayName != null },
+                        favoriteBookIds = currentState.favoriteBookIds.takeIf { action.displayName != null }.orEmpty(),
+                )
             is HomeAction.ProfileLoaded ->
                 currentState.copy(
-                    profile = action.profile,
+                        profile = action.profile,
                     favoriteBookIds = action.favoriteBookIds,
                 )
             is HomeAction.LoadingFailed ->

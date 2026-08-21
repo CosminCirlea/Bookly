@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -101,7 +102,6 @@ import org.evolutionsoftware.bookly.design.components.Header
 import org.evolutionsoftware.bookly.design.components.properties.ButtonProperties
 import org.evolutionsoftware.bookly.design.components.properties.HeaderProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
-import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -194,10 +194,10 @@ private fun SettingsScreen(
         ) {
             // Signed out, the profile card's slot invites the parent to sign in rather
             // than hiding the whole menu behind a wall.
-            val profile = state.profile
-            if (profile != null) {
+            val displayName = state.displayName
+            if (state.isAuthenticated && displayName != null) {
                 ProfileCard(
-                    profile = profile,
+                    displayName = displayName,
                     onEditClick = { onIntent(SettingsIntent.EditProfileClicked) },
                 )
             } else {
@@ -430,7 +430,7 @@ private fun LoginBanner(onClick: () -> Unit) {
 
 @Composable
 private fun ProfileCard(
-    profile: ParentProfile,
+    displayName: String,
     onEditClick: () -> Unit,
 ) {
     Row(
@@ -458,14 +458,14 @@ private fun ProfileCard(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = profile.initials,
+                text = displayName.toInitials(),
                 style = TokenProvider.textStyles.title.copy(fontSize = 22.sp),
                 color = TokenProvider.colors.text,
             )
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = profile.displayName,
+                text = displayName,
                 style = TokenProvider.textStyles.title,
                 color = TokenProvider.colors.text,
             )
@@ -497,6 +497,7 @@ private fun ProfileCard(
                 )
             }
         }
+
         Box(
             modifier =
                 Modifier
@@ -515,6 +516,13 @@ private fun ProfileCard(
         }
     }
 }
+
+private fun String.toInitials(): String =
+    split(" ")
+        .filter { it.isNotBlank() }
+        .take(2)
+        .joinToString(separator = "") { it.first().uppercase() }
+        .ifBlank { "G" }
 
 // === Sheets ===============================================================
 
@@ -934,7 +942,13 @@ internal fun SheetTextArea(
     placeholder: String,
     minHeight: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
+    label: String? = null,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    val floatingLabel = label?.takeIf { it.isNotBlank() }
+    val shouldFloatLabel = floatingLabel != null && (isFocused || value.isNotEmpty())
+
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
@@ -950,16 +964,53 @@ internal fun SheetTextArea(
             TokenProvider.textStyles.input.copy(
                 color = TokenProvider.colors.text,
             ),
+        interactionSource = interactionSource,
         decorationBox = { innerTextField ->
-            Box(modifier = Modifier.padding(TokenProvider.spacings.sm)) {
-                if (value.isEmpty()) {
-                    Text(
-                        text = placeholder,
-                        style = TokenProvider.textStyles.input,
-                        color = TokenProvider.colors.textMuted.copy(alpha = 0.7f),
-                    )
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(TokenProvider.spacings.sm),
+                contentAlignment =
+                    if (shouldFloatLabel || value.isNotEmpty()) {
+                        Alignment.TopStart
+                    } else {
+                        Alignment.CenterStart
+                    },
+            ) {
+                if (shouldFloatLabel) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Text(
+                            text = floatingLabel,
+                            style = TokenProvider.textStyles.eyebrow,
+                            color = TokenProvider.colors.textMuted,
+                        )
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            if (value.isEmpty()) {
+                                Text(
+                                    text = placeholder,
+                                    style = TokenProvider.textStyles.input,
+                                    color = TokenProvider.colors.textMuted.copy(alpha = 0.7f),
+                                )
+                            }
+                            innerTextField()
+                        }
+                    }
+                } else {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        if (value.isEmpty()) {
+                            Text(
+                                text = floatingLabel ?: placeholder,
+                                style = TokenProvider.textStyles.input,
+                                color = TokenProvider.colors.textMuted.copy(alpha = 0.7f),
+                            )
+                        }
+                        innerTextField()
+                    }
                 }
-                innerTextField()
             }
         },
     )

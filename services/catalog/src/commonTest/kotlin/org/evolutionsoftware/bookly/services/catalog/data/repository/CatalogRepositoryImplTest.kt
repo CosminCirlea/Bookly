@@ -246,7 +246,7 @@ class CatalogRepositoryImplTest {
         }
 
     @Test
-    fun `partial refresh preserves cached page images and their cache versions`() =
+    fun `refresh drops pages whose API image is null instead of preserving cached images`() =
         runTest {
             val oldTimestamp = "2026-08-13T10:00:00Z"
             val newTimestamp = "2026-08-14T10:00:00Z"
@@ -312,11 +312,83 @@ class CatalogRepositoryImplTest {
             val refreshed = repository.getBookDetails("10")
             val persisted = repository.getBookDetails("10", CatalogRefresh.CacheOnly)
 
-            assertEquals("https://cdn.example/cat.png", refreshed?.cards?.first()?.imageUrl)
-            assertEquals(oldTimestamp, refreshed?.cards?.first()?.imageLastUpdated)
-            assertEquals("https://cdn.example/duck.png", refreshed?.cards?.last()?.imageUrl)
-            assertEquals(newTimestamp, refreshed?.cards?.last()?.imageLastUpdated)
+            assertEquals(listOf("44"), refreshed?.cards?.map { it.id })
+            assertEquals("https://cdn.example/duck.png", refreshed?.cards?.single()?.imageUrl)
+            assertEquals(newTimestamp, refreshed?.cards?.single()?.imageLastUpdated)
             assertEquals(refreshed, persisted)
+        }
+
+    @Test
+    fun `details with only null page images cache an empty page list`() =
+        runTest {
+            val cache = InMemoryCache(books = mutableListOf(bookRow(id = "1", revision = "7")))
+            val remote =
+                FakeRemote(
+                    details =
+                        listOf(
+                            detailDto(
+                                id = 1,
+                                pages =
+                                    listOf(
+                                        BookPageDto(
+                                            id = 1,
+                                            pageNumber = 1,
+                                            textContent = "Fox",
+                                            photoUrl = null,
+                                        ),
+                                    ),
+                            ),
+                        ),
+                )
+            val repository = CatalogRepositoryImpl(remote, cache)
+
+            val details = repository.getBookDetails("1")
+            val persisted = repository.getBookDetails("1", CatalogRefresh.CacheOnly)
+
+            assertTrue(details?.cards.orEmpty().isEmpty())
+            assertTrue(persisted?.cards.orEmpty().isEmpty())
+            assertEquals("[]", cache.details["1"]?.cardsJson)
+        }
+
+    @Test
+    fun `legacy cached pages without images are not returned`() =
+        runTest {
+            val cache =
+                InMemoryCache(
+                    books = mutableListOf(bookRow(id = "1", revision = "7")),
+                    details =
+                        mutableMapOf(
+                            "1" to
+                                detailRow(
+                                    id = "1",
+                                    revision = "7",
+                                    cardsJson =
+                                        """
+                                        [
+                                          {
+                                            "id":"1",
+                                            "title":"Fox",
+                                            "description":"Fox",
+                                            "emoji":"",
+                                            "imageUrl":null
+                                          },
+                                          {
+                                            "id":"2",
+                                            "title":"Duck",
+                                            "description":"Duck",
+                                            "emoji":"",
+                                            "imageUrl":"https://cdn.example/duck.png"
+                                          }
+                                        ]
+                                        """.trimIndent(),
+                                ),
+                        ),
+                )
+            val repository = CatalogRepositoryImpl(FakeRemote(), cache)
+
+            val details = repository.getBookDetails("1", CatalogRefresh.CacheOnly)
+
+            assertEquals(listOf("2"), details?.cards?.map { it.id })
         }
 
     @Test
@@ -501,7 +573,15 @@ private fun bookDto(
 
 private fun detailDto(
     id: Int,
-    pages: List<BookPageDto> = listOf(BookPageDto(id = 1, pageNumber = 1, textContent = "Fox")),
+    pages: List<BookPageDto> =
+        listOf(
+            BookPageDto(
+                id = 1,
+                pageNumber = 1,
+                textContent = "Fox",
+                photoUrl = "https://cdn.example/fox.png",
+            ),
+        ),
 ) =
     BookDetailDto(
         id = id,

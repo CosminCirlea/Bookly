@@ -55,12 +55,13 @@
     <string name="auth_password_match_error">Parolele noi nu coincid încă.</string>
     <string name="auth_error_general">A apărut o eroare. Încearcă din nou.</string>
     <string name="auth_create_profile_title">Creează profilul</string>
-    <string name="auth_create_profile_subtitle">Alege un avatar și spune-ne câteva lucruri despre tine</string>
     <string name="auth_create_profile_name_label">Nume</string>
     <string name="auth_create_profile_name_placeholder">Introdu numele</string>
     <string name="auth_create_profile_name_error">Introdu un nume</string>
     <string name="auth_create_profile_dob_label">Data nașterii (opțional)</string>
     <string name="auth_create_profile_dob_placeholder">AAAA-LL-ZZ</string>
+    <string name="auth_create_profile_dob_picker_confirm">Selectează</string>
+    <string name="auth_create_profile_dob_picker_cancel">Anulează</string>
     <string name="auth_create_profile_gender_label">Gen</string>
     <string name="auth_create_profile_gender_boy">Băiat</string>
     <string name="auth_create_profile_gender_girl">Fată</string>

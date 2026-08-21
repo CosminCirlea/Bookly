@@ -18,10 +18,14 @@ sealed interface SettingsAuthDestination {
 internal data class SettingsViewState(
     val isLoading: Boolean = true,
     val isSessionActive: Boolean = false,
+    val accountDisplayName: String? = null,
     val profile: ParentProfile? = null,
 ) : ViewState {
     val isAuthenticated: Boolean
-        get() = profile != null || isSessionActive
+        get() = isSessionActive
+
+    val displayName: String?
+        get() = profile?.displayName ?: accountDisplayName
 }
 
 internal sealed interface SettingsSideEffect : SideEffect {
@@ -72,7 +76,10 @@ internal sealed interface SettingsIntent : UserIntent {
 }
 
 internal sealed interface SettingsAction : UserIntentAction {
-    data class SessionChecked(val active: Boolean) : SettingsAction
+    data class SessionChecked(
+        val active: Boolean,
+        val displayName: String?,
+    ) : SettingsAction
 
     data object LoadingStarted : SettingsAction
 

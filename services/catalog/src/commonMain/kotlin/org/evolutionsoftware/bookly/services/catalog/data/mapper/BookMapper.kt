@@ -63,18 +63,28 @@ internal fun BookDetailDto.toDetails(
         id = bookId,
         title = title,
         category = BookCategory.All,
-        cards = bookPages.sortedBy { it.pageNumber }.map { it.toCard(lastUpdated) },
+        cards =
+            bookPages
+                .sortedBy { it.pageNumber }
+                .mapNotNull { page ->
+                    page.photoUrl
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { imageUrl -> page.toCard(imageUrl, lastUpdated) }
+                },
         lastUpdated = lastUpdated,
     )
 
-private fun BookPageDto.toCard(lastUpdated: String?): BookCard =
+private fun BookPageDto.toCard(
+    imageUrl: String,
+    lastUpdated: String?,
+): BookCard =
     BookCard(
         id = id.toString(),
         title = textContent,
         description = textContent,
         emoji = "",
-        imageUrl = photoUrl,
-        imageLastUpdated = lastUpdated.takeIf { !photoUrl.isNullOrBlank() },
+        imageUrl = imageUrl,
+        imageLastUpdated = lastUpdated,
     )
 
 internal const val DEFAULT_LANGUAGE_ID = 1

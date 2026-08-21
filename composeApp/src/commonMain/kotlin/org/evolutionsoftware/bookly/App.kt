@@ -94,7 +94,11 @@ private fun BooklyContent(
                     AppDestination.Home ->
                         HomeRoute(
                             refreshKey = refreshKey,
-                            onBookSelected = { bookId -> destination = AppDestination.Reader(bookId) },
+                            onBookSelected = { bookId ->
+                                val readerDestination = AppDestination.Reader(bookId)
+                                saveableStateHolder.removeState(readerDestination.stateKey)
+                                destination = readerDestination
+                            },
                             onSettingsClick = { destination = AppDestination.Settings },
                             onShowToast = ::showToast,
                         )

@@ -130,7 +130,6 @@ class CatalogRepositoryImpl(
                     remote.getBookDetails(bookId, DEFAULT_LANGUAGE_ID)
                         ?.firstOrNull()
                         ?.toDetails(bookId, latestLastUpdated)
-                        ?.preservingCachedImages(cached?.toDetails())
                 }
             if (downloaded != null) {
                 cache.saveBookDetails(downloaded.toRow())
@@ -155,28 +154,6 @@ class CatalogRepositoryImpl(
             logger.d("cachedBooks: read failed (${e.message})")
             emptyList()
         }
-
-    private fun BookDetails.preservingCachedImages(cached: BookDetails?): BookDetails {
-        if (cached == null) return this
-        val cachedCards = cached.cards.associateBy { it.id }
-        return copy(
-            cards =
-                cards.map { card ->
-                    if (!card.imageUrl.isNullOrBlank()) {
-                        card
-                    } else {
-                        cachedCards[card.id]
-                            ?.takeIf { !it.imageUrl.isNullOrBlank() }
-                            ?.let { cachedCard ->
-                                card.copy(
-                                    imageUrl = cachedCard.imageUrl,
-                                    imageLastUpdated = cachedCard.imageLastUpdated,
-                                )
-                            } ?: card
-                    }
-                },
-        )
-    }
 
     private companion object {
         val logger = Logger.withTag("CatalogRepository")

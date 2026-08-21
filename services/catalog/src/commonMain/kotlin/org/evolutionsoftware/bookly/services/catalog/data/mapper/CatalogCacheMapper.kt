@@ -46,6 +46,7 @@ internal fun BookDetailRow.toDetails(): BookDetails {
         cards =
             cacheJson
                 .decodeFromString<List<BookCardPayload>>(cardsJson)
+                .filter { !it.imageUrl.isNullOrBlank() }
                 .map { payload ->
                     BookCard(
                         id = payload.id,
@@ -82,16 +83,18 @@ internal fun BookDetails.toRow(): BookDetailRow =
         category = category.name,
         cardsJson =
             cacheJson.encodeToString(
-                cards.map { card ->
-                    BookCardPayload(
-                        id = card.id,
-                        title = card.title,
-                        description = card.description,
-                        emoji = card.emoji,
-                        imageUrl = card.imageUrl,
-                        imageLastUpdated = card.imageLastUpdated,
-                    )
-                },
+                cards
+                    .filter { !it.imageUrl.isNullOrBlank() }
+                    .map { card ->
+                        BookCardPayload(
+                            id = card.id,
+                            title = card.title,
+                            description = card.description,
+                            emoji = card.emoji,
+                            imageUrl = card.imageUrl,
+                            imageLastUpdated = card.imageLastUpdated,
+                        )
+                    },
             ),
         lastUpdated = lastUpdated,
     )

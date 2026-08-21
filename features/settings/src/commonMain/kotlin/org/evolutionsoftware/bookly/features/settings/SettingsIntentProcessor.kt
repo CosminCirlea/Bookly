@@ -9,46 +9,33 @@ import bookly.features.settings.generated.resources.settings_sound_message
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import org.evolutionsoftware.bookly.core.auth.CheckSessionUseCase
-import org.evolutionsoftware.bookly.core.auth.SessionState
+import org.evolutionsoftware.bookly.core.auth.GetActiveUserSessionUseCase
 import org.evolutionsoftware.bookly.core.mvi.IntentProcessor
-import org.evolutionsoftware.bookly.services.profiles.domain.model.ParentProfile
 import org.evolutionsoftware.bookly.services.profiles.domain.usecase.GetCurrentProfileUseCase
 import org.evolutionsoftware.bookly.services.profiles.domain.usecase.LogoutUseCase
 
 internal class SettingsIntentProcessor(
     private val getCurrentProfileUseCase: GetCurrentProfileUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val checkSessionUseCase: CheckSessionUseCase,
+    private val getActiveUserSessionUseCase: GetActiveUserSessionUseCase,
 ) : IntentProcessor<SettingsIntent, SettingsAction> {
     override fun invoke(intent: SettingsIntent): Flow<SettingsAction> =
         when (intent) {
             SettingsIntent.Load ->
                 flow {
-                    // ===================== TEMPORARY STUB — DELETE ME =====================
-                    // Fakes the session so the settings menu can be exercised without a
-                    // working backend. Nothing here touches the network.
-                    //
-                    // Flip STUB_AS_SIGNED_IN to switch between the profile card and the
-                    // "Log in or sign up" banner.
-                    //
-                    // TO RESTORE THE REAL API CALL:
-                    //   1. delete this comment block and the emit(...) lines below, and
-                    //   2. un-comment the original implementation further down.
-                    emit(SettingsAction.SessionChecked(STUB_AS_SIGNED_IN))
-                    emit(SettingsAction.ProfileLoaded(if (STUB_AS_SIGNED_IN) STUB_PROFILE else null))
-                    // =================== END TEMPORARY STUB — DELETE ME ===================
-
-                    /* ORIGINAL IMPLEMENTATION — UN-COMMENT TO RESTORE
-                    val isSignedIn = checkSessionUseCase() == SessionState.SignedIn
-                    emit(SettingsAction.SessionChecked(isSignedIn))
-                    if (isSignedIn) {
+                    val session = getActiveUserSessionUseCase()
+                    emit(
+                        SettingsAction.SessionChecked(
+                            active = session != null,
+                            displayName = session?.displayName,
+                        ),
+                    )
+                    if (session != null) {
                         emit(SettingsAction.LoadingStarted)
                         emit(SettingsAction.ProfileLoaded(getCurrentProfileUseCase()))
                     } else {
                         emit(SettingsAction.ProfileLoaded(null))
                     }
-                     */
                 }
             SettingsIntent.LoginClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.SignIn))
             SettingsIntent.ChangePasswordClicked -> flowOf(SettingsAction.AuthenticationRequested(SettingsAuthDestination.ChangePassword))
@@ -83,28 +70,9 @@ internal class SettingsIntentProcessor(
                 )
             SettingsIntent.SignOutClicked ->
                 flow {
-                    // TEMPORARY STUB — DELETE ME: swallow backend failures so the logout
-                    // sheet can be exercised offline. Restore by replacing this
-                    // try/catch with a plain `logoutUseCase()` call.
-                    try {
-                        logoutUseCase()
-                    } catch (e: Exception) {
-                        // ignored while running against a stubbed session
-                    }
+                    logoutUseCase()
                     emit(SettingsAction.SignedOut)
                     emit(SettingsAction.ProfileLoaded(null))
                 }
         }
-
-    // TEMPORARY STUB — DELETE ME: stand-in session for testing without a backend.
-    private companion object {
-        /** false shows the signed-out banner, true shows the profile card. */
-        const val STUB_AS_SIGNED_IN = false
-
-        val STUB_PROFILE =
-            ParentProfile(
-                id = "stub-profile",
-                displayName = "Mia",
-            )
-    }
 }

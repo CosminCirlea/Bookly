@@ -23,12 +23,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +49,8 @@ import androidx.compose.ui.unit.sp
 import bookly.features.auth.generated.resources.Res
 import bookly.features.auth.generated.resources.auth_create_profile_avatar_label
 import bookly.features.auth.generated.resources.auth_create_profile_dob_label
+import bookly.features.auth.generated.resources.auth_create_profile_dob_picker_cancel
+import bookly.features.auth.generated.resources.auth_create_profile_dob_picker_confirm
 import bookly.features.auth.generated.resources.auth_create_profile_dob_placeholder
 import bookly.features.auth.generated.resources.auth_create_profile_gender_boy
 import bookly.features.auth.generated.resources.auth_create_profile_gender_girl
@@ -48,9 +60,9 @@ import bookly.features.auth.generated.resources.auth_create_profile_name_label
 import bookly.features.auth.generated.resources.auth_create_profile_name_placeholder
 import bookly.features.auth.generated.resources.auth_create_profile_skip
 import bookly.features.auth.generated.resources.auth_create_profile_submit
-import bookly.features.auth.generated.resources.auth_create_profile_subtitle
 import bookly.features.auth.generated.resources.auth_create_profile_title
 import kotlinx.coroutines.flow.collectLatest
+import org.evolutionsoftware.bookly.components.ui.BooklySheet
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.Header
 import org.evolutionsoftware.bookly.design.components.TextField
@@ -106,6 +118,9 @@ internal fun CreateProfileContent(
     viewState: CreateProfileViewState,
     onIntent: (CreateProfileIntent) -> Unit,
 ) {
+    var showAvatarSheet by remember { mutableStateOf(false) }
+    var showBirthdatePicker by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier =
@@ -135,21 +150,15 @@ internal fun CreateProfileContent(
                         .padding(bottom = TokenProvider.spacings.screenBottomSpacing),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = stringResource(Res.string.auth_create_profile_subtitle),
-                    style = TokenProvider.textStyles.body,
-                    color = TokenProvider.colors.textMuted,
-                    modifier = Modifier.padding(top = TokenProvider.spacings.formGapSm),
-                )
-
-                Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
+                Spacer(modifier = Modifier.height(TokenProvider.spacings.lg))
 
                 // Avatar picker
                 SectionLabel(stringResource(Res.string.auth_create_profile_avatar_label))
                 Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
-                AvatarGrid(
+                AvatarPreview(
                     selected = viewState.selectedAvatar,
-                    onSelect = { onIntent(CreateProfileIntent.AvatarSelected(it)) },
+                    enabled = !viewState.isLoading,
+                    onClick = { showAvatarSheet = true },
                 )
 
                 Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
@@ -186,22 +195,33 @@ internal fun CreateProfileContent(
                 Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
 
                 // Date of birth
-                TextField(
-                    properties =
-                        TextFieldProperties(
-                            label = stringResource(Res.string.auth_create_profile_dob_label),
-                            placeholder = stringResource(Res.string.auth_create_profile_dob_placeholder),
-                            state =
-                                if (viewState.isLoading) {
-                                    TextFieldProperties.State.Disabled
-                                } else {
-                                    TextFieldProperties.State.Default
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    TextField(
+                        properties =
+                            TextFieldProperties(
+                                label = stringResource(Res.string.auth_create_profile_dob_label),
+                                placeholder = stringResource(Res.string.auth_create_profile_dob_placeholder),
+                                state =
+                                    if (viewState.isLoading) {
+                                        TextFieldProperties.State.Disabled
+                                    } else {
+                                        TextFieldProperties.State.Default
+                                    },
+                            ),
+                        value = viewState.dateOfBirth,
+                        onValueChange = {},
+                        enabled = !viewState.isLoading,
+                        readOnly = true,
+                    )
+                    Box(
+                        modifier =
+                            Modifier
+                                .matchParentSize()
+                                .clickable(enabled = !viewState.isLoading) {
+                                    showBirthdatePicker = true
                                 },
-                        ),
-                    value = viewState.dateOfBirth,
-                    onValueChange = { onIntent(CreateProfileIntent.DateOfBirthChanged(it)) },
-                    enabled = !viewState.isLoading,
-                )
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
 
@@ -256,6 +276,27 @@ internal fun CreateProfileContent(
             }
         }
 
+        AvatarPickerSheet(
+            visible = showAvatarSheet,
+            selected = viewState.selectedAvatar,
+            onSelect = {
+                onIntent(CreateProfileIntent.AvatarSelected(it))
+                showAvatarSheet = false
+            },
+            onDismiss = { showAvatarSheet = false },
+        )
+
+        if (showBirthdatePicker) {
+            BirthdatePickerDialog(
+                selectedDateMillis = viewState.dateOfBirth.toUtcBirthdateMillisOrNull(),
+                onDateSelected = {
+                    onIntent(CreateProfileIntent.DateOfBirthChanged(it.toIsoBirthdate()))
+                    showBirthdatePicker = false
+                },
+                onDismiss = { showBirthdatePicker = false },
+            )
+        }
+
         if (viewState.isLoading) {
             Box(
                 modifier =
@@ -270,47 +311,187 @@ internal fun CreateProfileContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AvatarGrid(
-    selected: Int,
-    onSelect: (Int) -> Unit,
+private fun BirthdatePickerDialog(
+    selectedDateMillis: Long?,
+    onDateSelected: (Long) -> Unit,
+    onDismiss: () -> Unit,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(5),
-        modifier = Modifier.height(160.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        itemsIndexed(PROFILE_AVATARS) { index, emoji ->
-            val isSelected = index == selected
-            val bg = AVATAR_BACKGROUNDS.getOrElse(index) { Color(0xFFFFE796) }
-            Box(
-                modifier =
-                    Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(bg)
-                        .then(
-                            if (isSelected) {
-                                Modifier.border(
-                                    width = 3.dp,
-                                    color = TokenProvider.colors.borderAccent,
-                                    shape = CircleShape,
-                                )
-                            } else {
-                                Modifier
-                            },
-                        )
-                        .clickable { onSelect(index) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = emoji,
-                    fontSize = 28.sp,
-                    lineHeight = 32.sp,
-                )
+    val todayMillis = remember { currentLocalDateMillisUtc() }
+    val selectableDates =
+        remember(todayMillis) {
+            object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis <= todayMillis
             }
         }
+    val datePickerState =
+        rememberDatePickerState(
+            initialSelectedDateMillis = selectedDateMillis,
+            initialDisplayedMonthMillis = selectedDateMillis ?: todayMillis,
+            selectableDates = selectableDates,
+        )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                enabled = datePickerState.selectedDateMillis != null,
+                onClick = {
+                    datePickerState.selectedDateMillis?.let(onDateSelected)
+                },
+            ) {
+                Text(
+                    text = stringResource(Res.string.auth_create_profile_dob_picker_confirm),
+                    color = TokenProvider.colors.textAccent,
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = stringResource(Res.string.auth_create_profile_dob_picker_cancel),
+                    color = TokenProvider.colors.textMuted,
+                )
+            }
+        },
+    ) {
+        DatePicker(
+            state = datePickerState,
+            showModeToggle = false,
+            colors =
+                DatePickerDefaults.colors(
+                    containerColor = TokenProvider.colors.bgBase,
+                    titleContentColor = TokenProvider.colors.text,
+                    headlineContentColor = TokenProvider.colors.text,
+                    weekdayContentColor = TokenProvider.colors.textMuted,
+                    subheadContentColor = TokenProvider.colors.text,
+                    navigationContentColor = TokenProvider.colors.text,
+                    yearContentColor = TokenProvider.colors.text,
+                    disabledYearContentColor = TokenProvider.colors.textMuted.copy(alpha = 0.4f),
+                    currentYearContentColor = TokenProvider.colors.textAccent,
+                    selectedYearContentColor = TokenProvider.colors.bgBase,
+                    selectedYearContainerColor = TokenProvider.colors.borderAccent,
+                    dayContentColor = TokenProvider.colors.text,
+                    disabledDayContentColor = TokenProvider.colors.textMuted.copy(alpha = 0.4f),
+                    selectedDayContentColor = TokenProvider.colors.bgBase,
+                    selectedDayContainerColor = TokenProvider.colors.borderAccent,
+                    todayContentColor = TokenProvider.colors.textAccent,
+                    todayDateBorderColor = TokenProvider.colors.borderAccent,
+                ),
+        )
+    }
+}
+
+@Composable
+private fun AvatarPreview(
+    selected: Int,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    val avatar = PROFILE_AVATARS.getOrElse(selected) { PROFILE_AVATARS.first() }
+    val background = AVATAR_BACKGROUNDS.getOrElse(selected) { AVATAR_BACKGROUNDS.first() }
+
+    Box(
+        modifier =
+            Modifier
+                .size(112.dp)
+                .clip(CircleShape)
+                .background(background)
+                .border(
+                    width = 4.dp,
+                    color = TokenProvider.colors.borderAccent,
+                    shape = CircleShape,
+                )
+                .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = avatar,
+            fontSize = 56.sp,
+            lineHeight = 64.sp,
+        )
+    }
+}
+
+@Composable
+private fun AvatarPickerSheet(
+    visible: Boolean,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    BooklySheet(
+        visible = visible,
+        onDismiss = onDismiss,
+    ) {
+        Text(
+            text = stringResource(Res.string.auth_create_profile_avatar_label),
+            modifier = Modifier.fillMaxWidth(),
+            style = TokenProvider.textStyles.title,
+            color = TokenProvider.colors.text,
+        )
+        Spacer(modifier = Modifier.height(TokenProvider.spacings.lg))
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(4),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(216.dp),
+            horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.sm),
+            verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.sm),
+        ) {
+            itemsIndexed(PROFILE_AVATARS) { index, emoji ->
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AvatarOption(
+                        index = index,
+                        emoji = emoji,
+                        selected = index == selected,
+                        onClick = { onSelect(index) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AvatarOption(
+    index: Int,
+    emoji: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val background = AVATAR_BACKGROUNDS.getOrElse(index) { AVATAR_BACKGROUNDS.first() }
+
+    Box(
+        modifier =
+            Modifier
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(background)
+                .then(
+                    if (selected) {
+                        Modifier.border(
+                            width = 3.dp,
+                            color = TokenProvider.colors.borderAccent,
+                            shape = CircleShape,
+                        )
+                    } else {
+                        Modifier
+                    },
+                )
+                .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = emoji,
+            fontSize = 32.sp,
+            lineHeight = 36.sp,
+        )
     }
 }
 
@@ -326,7 +507,6 @@ private fun GenderSelector(
     ) {
         GenderOption(
             label = stringResource(Res.string.auth_create_profile_gender_boy),
-            emoji = "👦",
             selected = isMale,
             enabled = enabled,
             modifier = Modifier.weight(1f),
@@ -334,7 +514,6 @@ private fun GenderSelector(
         )
         GenderOption(
             label = stringResource(Res.string.auth_create_profile_gender_girl),
-            emoji = "👧",
             selected = !isMale,
             enabled = enabled,
             modifier = Modifier.weight(1f),
@@ -346,7 +525,6 @@ private fun GenderSelector(
 @Composable
 private fun GenderOption(
     label: String,
-    emoji: String,
     selected: Boolean,
     enabled: Boolean,
     modifier: Modifier = Modifier,
@@ -371,23 +549,17 @@ private fun GenderOption(
                     },
                 )
                 .clickable(enabled = enabled, onClick = onClick)
-                .padding(vertical = TokenProvider.spacings.lg),
+                .padding(vertical = TokenProvider.spacings.md),
         contentAlignment = Alignment.Center,
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xs),
-        ) {
-            Text(text = emoji, fontSize = 32.sp, lineHeight = 36.sp)
-            Text(
-                text = label,
-                style =
-                    TokenProvider.textStyles.bodyStrong.copy(
-                        fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Bold,
-                    ),
-                color = if (selected) TokenProvider.colors.textAccent else TokenProvider.colors.textMuted,
-            )
-        }
+        Text(
+            text = label,
+            style =
+                TokenProvider.textStyles.bodyStrong.copy(
+                    fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Bold,
+                ),
+            color = if (selected) TokenProvider.colors.textAccent else TokenProvider.colors.textMuted,
+        )
     }
 }
 

@@ -3,6 +3,7 @@ package org.evolutionsoftware.bookly.core.di
 import io.ktor.client.HttpClient
 import org.evolutionsoftware.bookly.core.auth.CheckSessionUseCase
 import org.evolutionsoftware.bookly.core.auth.ClearSessionUseCase
+import org.evolutionsoftware.bookly.core.auth.GetActiveUserSessionUseCase
 import org.evolutionsoftware.bookly.core.network.AuthTokenStore
 import org.evolutionsoftware.bookly.core.network.HttpClientFactory
 import org.evolutionsoftware.bookly.core.network.NetworkConfig
@@ -28,5 +29,6 @@ object CoreDiModule {
             }
             single { CheckSessionUseCase(get(), get()) }
             single { ClearSessionUseCase(get(), get()) }
+            single { GetActiveUserSessionUseCase(get(), get()) }
         }
 }

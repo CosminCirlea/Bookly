@@ -3,8 +3,8 @@ package org.evolutionsoftware.bookly.services.catalog.data.local
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import org.evolutionsoftware.bookly.core.logging.Logger
+import kotlin.time.Clock
 
 /**
  * SQLDelight-backed [CatalogCache].

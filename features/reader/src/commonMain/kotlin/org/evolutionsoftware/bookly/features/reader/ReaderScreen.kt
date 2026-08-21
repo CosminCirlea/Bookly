@@ -56,6 +56,8 @@ import bookly.features.reader.generated.resources.reader_favorite_failed
 import bookly.features.reader.generated.resources.reader_favorite_remove_aria
 import bookly.features.reader.generated.resources.reader_favorite_removed
 import bookly.features.reader.generated.resources.reader_missing_cached_message
+import bookly.features.reader.generated.resources.reader_no_page_images_body
+import bookly.features.reader.generated.resources.reader_no_page_images_title
 import bookly.features.reader.generated.resources.reader_opening_book
 import bookly.features.reader.generated.resources.reader_unavailable_offline
 import coil3.compose.AsyncImage
@@ -122,46 +124,12 @@ private fun ReaderScreen(
 ) {
     val cards = state.book?.cards.orEmpty()
     val unavailableMessage = stringResource(Res.string.reader_unavailable_offline)
+    val noPageImagesTitle = stringResource(Res.string.reader_no_page_images_title)
+    val noPageImagesBody = stringResource(Res.string.reader_no_page_images_body)
     val openingBook = stringResource(Res.string.reader_opening_book)
     val closeBookAria = stringResource(Res.string.reader_close_book_aria)
     val autoplayStartAria = stringResource(Res.string.reader_autoplay_start_aria)
     val autoplayStopAria = stringResource(Res.string.reader_autoplay_stop_aria)
-    val pagerState =
-        rememberPagerState(
-            initialPage = state.currentPage,
-            pageCount = { maxOf(cards.size, 1) },
-        )
-
-    LaunchedEffect(state.isAutoplayEnabled, state.currentPage, cards.size) {
-        if (!state.isAutoplayEnabled || cards.isEmpty()) {
-            return@LaunchedEffect
-        }
-
-        delay(7_000)
-        onIntent(
-            ReaderIntent.AutoplayAdvanceRequested(
-                currentPage = state.currentPage,
-                totalPages = cards.size,
-            ),
-        )
-    }
-
-    LaunchedEffect(pagerState, cards.size) {
-        if (cards.isEmpty()) {
-            return@LaunchedEffect
-        }
-
-        snapshotFlow { pagerState.currentPage }
-            .collectLatest { page -> onIntent(ReaderIntent.PageChanged(page)) }
-    }
-
-    LaunchedEffect(state.currentPage, cards.size) {
-        if (cards.isEmpty() || pagerState.currentPage == state.currentPage) {
-            return@LaunchedEffect
-        }
-
-        pagerState.animateScrollToPage(state.currentPage.coerceIn(0, cards.lastIndex))
-    }
 
     // The toolbar is a sibling of the content rather than an overlay, so it keeps the
     // shared metrics and the content no longer needs a hand-tuned top inset to clear it.
@@ -195,83 +163,145 @@ private fun ReaderScreen(
             // Shimmering the real page layout, rather than a spinner, so the book
             // appears in place instead of replacing a centred graphic.
             ReaderSkeleton(modifier = Modifier.weight(1f))
+        } else if (state.book != null && cards.isEmpty()) {
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center,
+            ) {
+                ReaderUnavailableState(
+                    title = noPageImagesTitle,
+                    message = noPageImagesBody,
+                    isError = true,
+                )
+            }
         } else if (cards.isEmpty()) {
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center,
             ) {
-                ReaderEmptyState(
+                ReaderUnavailableState(
                     title = state.book?.title ?: openingBook,
-                    unavailableMessage = unavailableMessage,
+                    message = unavailableMessage,
                 )
             }
         } else {
-            // Content and footer are siblings in a column so a long card title can
-            // never overlap the page indicator.
-            Column(modifier = Modifier.weight(1f)) {
-                BoxWithConstraints(
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                ) {
-                    val contentWidth = maxWidth.coerceAtMost(420.dp)
-                    // Size the illustration against the height left over after the
-                    // title, so a tall screen scales up and a short one never clips.
-                    val cardWidth =
-                        minOf(
-                            contentWidth,
-                            (maxHeight - READER_TITLE_BLOCK_HEIGHT).coerceAtLeast(120.dp) * 4f / 5f,
-                        )
+            ReaderBookContent(
+                state = state,
+                cards = cards,
+                autoplayStartAria = autoplayStartAria,
+                autoplayStopAria = autoplayStopAria,
+                onIntent = onIntent,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
 
-                    Column(
-                        modifier =
-                            Modifier
-                                .align(Alignment.Center)
-                                .padding(horizontal = 8.dp)
-                                .widthIn(max = contentWidth),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier.fillMaxWidth(),
-                            contentPadding = PaddingValues(0.dp),
-                        ) { page ->
-                            ReaderPage(
-                                card = cards[page],
-                                cardWidth = cardWidth,
-                                showAutoplayBadge = state.isAutoplayEnabled,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        }
-                    }
-                }
+@Composable
+private fun ReaderBookContent(
+    state: ReaderViewState,
+    cards: List<BookCard>,
+    autoplayStartAria: String,
+    autoplayStopAria: String,
+    onIntent: (ReaderIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val pagerState =
+        rememberPagerState(
+            initialPage = 0,
+            pageCount = { cards.size },
+        )
 
-                ReaderFooter(
-                    total = cards.size,
-                    current = state.currentPage.coerceIn(0, cards.lastIndex),
-                    isAutoplayEnabled = state.isAutoplayEnabled,
-                    autoplayAriaLabel = if (state.isAutoplayEnabled) autoplayStopAria else autoplayStartAria,
-                    onDotSelected = { page ->
-                        if (state.isAutoplayEnabled) {
-                            onIntent(ReaderIntent.AutoplayToggled(isEnabled = false))
-                        }
-                        onIntent(ReaderIntent.PageChanged(page))
-                    },
-                    onAutoplayToggle = {
-                        onIntent(ReaderIntent.AutoplayToggled(isEnabled = !state.isAutoplayEnabled))
-                    },
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = TokenProvider.spacings.horizontalSpacing,
-                                end = TokenProvider.spacings.horizontalSpacing,
-                                bottom = TokenProvider.spacings.xl,
-                            ),
+    LaunchedEffect(state.isAutoplayEnabled, state.currentPage, cards.size) {
+        if (!state.isAutoplayEnabled) {
+            return@LaunchedEffect
+        }
+
+        delay(7_000)
+        onIntent(
+            ReaderIntent.AutoplayAdvanceRequested(
+                currentPage = state.currentPage,
+                totalPages = cards.size,
+            ),
+        )
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }
+            .collectLatest { page -> onIntent(ReaderIntent.PageChanged(page)) }
+    }
+
+    LaunchedEffect(state.currentPage, cards.size) {
+        val targetPage = state.currentPage.coerceIn(0, cards.lastIndex)
+        if (pagerState.currentPage != targetPage) {
+            pagerState.animateScrollToPage(targetPage)
+        }
+    }
+
+    // Content and footer are siblings in a column so a long card title can
+    // never overlap the page indicator.
+    Column(modifier = modifier) {
+        BoxWithConstraints(
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+        ) {
+            val contentWidth = maxWidth.coerceAtMost(420.dp)
+            // Size the illustration against the height left over after the
+            // title, so a tall screen scales up and a short one never clips.
+            val cardWidth =
+                minOf(
+                    contentWidth,
+                    (maxHeight - READER_TITLE_BLOCK_HEIGHT).coerceAtLeast(120.dp) * 4f / 5f,
                 )
+
+            Column(
+                modifier =
+                    Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = 8.dp)
+                        .widthIn(max = contentWidth),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(0.dp),
+                ) { page ->
+                    ReaderPage(
+                        card = cards[page],
+                        cardWidth = cardWidth,
+                        showAutoplayBadge = state.isAutoplayEnabled,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
+
+        ReaderFooter(
+            total = cards.size,
+            current = state.currentPage.coerceIn(0, cards.lastIndex),
+            isAutoplayEnabled = state.isAutoplayEnabled,
+            autoplayAriaLabel = if (state.isAutoplayEnabled) autoplayStopAria else autoplayStartAria,
+            onDotSelected = { page ->
+                if (state.isAutoplayEnabled) {
+                    onIntent(ReaderIntent.AutoplayToggled(isEnabled = false))
+                }
+                onIntent(ReaderIntent.PageChanged(page))
+            },
+            onAutoplayToggle = {
+                onIntent(ReaderIntent.AutoplayToggled(isEnabled = !state.isAutoplayEnabled))
+            },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = TokenProvider.spacings.horizontalSpacing,
+                        end = TokenProvider.spacings.horizontalSpacing,
+                        bottom = TokenProvider.spacings.xl,
+                    ),
+        )
     }
 }
 
@@ -654,15 +684,16 @@ private fun ReaderActionButton(
 }
 
 @Composable
-private fun ReaderEmptyState(
+private fun ReaderUnavailableState(
     title: String,
-    unavailableMessage: String,
+    message: String,
+    isError: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Feedback(
-        properties = FeedbackProperties.Empty(),
+        properties = if (isError) FeedbackProperties.Error() else FeedbackProperties.Empty(),
         title = title,
-        description = unavailableMessage,
+        description = message,
         modifier = modifier.widthIn(max = 420.dp),
     )
 }
@@ -733,9 +764,9 @@ internal fun ReaderEmptyStateContent(
     unavailableMessage: String,
     modifier: Modifier = Modifier,
 ) {
-    ReaderEmptyState(
+    ReaderUnavailableState(
         title = title,
-        unavailableMessage = unavailableMessage,
+        message = unavailableMessage,
         modifier = modifier,
     )
 }

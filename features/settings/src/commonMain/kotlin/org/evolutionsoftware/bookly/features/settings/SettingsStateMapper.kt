@@ -8,7 +8,12 @@ internal class SettingsStateMapper : StateMapper<SettingsAction, SettingsViewSta
         currentState: SettingsViewState,
     ): SettingsViewState =
         when (action) {
-            is SettingsAction.SessionChecked -> currentState.copy(isSessionActive = action.active)
+            is SettingsAction.SessionChecked ->
+                currentState.copy(
+                    isSessionActive = action.active,
+                    accountDisplayName = action.displayName,
+                    profile = currentState.profile.takeIf { action.active },
+                )
             SettingsAction.LoadingStarted -> currentState.copy(isLoading = true)
             is SettingsAction.ProfileLoaded ->
                 currentState.copy(

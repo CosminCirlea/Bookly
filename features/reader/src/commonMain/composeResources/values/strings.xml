@@ -5,6 +5,8 @@
     <string name="reader_close_book_aria">Close book</string>
     <string name="reader_unavailable_offline">This book is not available offline yet.</string>
     <string name="reader_missing_cached_message">This book is not cached yet.</string>
+    <string name="reader_no_page_images_title">No illustrated pages available</string>
+    <string name="reader_no_page_images_body">This book does not have any pages with images yet. Please try again after the book is updated.</string>
     <string name="reader_empty_symbol">📖</string>
     <string name="reader_autoplay_badge">AUTOPLAY</string>
     <string name="reader_favorite_add_aria">Add to favorites</string>

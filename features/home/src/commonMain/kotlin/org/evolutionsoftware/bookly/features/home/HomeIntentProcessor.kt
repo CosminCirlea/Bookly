@@ -3,6 +3,7 @@ package org.evolutionsoftware.bookly.features.home
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import org.evolutionsoftware.bookly.core.auth.GetActiveUserSessionUseCase
 import org.evolutionsoftware.bookly.core.mvi.IntentProcessor
 import org.evolutionsoftware.bookly.core.usecase.utils.Result
 import org.evolutionsoftware.bookly.services.catalog.domain.model.CatalogRefresh
@@ -16,6 +17,7 @@ import org.evolutionsoftware.bookly.services.profiles.domain.usecase.GetCurrentP
 internal class HomeIntentProcessor(
     private val getBooksUseCase: GetBooksUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val getActiveUserSessionUseCase: GetActiveUserSessionUseCase,
     private val getCurrentProfileUseCase: GetCurrentProfileUseCase,
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val addFavoriteUseCase: AddFavoriteUseCase,
@@ -74,6 +76,35 @@ internal class HomeIntentProcessor(
                 emit(HomeAction.LoadingStarted)
             }
 
+            val session = getActiveUserSessionUseCase()
+            emit(HomeAction.SessionLoaded(session?.displayName))
+
+            val profile =
+                if (session != null) {
+                    try {
+                        getCurrentProfileUseCase()
+                    } catch (e: Exception) {
+                        null
+                    }
+                } else {
+                    null
+                }
+            val favoriteBookIds =
+                if (profile != null) {
+                    when (val favorites = getFavoritesUseCase(profile.id)) {
+                        is Result.Success -> favorites.data.map { it.bookId }.toSet()
+                        is Result.Error -> emptySet()
+                    }
+                } else {
+                    emptySet()
+                }
+            emit(
+                HomeAction.ProfileLoaded(
+                    profile = profile,
+                    favoriteBookIds = favoriteBookIds,
+                ),
+            )
+
             when (val categories = getCategoriesUseCase()) {
                 is Result.Success -> emit(HomeAction.CategoriesLoaded(categories.data))
                 is Result.Error -> Unit
@@ -97,26 +128,5 @@ internal class HomeIntentProcessor(
             if (books != cached) {
                 emit(HomeAction.BooksLoaded(books))
             }
-            val profile =
-                try {
-                    getCurrentProfileUseCase()
-                } catch (e: Exception) {
-                    null
-                }
-            val favoriteBookIds =
-                if (profile != null) {
-                    when (val favorites = getFavoritesUseCase(profile.id)) {
-                        is Result.Success -> favorites.data.map { it.bookId }.toSet()
-                        is Result.Error -> emptySet()
-                    }
-                } else {
-                    emptySet()
-                }
-            emit(
-                HomeAction.ProfileLoaded(
-                    profile = profile,
-                    favoriteBookIds = favoriteBookIds,
-                ),
-            )
         }
 }

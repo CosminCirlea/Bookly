@@ -2,6 +2,11 @@ package org.evolutionsoftware.bookly.features.home
 
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import org.evolutionsoftware.bookly.core.auth.GetActiveUserSessionUseCase
+import org.evolutionsoftware.bookly.core.network.AuthToken
+import org.evolutionsoftware.bookly.core.network.AuthTokenStore
+import org.evolutionsoftware.bookly.core.network.UserSession
+import org.evolutionsoftware.bookly.core.network.UserSessionStore
 import org.evolutionsoftware.bookly.core.usecase.utils.Result
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCategory
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookDetails
@@ -22,6 +27,7 @@ import org.evolutionsoftware.bookly.services.profiles.domain.repository.ProfileR
 import org.evolutionsoftware.bookly.services.profiles.domain.usecase.GetCurrentProfileUseCase
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class HomeIntentProcessorTest {
@@ -145,6 +151,33 @@ class HomeIntentProcessorTest {
             )
         }
 
+    @Test
+    fun `active account remains visible when the backend profile is missing`() =
+        runTest {
+            val session =
+                UserSession(
+                    userId = "user-id",
+                    displayName = "reader@example.com",
+                )
+            val actions =
+                processor(
+                    catalog = FakeCatalog(cached = emptyList()),
+                    session = session,
+                ).invoke(HomeIntent.Load).toList()
+            val state =
+                actions.fold(HomeViewState()) { currentState, action ->
+                    HomeStateMapper()(action, currentState)
+                }
+
+            assertEquals(
+                HomeAction.SessionLoaded(session.displayName),
+                actions.filterIsInstance<HomeAction.SessionLoaded>().single(),
+            )
+            assertEquals(session.displayName, state.accountDisplayName)
+            assertNull(state.profile)
+            assertTrue(state.favoriteBookIds.isEmpty())
+        }
+
     // === Filter options ===================================================
 
     @Test
@@ -213,10 +246,16 @@ private fun book(
 private fun processor(
     catalog: CatalogRepository,
     categories: GetCategoriesUseCase = NoCategories,
+    session: UserSession? = null,
 ) =
     HomeIntentProcessor(
         getBooksUseCase = GetBooksUseCase(catalog),
         getCategoriesUseCase = categories,
+        getActiveUserSessionUseCase =
+            GetActiveUserSessionUseCase(
+                authTokenStore = StaticAuthTokenStore(session?.let { ACTIVE_TOKEN }),
+                userSessionStore = StaticUserSessionStore(session),
+            ),
         getCurrentProfileUseCase = GetCurrentProfileUseCase(NoProfile),
         getFavoritesUseCase = NoFavorites,
         addFavoriteUseCase = NoAddFavorite,
@@ -296,3 +335,29 @@ private object NoRemoveFavorite : RemoveFavoriteUseCase {
         bookId: String,
     ): Result<Unit, FavoritesError> = Result.Success(Unit)
 }
+
+private class StaticAuthTokenStore(
+    private val token: AuthToken?,
+) : AuthTokenStore {
+    override suspend fun read(): AuthToken? = token
+
+    override suspend fun write(token: AuthToken) = Unit
+
+    override suspend fun clear() = Unit
+}
+
+private class StaticUserSessionStore(
+    private val session: UserSession?,
+) : UserSessionStore {
+    override suspend fun read(): UserSession? = session
+
+    override suspend fun write(session: UserSession) = Unit
+
+    override suspend fun clear() = Unit
+}
+
+private val ACTIVE_TOKEN =
+    AuthToken(
+        accessToken = "access-token",
+        refreshToken = "refresh-token",
+    )

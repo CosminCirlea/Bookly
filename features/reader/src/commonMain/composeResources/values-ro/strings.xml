@@ -5,6 +5,8 @@
     <string name="reader_close_book_aria">Închide cartea</string>
     <string name="reader_unavailable_offline">Această carte nu este încă disponibilă offline.</string>
     <string name="reader_missing_cached_message">Această carte nu este încă salvată.</string>
+    <string name="reader_no_page_images_title">Nu există pagini ilustrate</string>
+    <string name="reader_no_page_images_body">Această carte nu are încă pagini cu imagini. Încearcă din nou după actualizarea cărții.</string>
     <string name="reader_empty_symbol">📖</string>
     <string name="reader_autoplay_badge">REDARE AUTOMATĂ</string>
     <string name="reader_favorite_add_aria">Adaugă la favorite</string>
