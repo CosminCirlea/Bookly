@@ -1,11 +1,11 @@
 package org.evolutionsoftware.bookly.features.auth
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 
 sealed interface AuthDestination {
@@ -32,6 +32,10 @@ internal class AuthNavigator(
         private set
 
     fun navigateTo(destination: AuthDestination) {
+        if (currentDestination == AuthDestination.Onboarding && destination != AuthDestination.Onboarding) {
+            resetTo(destination)
+            return
+        }
         if (backStack.lastOrNull() != destination) {
             backStack.add(destination)
         }
@@ -59,11 +63,8 @@ internal fun rememberAuthNavigator(
     startDestination: AuthDestination,
     onExit: () -> Unit,
 ): AuthNavigator {
-    val navigator = remember(onExit) { AuthNavigator(startDestination, onExit) }
-
-    LaunchedEffect(startDestination) {
-        navigator.resetTo(startDestination)
+    val currentOnExit by rememberUpdatedState(onExit)
+    return remember(startDestination) {
+        AuthNavigator(startDestination) { currentOnExit() }
     }
-
-    return navigator
 }

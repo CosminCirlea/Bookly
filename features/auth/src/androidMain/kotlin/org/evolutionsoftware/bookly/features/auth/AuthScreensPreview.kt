@@ -261,6 +261,7 @@ private fun OnboardingPreview() {
         OnboardingRoute(
             onDone = {},
             onRegister = {},
+            onLogin = {},
         )
     }
 }

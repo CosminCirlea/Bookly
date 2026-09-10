@@ -16,6 +16,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppLocaleController.attach(this)
+        AppOnboardingController.attach(this)
         CoreContext.init(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)

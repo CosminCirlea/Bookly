@@ -19,6 +19,7 @@ fun AuthFlow(
     onSignedUp: () -> Unit,
     onFinished: (String) -> Unit,
     onShowMessage: (String) -> Unit,
+    onOnboardingCompleted: () -> Unit,
     onOnboardingDone: () -> Unit = onExit,
 ) {
     val forgotPasswordSentMessage = stringResource(Res.string.auth_forgot_password_sent)
@@ -27,8 +28,21 @@ fun AuthFlow(
         onExit = onExit,
     )
 
+    fun completeOnboarding(nextDestination: AuthDestination? = null) {
+        onOnboardingCompleted()
+        if (nextDestination == null) {
+            onOnboardingDone()
+        } else {
+            navigator.navigateTo(nextDestination)
+        }
+    }
+
     PlatformBackHandler {
-        navigator.navigateBack()
+        if (navigator.currentDestination == AuthDestination.Onboarding) {
+            completeOnboarding()
+        } else {
+            navigator.navigateBack()
+        }
     }
 
     when (navigator.currentDestination) {
@@ -71,8 +85,9 @@ fun AuthFlow(
             )
         AuthDestination.Onboarding ->
             OnboardingRoute(
-                onDone = onOnboardingDone,
-                onRegister = { navigator.resetTo(AuthDestination.SignUp) },
+                onDone = { completeOnboarding() },
+                onRegister = { completeOnboarding(AuthDestination.SignUp) },
+                onLogin = { completeOnboarding(AuthDestination.SignIn) },
             )
     }
 }

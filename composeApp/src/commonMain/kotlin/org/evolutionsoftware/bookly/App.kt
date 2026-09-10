@@ -70,8 +70,19 @@ private fun BooklyContent(
         val toastState = rememberBooklyToastState()
         val saveableStateHolder = rememberSaveableStateHolder()
         var refreshKey by remember { mutableIntStateOf(0) }
-        val initialDestination = if (startWithDebugMenu) AppDestination.DebugMenu else AppDestination.Home
+        val initialDestination =
+            when {
+                startWithDebugMenu -> AppDestination.DebugMenu
+                !AppOnboardingController.isCompleted() ->
+                    AppDestination.Auth(AuthDestination.Onboarding)
+                else -> AppDestination.Home
+            }
         var destination by remember { mutableStateOf<AppDestination>(initialDestination) }
+
+        fun completeOnboarding(nextDestination: AppDestination) {
+            AppOnboardingController.markCompleted()
+            destination = nextDestination
+        }
 
         fun showToast(
             message: String,
@@ -165,17 +176,27 @@ private fun BooklyContent(
                     is AppDestination.Auth -> {
                         AuthFlow(
                             startDestination = screen.destination,
-                            onExit = { destination = AppDestination.Settings },
+                            onExit = {
+                                destination =
+                                    if (screen.destination == AuthDestination.Onboarding) {
+                                        AppDestination.Home
+                                    } else {
+                                        AppDestination.Settings
+                                    }
+                            },
                             onAuthenticated = {
-                                destination = AppDestination.Home
+                                completeOnboarding(AppDestination.Home)
                                 showToast(it, BooklyToastKind.Success)
                             },
-                            onSignedUp = { destination = AppDestination.CreateProfile(fromSettings = false) },
+                            onSignedUp = {
+                                completeOnboarding(AppDestination.CreateProfile(fromSettings = false))
+                            },
                             onFinished = {
                                 destination = AppDestination.Settings
                                 showToast(it, BooklyToastKind.Success)
                             },
                             onShowMessage = ::showMessage,
+                            onOnboardingCompleted = { AppOnboardingController.markCompleted() },
                             onOnboardingDone = { destination = AppDestination.Home },
                         )
                     }
