@@ -81,6 +81,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ReaderRoute(
     bookId: String,
+    knownLastUpdated: String? = null,
     onBack: () -> Unit,
     onShowMessage: (String) -> Unit,
     onShowToast: (String, BooklyToastKind) -> Unit = { message, _ -> onShowMessage(message) },
@@ -90,7 +91,7 @@ fun ReaderRoute(
     val missingCachedMessage = stringResource(Res.string.reader_missing_cached_message)
 
     LaunchedEffect(bookId) {
-        viewModel.onUserIntent(ReaderIntent.Load(bookId))
+        viewModel.onUserIntent(ReaderIntent.Load(bookId, knownLastUpdated))
     }
 
     LaunchedEffect(viewModel) {

@@ -296,6 +296,7 @@ private class FakeCatalog(
     override suspend fun getBookDetails(
         bookId: String,
         refresh: CatalogRefresh,
+        knownLastUpdated: String?,
     ): BookDetails? = null
 }
 

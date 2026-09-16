@@ -1,0 +1,23 @@
+-- Filter options are re-downloadable. Schema changes use a new database filename,
+-- allowing the cache to be rebuilt rather than migrated.
+CREATE TABLE CategoryEntity (
+    id TEXT NOT NULL,
+    languageId INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    imageUrl TEXT,
+    cachedAt INTEGER NOT NULL,
+    PRIMARY KEY(id, languageId)
+);
+
+selectCategories:
+SELECT id, name, imageUrl
+FROM CategoryEntity
+WHERE languageId = ?
+ORDER BY name;
+
+deleteCategoriesForLanguage:
+DELETE FROM CategoryEntity WHERE languageId = ?;
+
+insertCategory:
+INSERT INTO CategoryEntity(id, languageId, name, imageUrl, cachedAt)
+VALUES (?, ?, ?, ?, ?);

@@ -105,8 +105,8 @@ private fun BooklyContent(
                     AppDestination.Home ->
                         HomeRoute(
                             refreshKey = refreshKey,
-                            onBookSelected = { bookId ->
-                                val readerDestination = AppDestination.Reader(bookId)
+                            onBookSelected = { bookId, lastUpdated ->
+                                val readerDestination = AppDestination.Reader(bookId, lastUpdated)
                                 saveableStateHolder.removeState(readerDestination.stateKey)
                                 destination = readerDestination
                             },
@@ -120,6 +120,7 @@ private fun BooklyContent(
                         }
                         ReaderRoute(
                             bookId = screen.bookId,
+                            knownLastUpdated = screen.lastUpdated,
                             onBack = { destination = AppDestination.Home },
                             onShowMessage = ::showMessage,
                             onShowToast = ::showToast,
@@ -298,7 +299,12 @@ private sealed interface AppDestination {
 
     data object Home : AppDestination
 
-    data class Reader(val bookId: String) : AppDestination
+    data class Reader(val bookId: String, val lastUpdated: String? = null) : AppDestination {
+        // The reading position belongs to the book, not to how fresh its metadata is,
+        // so the saved-state key deliberately ignores lastUpdated.
+        override val stateKey: String
+            get() = "Reader($bookId)"
+    }
 
     data object Settings : AppDestination
 

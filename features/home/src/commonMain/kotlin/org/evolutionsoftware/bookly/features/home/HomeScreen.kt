@@ -101,7 +101,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun HomeRoute(
     refreshKey: Int,
-    onBookSelected: (String) -> Unit,
+    onBookSelected: (String, String?) -> Unit,
     onSettingsClick: () -> Unit,
     onShowToast: (String, BooklyToastKind) -> Unit = { _, _ -> },
 ) {
@@ -139,7 +139,7 @@ fun HomeRoute(
 private fun HomeScreen(
     state: HomeViewState,
     onIntent: (HomeIntent) -> Unit,
-    onBookSelected: (String) -> Unit,
+    onBookSelected: (String, String?) -> Unit,
     onSettingsClick: () -> Unit,
 ) {
     var showFilterSheet by remember { mutableStateOf(false) }
@@ -236,7 +236,7 @@ private fun HomeScreen(
                                         ),
                                     )
                                 },
-                                onClick = { onBookSelected(book.id) },
+                                onClick = { onBookSelected(book.id, book.lastUpdated) },
                             )
                         }
                     }
@@ -943,7 +943,7 @@ private fun FavoriteButton(
 internal fun HomeScreenContent(
     state: HomeViewState,
     onIntent: (HomeIntent) -> Unit,
-    onBookSelected: (String) -> Unit,
+    onBookSelected: (String, String?) -> Unit,
     onSettingsClick: () -> Unit,
 ) {
     HomeScreen(

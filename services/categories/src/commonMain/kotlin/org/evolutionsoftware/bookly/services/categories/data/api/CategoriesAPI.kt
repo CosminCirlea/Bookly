@@ -7,10 +7,24 @@ import io.ktor.client.request.parameter
 import org.evolutionsoftware.bookly.services.categories.data.dto.CategoriesPaginatedResponseDto
 import org.evolutionsoftware.bookly.services.categories.data.error.requireSuccess
 
+interface CategoriesRemoteDataSource {
+    suspend fun getCategories(
+        languageId: Int,
+        limit: Int = DEFAULT_PAGE_SIZE,
+    ): CategoriesPaginatedResponseDto
+
+    companion object {
+        const val DEFAULT_PAGE_SIZE = 100
+    }
+}
+
 class CategoriesAPI(
     private val httpClient: HttpClient,
-) {
-    suspend fun getCategories(languageId: Int, limit: Int = 100): CategoriesPaginatedResponseDto =
+) : CategoriesRemoteDataSource {
+    override suspend fun getCategories(
+        languageId: Int,
+        limit: Int,
+    ): CategoriesPaginatedResponseDto =
         httpClient
             .get(CATEGORIES_PATH) {
                 parameter("language_id", languageId)

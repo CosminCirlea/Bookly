@@ -19,10 +19,16 @@ interface CatalogRepository {
      * then served from disk indefinitely, until the catalog list reports a different
      * last-updated value for the book.
      *
+     * @param knownLastUpdated the book's last-updated value as already known by the
+     *   caller (typically read straight from the catalog list that is showing this
+     *   book). When supplied under [CatalogRefresh.Automatic], it is trusted instead
+     *   of re-fetching the catalog just to look up the same value, saving a network
+     *   round trip.
      * @return null when the book exists in neither the cache nor the catalog.
      */
     suspend fun getBookDetails(
         bookId: String,
         refresh: CatalogRefresh = CatalogRefresh.Automatic,
+        knownLastUpdated: String? = null,
     ): BookDetails?
 }

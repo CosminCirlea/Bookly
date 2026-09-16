@@ -108,7 +108,7 @@ private fun HomeScreenPreview() {
         HomeScreenContent(
             state = previewStateWithContent,
             onIntent = {},
-            onBookSelected = {},
+            onBookSelected = { _, _ -> },
             onSettingsClick = {},
         )
     }
@@ -121,7 +121,7 @@ private fun HomeScreenLoadingPreview() {
         HomeScreenContent(
             state = previewStateLoading,
             onIntent = {},
-            onBookSelected = {},
+            onBookSelected = { _, _ -> },
             onSettingsClick = {},
         )
     }
@@ -134,7 +134,7 @@ private fun HomeScreenEmptyPreview() {
         HomeScreenContent(
             state = previewStateEmpty,
             onIntent = {},
-            onBookSelected = {},
+            onBookSelected = { _, _ -> },
             onSettingsClick = {},
         )
     }
@@ -147,7 +147,7 @@ private fun HomeScreenErrorPreview() {
         HomeScreenContent(
             state = previewStateError,
             onIntent = {},
-            onBookSelected = {},
+            onBookSelected = { _, _ -> },
             onSettingsClick = {},
         )
     }

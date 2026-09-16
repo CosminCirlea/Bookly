@@ -23,7 +23,7 @@ internal class ReaderIntentProcessor(
             is ReaderIntent.Load ->
                 flow {
                     emit(ReaderAction.LoadingStarted)
-                    val book = getBookDetailsUseCase(intent.bookId)
+                    val book = getBookDetailsUseCase(intent.bookId, knownLastUpdated = intent.knownLastUpdated)
                     emit(if (book != null) ReaderAction.ContentLoaded(book) else ReaderAction.MissingBook)
                     if (book != null) {
                         val profile =

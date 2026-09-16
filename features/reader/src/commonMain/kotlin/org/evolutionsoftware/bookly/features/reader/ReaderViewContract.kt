@@ -24,7 +24,7 @@ internal sealed interface ReaderSideEffect : SideEffect {
 }
 
 internal sealed interface ReaderIntent : UserIntent {
-    data class Load(val bookId: String) : ReaderIntent
+    data class Load(val bookId: String, val knownLastUpdated: String? = null) : ReaderIntent
 
     data class AutoplayToggled(val isEnabled: Boolean) : ReaderIntent
 

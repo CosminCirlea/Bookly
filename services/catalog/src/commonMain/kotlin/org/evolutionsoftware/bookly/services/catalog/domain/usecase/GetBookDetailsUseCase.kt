@@ -10,5 +10,6 @@ class GetBookDetailsUseCase(
     suspend operator fun invoke(
         bookId: String,
         refresh: CatalogRefresh = CatalogRefresh.Automatic,
-    ): BookDetails? = repository.getBookDetails(bookId, refresh)
+        knownLastUpdated: String? = null,
+    ): BookDetails? = repository.getBookDetails(bookId, refresh, knownLastUpdated)
 }

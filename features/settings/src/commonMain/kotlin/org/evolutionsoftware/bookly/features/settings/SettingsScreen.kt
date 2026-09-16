@@ -76,7 +76,6 @@ import bookly.features.settings.generated.resources.settings_logout_confirm
 import bookly.features.settings.generated.resources.settings_logout_title
 import bookly.features.settings.generated.resources.settings_more
 import bookly.features.settings.generated.resources.settings_notifications
-import bookly.features.settings.generated.resources.settings_preferences
 import bookly.features.settings.generated.resources.settings_rate_app
 import bookly.features.settings.generated.resources.settings_rate_later
 import bookly.features.settings.generated.resources.settings_rate_placeholder_improve
@@ -221,19 +220,6 @@ private fun SettingsScreen(
                         ),
                 )
             }
-
-            SettingsSection(
-                title = stringResource(Res.string.settings_preferences),
-                items =
-                    listOf(
-                        SettingsRowItem(stringResource(Res.string.settings_notifications), Icons.SettingsNotifications, SettingsRowStyles.Success) {
-                            onIntent(SettingsIntent.NotificationsClicked)
-                        },
-                        SettingsRowItem(stringResource(Res.string.settings_sound_audio), Icons.SettingsSound, SettingsRowStyles.Info) {
-                            onIntent(SettingsIntent.SoundClicked)
-                        },
-                    ),
-            )
 
             SettingsSection(
                 title = stringResource(Res.string.settings_support),
@@ -583,22 +569,21 @@ private fun RateAppSheet(
                     )
                 }
             }
-            if (stars > 0) {
-                Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
-                SheetTextArea(
-                    value = feedback,
-                    onValueChange = { feedback = it },
-                    placeholder =
-                        stringResource(
-                            if (stars >= 4) {
-                                Res.string.settings_rate_placeholder_love
-                            } else {
-                                Res.string.settings_rate_placeholder_improve
-                            },
-                        ),
-                    minHeight = 88.dp,
-                )
-            }
+            Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
+            SheetTextArea(
+                value = feedback,
+                onValueChange = { feedback = it },
+                placeholder =
+                    stringResource(
+                        if (stars >= 4) {
+                            Res.string.settings_rate_placeholder_love
+                        } else {
+                            Res.string.settings_rate_placeholder_improve
+                        },
+                    ),
+                minHeight = 56.dp,
+                maxHeight = 100.dp,
+            )
             Spacer(modifier = Modifier.height(TokenProvider.spacings.lg - TokenProvider.spacings.xxs))
             Button(
                 properties =
@@ -941,6 +926,7 @@ internal fun SheetTextArea(
     onValueChange: (String) -> Unit,
     placeholder: String,
     minHeight: androidx.compose.ui.unit.Dp,
+    maxHeight: androidx.compose.ui.unit.Dp = androidx.compose.ui.unit.Dp.Unspecified,
     modifier: Modifier = Modifier,
     label: String? = null,
 ) {
@@ -955,7 +941,7 @@ internal fun SheetTextArea(
         modifier =
             modifier
                 .fillMaxWidth()
-                .heightIn(min = minHeight)
+                .heightIn(min = minHeight, max = maxHeight)
                 .background(
                     color = TokenProvider.colors.bgElevated,
                     shape = RoundedCornerShape(TokenProvider.borderRadius.md),

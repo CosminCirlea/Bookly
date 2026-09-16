@@ -87,23 +87,39 @@ class CatalogRepositoryImpl(
     override suspend fun getBookDetails(
         bookId: String,
         refresh: CatalogRefresh,
+        knownLastUpdated: String?,
     ): BookDetails? {
         val cached = cache.getBookDetails(bookId)
         val cachedCatalogLastUpdated = cache.getBookLastUpdated(bookId)
         val latestLastUpdated =
-            if (refresh == CatalogRefresh.CacheOnly) {
-                cachedCatalogLastUpdated
-            } else {
-                try {
-                    remote.getBookLastUpdated(bookId) ?: cachedCatalogLastUpdated
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Throwable) {
-                    logger.d("getBookDetails($bookId): last-updated check failed (${e.message})")
-                    if (cached != null) return cached.toDetails()
-                    cachedCatalogLastUpdated
+            when {
+                refresh == CatalogRefresh.CacheOnly -> cachedCatalogLastUpdated
+                // The caller already knows the catalog's current value for this book
+                // (typically read straight off the list screen), so there is nothing
+                // a network round trip would tell us that we do not already know.
+                refresh == CatalogRefresh.Automatic && knownLastUpdated != null -> {
+                    logger.d(
+                        "getBookDetails($bookId): using caller-supplied lastUpdated=$knownLastUpdated, " +
+                            "skipping the network freshness check",
+                    )
+                    knownLastUpdated
                 }
+                else ->
+                    try {
+                        remote.getBookLastUpdated(bookId) ?: cachedCatalogLastUpdated
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Throwable) {
+                        logger.d("getBookDetails($bookId): last-updated check failed (${e.message})")
+                        if (cached != null) return cached.toDetails()
+                        cachedCatalogLastUpdated
+                    }
             }
+
+        logger.d(
+            "getBookDetails($bookId): cached lastUpdated=${cached?.lastUpdated}, " +
+                "api lastUpdated=$latestLastUpdated",
+        )
 
         val shouldDownload =
             when (refresh) {

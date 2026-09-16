@@ -175,7 +175,10 @@ fun OnboardingRoute(
 private fun OnboardingTopBar(
     skipLabel: String,
     onSkip: () -> Unit,
+    isVisible: Boolean,
 ) {
+    // Always reserve the same height as the visible skip pill so the title below
+    // stays at a consistent vertical position across all pages, including the last one.
     Row(
         modifier =
             Modifier
@@ -190,8 +193,8 @@ private fun OnboardingTopBar(
             modifier =
                 Modifier
                     .clip(CircleShape)
-                    .background(TokenProvider.colors.bgElevated)
-                    .clickable(onClick = onSkip)
+                    .background(if (isVisible) TokenProvider.colors.bgElevated else Color.Transparent)
+                    .clickable(enabled = isVisible, onClick = onSkip)
                     .padding(
                         start = TokenProvider.spacings.md,
                         end = TokenProvider.spacings.sm,
@@ -207,13 +210,13 @@ private fun OnboardingTopBar(
                     TokenProvider.textStyles.bodyStrong.copy(
                         fontSize = TokenProvider.fontSizes.caption,
                     ),
-                color = TokenProvider.colors.text,
+                color = if (isVisible) TokenProvider.colors.text else Color.Transparent,
             )
             Icon(
                 painter = painterResource(Icons.Close.icon),
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
-                tint = TokenProvider.colors.text,
+                tint = if (isVisible) TokenProvider.colors.text else Color.Transparent,
             )
         }
     }
@@ -282,6 +285,7 @@ private fun OnboardingPageContent(
             OnboardingTopBar(
                 skipLabel = stringResource(Res.string.onboarding_skip),
                 onSkip = onDone,
+                isVisible = !page.showsActions,
             )
             Column(
                 modifier =
