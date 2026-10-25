@@ -42,6 +42,7 @@ data class ThemeColors(
     val textPrimaryButton: Color = textInverse,
     val bgSecondaryButton: Color = text,
     val textSecondaryButton: Color = textInverse,
+    val textInput: Color = text,
 )
 
 fun ThemeColors.toMaterialColors(darkTheme: Boolean): ColorScheme =

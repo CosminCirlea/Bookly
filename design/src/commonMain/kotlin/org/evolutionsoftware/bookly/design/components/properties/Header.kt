@@ -32,6 +32,6 @@ data class HeaderProperties(
     fun getBackgroundColor(): Color = TokenProvider.colors.bgBase
 
     @Composable
-    fun getTitleColor(): Color = TokenProvider.colors.text
+    fun getTitleColor(): Color = TokenProvider.colors.textBrand
 
 }

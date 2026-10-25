@@ -35,7 +35,7 @@ fun IconButton(
     val containerColor by animateColorAsState(
         targetValue =
             if (pressed && properties.isEnabled()) {
-                TokenProvider.colors.bgPrimaryButton
+                TokenProvider.colors.bgElevated
             } else {
                 properties.getContainerColor()
             },

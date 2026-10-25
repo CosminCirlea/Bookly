@@ -118,17 +118,25 @@ internal fun ReaderSkeleton(
                     Arrangement.spacedBy(TokenProvider.spacings.xs, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                repeat(pageCount) { index ->
+                repeat(pageCount.coerceIn(0, SKELETON_PAGES)) { index ->
                     // Matches the real indicator: active pill first, edge dot tapered.
                     val diameter = if (index == pageCount - 1) 6.dp else 10.dp
-                    ShimmerBlock(
+                    Box(
                         modifier =
                             Modifier
-                                .height(diameter)
+                                .height(48.dp)
                                 .width(if (index == 0) 24.dp else diameter),
-                        shape = pill,
-                        brush = brush,
-                    )
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        ShimmerBlock(
+                            modifier =
+                                Modifier
+                                    .height(diameter)
+                                    .width(if (index == 0) 24.dp else diameter),
+                            shape = pill,
+                            brush = brush,
+                        )
+                    }
                 }
             }
             ShimmerBlock(

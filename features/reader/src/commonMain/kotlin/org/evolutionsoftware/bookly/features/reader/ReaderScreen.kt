@@ -2,8 +2,7 @@ package org.evolutionsoftware.bookly.features.reader
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -37,6 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +59,7 @@ import bookly.features.reader.generated.resources.reader_missing_cached_message
 import bookly.features.reader.generated.resources.reader_no_page_images_body
 import bookly.features.reader.generated.resources.reader_no_page_images_title
 import bookly.features.reader.generated.resources.reader_opening_book
+import bookly.features.reader.generated.resources.reader_page_aria
 import bookly.features.reader.generated.resources.reader_unavailable_offline
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
@@ -492,7 +495,7 @@ private fun ReaderProgressIndicator(
     if (total <= 0) return
 
     // A window of at most MAX_VISIBLE_DOTS slides to keep the current page centred, so
-    // a twenty-page book reads the same as a five-page one. The outermost dot on a side
+    // a twenty-page book reads the same as a short one. The outermost dot on a side
     // that still has pages beyond it tapers down, hinting there is more in that
     // direction without spelling out how much.
     val windowStart = (current - MAX_VISIBLE_DOTS / 2).coerceIn(0, maxOf(0, total - MAX_VISIBLE_DOTS))
@@ -518,32 +521,42 @@ private fun ReaderProgressIndicator(
                 targetValue = if (isActive) DOT_WIDTH_ACTIVE else diameter,
                 label = "readerDotWidth",
             )
-            val interactionSource = remember { MutableInteractionSource() }
+            val pageLabel = stringResource(Res.string.reader_page_aria, index + 1, total)
 
             Box(
                 modifier =
                     Modifier
-                        .height(diameter)
                         .width(width)
+                        .height(48.dp)
                         .clip(CircleShape)
-                        .background(
-                            if (isActive) {
-                                TokenProvider.colors.bgAccentStrong
-                            } else {
-                                TokenProvider.colors.borderAccent.copy(alpha = 0.5f)
-                            },
-                        )
+                        .semantics { contentDescription = pageLabel }
                         .then(
                             if (onDotSelected != null) {
-                                Modifier.clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null,
+                                Modifier.selectable(
+                                    selected = isActive,
+                                    role = Role.Tab,
                                 ) { onDotSelected(index) }
                             } else {
                                 Modifier
                             },
                         ),
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .height(diameter)
+                            .width(width)
+                            .clip(CircleShape)
+                            .background(
+                                if (isActive) {
+                                    TokenProvider.colors.bgAccent
+                                } else {
+                                    TokenProvider.colors.borderAccent.copy(alpha = 0.5f)
+                                },
+                            ),
+                )
+            }
         }
     }
 }

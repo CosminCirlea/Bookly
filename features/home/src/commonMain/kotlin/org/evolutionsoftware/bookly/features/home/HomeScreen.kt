@@ -3,6 +3,7 @@ package org.evolutionsoftware.bookly.features.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +47,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -362,7 +364,7 @@ private fun HomeSearchField(
                 ),
         textStyle =
             TokenProvider.textStyles.input.copy(
-                color = TokenProvider.colors.text,
+                color = TokenProvider.colors.textInput,
             ),
         lineLimits = TextFieldLineLimits.SingleLine,
         decorator = { innerTextField ->
@@ -378,7 +380,7 @@ private fun HomeSearchField(
                 Icon(
                     painter = painterResource(Icons.Search.icon),
                     contentDescription = null,
-                    tint = TokenProvider.colors.textMuted,
+                    tint = TokenProvider.colors.textInput,
                     modifier = Modifier.size(22.dp),
                 )
                 Box(modifier = Modifier.weight(1f)) {
@@ -386,7 +388,7 @@ private fun HomeSearchField(
                         Text(
                             text = stringResource(Res.string.home_search_placeholder),
                             style = TokenProvider.textStyles.input,
-                            color = TokenProvider.colors.textMuted.copy(alpha = 0.7f),
+                            color = TokenProvider.colors.textInput,
                         )
                     }
                     innerTextField()
@@ -904,12 +906,10 @@ private fun FavoriteButton(
         stringResource(
             if (isFavorite) Res.string.home_favorite_remove_aria else Res.string.home_favorite_add_aria,
         )
-    val interactionSource = remember { MutableInteractionSource() }
-
     Box(
         modifier =
             modifier
-                .size(36.dp)
+                .size(48.dp)
                 .shadow(
                     elevation = 4.dp,
                     shape = CircleShape,
@@ -918,10 +918,10 @@ private fun FavoriteButton(
                 )
                 .clip(CircleShape)
                 .background(TokenProvider.colors.bgSurface.copy(alpha = 0.92f))
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = onClick,
+                .toggleable(
+                    value = isFavorite,
+                    role = Role.Checkbox,
+                    onValueChange = { onClick() },
                 ),
         contentAlignment = Alignment.Center,
     ) {
@@ -929,7 +929,7 @@ private fun FavoriteButton(
             painter = painterResource(if (isFavorite) Icons.HeartFilled.icon else Icons.Heart.icon),
             contentDescription = ariaLabel,
             tint = if (isFavorite) TokenProvider.colors.favorite else TokenProvider.colors.textMuted,
-            modifier = Modifier.size(20.dp),
+            modifier = Modifier.size(24.dp),
         )
     }
 }

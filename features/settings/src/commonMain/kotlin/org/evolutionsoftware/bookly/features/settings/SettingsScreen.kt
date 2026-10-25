@@ -3,6 +3,7 @@ package org.evolutionsoftware.bookly.features.settings
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -44,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -79,6 +81,7 @@ import bookly.features.settings.generated.resources.settings_logout_title
 import bookly.features.settings.generated.resources.settings_more
 import bookly.features.settings.generated.resources.settings_notifications
 import bookly.features.settings.generated.resources.settings_rate_app
+import bookly.features.settings.generated.resources.settings_rate_star_aria
 import bookly.features.settings.generated.resources.settings_rate_later
 import bookly.features.settings.generated.resources.settings_rate_placeholder_improve
 import bookly.features.settings.generated.resources.settings_rate_placeholder_love
@@ -292,7 +295,7 @@ private fun SettingsScreen(
                 text = stringResource(Res.string.settings_version).uppercase(),
                 modifier = Modifier.fillMaxWidth(),
                 style = TokenProvider.textStyles.overline,
-                color = TokenProvider.colors.textMuted.copy(alpha = 0.7f),
+                color = TokenProvider.colors.textMuted,
                 textAlign = TextAlign.Center,
             )
         }
@@ -544,23 +547,29 @@ private fun RateAppSheet(
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(TokenProvider.spacings.lg - TokenProvider.spacings.xxs))
-            Row(horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xs)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 repeat(5) { index ->
                     val starNumber = index + 1
                     val filled = starNumber <= stars
-                    val interactionSource = remember { MutableInteractionSource() }
-                    Icon(
-                        painter = painterResource(if (filled) Icons.Star.icon else Icons.StarOutline.icon),
-                        contentDescription = null,
-                        tint = if (filled) TokenProvider.colors.borderAccent else TokenProvider.colors.border,
+                    Box(
                         modifier =
                             Modifier
-                                .size(44.dp)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null,
+                                .weight(1f, fill = false)
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .selectable(
+                                    selected = starNumber == stars,
+                                    role = Role.RadioButton,
                                 ) { stars = starNumber },
-                    )
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(if (filled) Icons.Star.icon else Icons.StarOutline.icon),
+                            contentDescription = stringResource(Res.string.settings_rate_star_aria, starNumber),
+                            tint = if (filled) TokenProvider.colors.borderAccent else TokenProvider.colors.textMuted,
+                            modifier = Modifier.size(36.dp),
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
@@ -948,7 +957,7 @@ internal fun SheetTextArea(
                 ),
         textStyle =
             TokenProvider.textStyles.input.copy(
-                color = TokenProvider.colors.text,
+                color = TokenProvider.colors.textInput,
             ),
         interactionSource = interactionSource,
         decorator = { innerTextField ->
@@ -972,14 +981,14 @@ internal fun SheetTextArea(
                         Text(
                             text = floatingLabel,
                             style = TokenProvider.textStyles.eyebrow,
-                            color = TokenProvider.colors.textMuted,
+                            color = TokenProvider.colors.textInput,
                         )
                         Box(modifier = Modifier.fillMaxWidth()) {
                             if (text.isEmpty()) {
                                 Text(
                                     text = placeholder,
                                     style = TokenProvider.textStyles.input,
-                                    color = TokenProvider.colors.textMuted.copy(alpha = 0.7f),
+                                    color = TokenProvider.colors.textInput,
                                 )
                             }
                             innerTextField()
@@ -991,7 +1000,7 @@ internal fun SheetTextArea(
                             Text(
                                 text = floatingLabel ?: placeholder,
                                 style = TokenProvider.textStyles.input,
-                                color = TokenProvider.colors.textMuted.copy(alpha = 0.7f),
+                                color = TokenProvider.colors.textInput,
                             )
                         }
                         innerTextField()
