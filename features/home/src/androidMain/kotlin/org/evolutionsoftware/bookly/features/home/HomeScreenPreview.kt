@@ -62,7 +62,7 @@ private val previewStateWithContent =
         profile = previewProfile,
         allBooks = previewBooks,
         visibleBooks = previewBooks,
-        selectedCategoryId = null,
+        selectedCategoryIds = emptySet(),
         categories =
             listOf(
                 Category(id = "1", name = "Animals"),
@@ -78,7 +78,7 @@ private val previewStateLoading =
         profile = null,
         allBooks = emptyList(),
         visibleBooks = emptyList(),
-        selectedCategoryId = null,
+        selectedCategoryIds = emptySet(),
     )
 
 private val previewStateEmpty =
@@ -88,7 +88,7 @@ private val previewStateEmpty =
         profile = previewProfile,
         allBooks = emptyList(),
         visibleBooks = emptyList(),
-        selectedCategoryId = null,
+        selectedCategoryIds = emptySet(),
     )
 
 private val previewStateError =
@@ -98,7 +98,7 @@ private val previewStateError =
         profile = null,
         allBooks = emptyList(),
         visibleBooks = emptyList(),
-        selectedCategoryId = null,
+        selectedCategoryIds = emptySet(),
     )
 
 @Preview(showBackground = true, showSystemUi = true)

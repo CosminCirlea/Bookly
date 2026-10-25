@@ -34,7 +34,7 @@ fun FilterChips(
                 modifier =
                     Modifier
                         .background(
-                            color = if (selected) TokenProvider.colors.bgAccent else TokenProvider.colors.bgSurface,
+                            color = if (selected) TokenProvider.colors.bgAccentSoft else TokenProvider.colors.bgSurface,
                             shape = RoundedCornerShape(TokenProvider.borderRadius.pill),
                         ).clickable { onFilterSelected(filter) }
                         .padding(
@@ -42,7 +42,7 @@ fun FilterChips(
                             vertical = TokenProvider.spacings.sm,
                         ),
                 style = TokenProvider.textStyles.eyebrow,
-                color = if (selected) TokenProvider.colors.textInverse else TokenProvider.colors.text,
+                color = if (selected) TokenProvider.colors.textAccent else TokenProvider.colors.textMuted,
             )
         }
     }

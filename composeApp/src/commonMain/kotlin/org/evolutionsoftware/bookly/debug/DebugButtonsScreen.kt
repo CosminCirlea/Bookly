@@ -14,9 +14,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import org.evolutionsoftware.bookly.components.ui.PlayroomGhostButton
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.properties.ButtonProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
+import org.evolutionsoftware.bookly.features.auth.onboarding.OnboardingActionButton
+import org.evolutionsoftware.bookly.features.auth.onboarding.OnboardingGuestButton
 
 @Composable
 fun DebugButtonsScreen(onClose: () -> Unit) {
@@ -40,51 +43,28 @@ fun DebugButtonsScreen(onClose: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
 
-            DebugSectionTitle("Primary - Large")
-            Button(
-                properties = ButtonProperties(label = "Continue", size = ButtonProperties.Size.Large),
-                onClick = {},
-            )
+            ButtonMatrix(size = ButtonProperties.Size.Large)
+            ButtonMatrix(size = ButtonProperties.Size.Medium)
+            ButtonMatrix(size = ButtonProperties.Size.Large, variant = ButtonProperties.Variant.Outlined)
+            ButtonMatrix(size = ButtonProperties.Size.Medium, variant = ButtonProperties.Variant.Outlined)
 
-            DebugSectionTitle("Primary - Medium")
-            Button(
-                properties = ButtonProperties(label = "Sign In", size = ButtonProperties.Size.Medium),
+            DebugSectionTitle("Onboarding / Secondary")
+            OnboardingActionButton(
+                label = "Create account",
+                isPrimary = true,
                 onClick = {},
             )
-
-            DebugSectionTitle("Disabled - Large")
-            Button(
-                properties =
-                    ButtonProperties(
-                        label = "Disabled Button",
-                        size = ButtonProperties.Size.Large,
-                        state = ButtonProperties.State.Disabled,
-                    ),
+            OnboardingActionButton(
+                label = "Log in",
+                isPrimary = false,
                 onClick = {},
             )
-
-            DebugSectionTitle("Disabled - Medium")
-            Button(
-                properties =
-                    ButtonProperties(
-                        label = "Disabled",
-                        size = ButtonProperties.Size.Medium,
-                        state = ButtonProperties.State.Disabled,
-                    ),
+            PlayroomGhostButton(
+                label = "Secondary action",
                 onClick = {},
             )
-
-            DebugSectionTitle("Various Labels")
-            Button(
-                properties = ButtonProperties(label = "Get Started"),
-                onClick = {},
-            )
-            Button(
-                properties = ButtonProperties(label = "Create Account"),
-                onClick = {},
-            )
-            Button(
-                properties = ButtonProperties(label = "Save Changes"),
+            OnboardingGuestButton(
+                label = "Continue as guest",
                 onClick = {},
             )
 
@@ -92,6 +72,35 @@ fun DebugButtonsScreen(onClose: () -> Unit) {
         }
     }
 }
+
+@Composable
+private fun ButtonMatrix(
+    size: ButtonProperties.Size,
+    variant: ButtonProperties.Variant = ButtonProperties.Variant.Primary,
+) {
+    val name = if (variant == ButtonProperties.Variant.Primary) "Primary" else "Secondary"
+    DebugSectionTitle("$name - ${size.name.lowercase().replaceFirstChar { it.uppercase() }}")
+    ButtonProperties.State.entries.forEach { state ->
+        Button(
+            properties =
+                ButtonProperties(
+                    label = state.label,
+                    size = size,
+                    variant = variant,
+                    state = state,
+                ),
+            onClick = {},
+        )
+    }
+}
+
+private val ButtonProperties.State.label: String
+    get() =
+        when (this) {
+            ButtonProperties.State.Default -> "Default"
+            ButtonProperties.State.Disabled -> "Disabled"
+            ButtonProperties.State.Loading -> "Loading"
+        }
 
 @Composable
 private fun DebugSectionTitle(title: String) {

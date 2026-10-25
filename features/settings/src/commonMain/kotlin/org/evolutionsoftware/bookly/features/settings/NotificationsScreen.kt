@@ -224,7 +224,7 @@ private fun ToggleRow(
                 Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFFFE0B2)),
+                    .background(TokenProvider.colors.bgAccentSoft),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -237,12 +237,12 @@ private fun ToggleRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,
-                style = TokenProvider.textStyles.bodyStrong.copy(fontSize = 15.sp),
+                style = TokenProvider.textStyles.label,
                 color = TokenProvider.colors.text,
             )
             Text(
                 text = sub,
-                style = TokenProvider.textStyles.body.copy(fontSize = 12.sp, lineHeight = 16.sp),
+                style = TokenProvider.textStyles.caption,
                 color = TokenProvider.colors.textMuted,
             )
         }
@@ -277,7 +277,7 @@ private fun BedtimeRow(
                     Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFE3F2FD)),
+                        .background(TokenProvider.colors.bgInfoSoft),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -290,12 +290,12 @@ private fun BedtimeRow(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(Res.string.notifications_bedtime),
-                    style = TokenProvider.textStyles.bodyStrong.copy(fontSize = 15.sp),
+                    style = TokenProvider.textStyles.label,
                     color = TokenProvider.colors.text,
                 )
                 Text(
                     text = stringResource(Res.string.notifications_bedtime_sub),
-                    style = TokenProvider.textStyles.body.copy(fontSize = 12.sp, lineHeight = 16.sp),
+                    style = TokenProvider.textStyles.caption,
                     color = TokenProvider.colors.textMuted,
                 )
             }
@@ -309,7 +309,7 @@ private fun BedtimeRow(
                 Text(
                     text = stringResource(Res.string.notifications_bedtime_time),
                     modifier = Modifier.weight(1f),
-                    style = TokenProvider.textStyles.bodyStrong.copy(fontSize = TokenProvider.fontSizes.caption),
+                    style = TokenProvider.textStyles.captionStrong,
                     color = TokenProvider.colors.text,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xs)) {
@@ -330,8 +330,7 @@ private fun BedtimeRow(
                         ) {
                             Text(
                                 text = option,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
+                                style = TokenProvider.textStyles.captionStrong,
                                 color = TokenProvider.colors.text,
                             )
                         }

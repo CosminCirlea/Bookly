@@ -38,7 +38,7 @@ fun PlayroomSecondaryChip(
         modifier =
             modifier
                 .clip(CircleShape)
-                .background(if (selected) TokenProvider.colors.bgSuccessSoft else TokenProvider.colors.bgElevated)
+                .background(if (selected) TokenProvider.colors.bgAccentSoft else TokenProvider.colors.bgElevated)
                 .clickable(onClick = onClick)
                 .padding(
                     horizontal = TokenProvider.spacings.md + TokenProvider.spacings.xs,
@@ -49,7 +49,7 @@ fun PlayroomSecondaryChip(
         Text(
             text = label,
             style = TokenProvider.textStyles.eyebrow.copy(fontWeight = FontWeight.Bold),
-            color = if (selected) TokenProvider.colors.textSuccess else TokenProvider.colors.text,
+            color = if (selected) TokenProvider.colors.textAccent else TokenProvider.colors.textMuted,
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

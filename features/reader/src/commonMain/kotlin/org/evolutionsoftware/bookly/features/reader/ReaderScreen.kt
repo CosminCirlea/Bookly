@@ -25,7 +25,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,7 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -75,7 +73,6 @@ import org.evolutionsoftware.bookly.design.components.properties.IconButtonPrope
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.evolutionsoftware.bookly.services.catalog.domain.model.BookCard
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -362,8 +359,8 @@ private fun ReaderIllustrationCard(
                 .shadow(
                     elevation = 24.dp,
                     shape = shape,
-                    ambientColor = Color(0x14392E00),
-                    spotColor = Color(0x14392E00),
+                    ambientColor = TokenProvider.colors.shadowSoft,
+                    spotColor = TokenProvider.colors.shadowSoft,
                 ).clip(shape)
                 .background(TokenProvider.colors.bgSurface),
         contentAlignment = Alignment.Center,
@@ -424,7 +421,7 @@ private fun ReaderIllustrationCard(
                         .align(Alignment.TopEnd)
                         .padding(TokenProvider.spacings.sm)
                         .clip(CircleShape)
-                        .background(TokenProvider.colors.bgAccent)
+                        .background(TokenProvider.colors.bgAccentSoft)
                         .padding(
                             horizontal = TokenProvider.spacings.xs + 2.dp,
                             vertical = TokenProvider.spacings.xxs,
@@ -437,21 +434,17 @@ private fun ReaderIllustrationCard(
                         Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(TokenProvider.colors.textInverse),
+                            .background(TokenProvider.colors.textAccent),
                 )
                 Text(
                     text = stringResource(Res.string.reader_autoplay_badge),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TokenProvider.colors.textInverse,
+                    style = TokenProvider.textStyles.overline,
+                    color = TokenProvider.colors.textAccent,
                 )
             }
         }
     }
 }
-
-/** Matches the design system's circular icon button, used to balance the footer. */
-private val READER_ACTION_BUTTON_SIZE = 44.dp
 
 private val READER_TITLE_FONT_SIZE = 64.sp
 private val READER_TITLE_LINE_HEIGHT = 72.sp
@@ -474,7 +467,7 @@ private fun ReaderFooter(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Balances the trailing action button so the dots stay optically centred.
-        Spacer(modifier = Modifier.size(READER_ACTION_BUTTON_SIZE))
+        Spacer(modifier = Modifier.size(TokenProvider.sizing.iconButtonSize))
         ReaderProgressIndicator(
             total = total,
             current = current,
@@ -617,29 +610,6 @@ private fun ReaderFavoriteButton(
                 ariaLabel = ariaLabel,
             ),
         onClick = onClick,
-        content = {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = CircleShape,
-                            ambientColor = Color(0x0D392E00),
-                            spotColor = Color(0x0D392E00),
-                        )
-                        .clip(CircleShape)
-                        .background(TokenProvider.colors.bgAccentSoft),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(if (isFavorite) Icons.HeartFilled.icon else Icons.Heart.icon),
-                    contentDescription = ariaLabel,
-                    tint = if (isFavorite) TokenProvider.colors.favorite else TokenProvider.colors.text,
-                    modifier = Modifier.size(24.dp),
-                )
-            }
-        },
     )
 }
 
@@ -658,29 +628,6 @@ private fun ReaderActionButton(
                 ariaLabel = ariaLabel,
             ),
         onClick = onClick,
-        content = {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = CircleShape,
-                            ambientColor = Color(0x0D392E00),
-                            spotColor = Color(0x0D392E00),
-                        )
-                        .clip(CircleShape)
-                        .background(TokenProvider.colors.bgAccentSoft),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(icon.icon),
-                    contentDescription = ariaLabel,
-                    tint = TokenProvider.colors.textAccent,
-                    modifier = Modifier.size(24.dp),
-                )
-            }
-        },
     )
 }
 

@@ -1,19 +1,14 @@
 package org.evolutionsoftware.bookly.features.auth.onboarding
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -40,12 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -67,16 +62,17 @@ import bookly.features.auth.generated.resources.onboarding_welcome
 import bookly.features.auth.generated.resources.onboarding_welcome_body
 import bookly.features.auth.generated.resources.onboarding_welcome_title
 import kotlinx.coroutines.launch
+import org.evolutionsoftware.bookly.components.ui.PlayroomGhostButton
+import org.evolutionsoftware.bookly.components.ui.PlayroomPrimaryButton
 import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
+import org.evolutionsoftware.bookly.design.theme.bookly.BooklyOnboardingTheme
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.absoluteValue
 
-private val OnboardingOrange = Color(0xFFF57C16)
-private val OnboardingOrangePressed = Color(0xFFD95D08)
 private val OnboardingSelectedIndicatorSize = 14.dp
 
 private data class OnboardingPage(
@@ -88,6 +84,17 @@ private data class OnboardingPage(
 
 @Composable
 fun OnboardingRoute(
+    onDone: () -> Unit,
+    onRegister: () -> Unit,
+    onLogin: () -> Unit,
+) {
+    BooklyOnboardingTheme {
+        OnboardingContent(onDone = onDone, onRegister = onRegister, onLogin = onLogin)
+    }
+}
+
+@Composable
+private fun OnboardingContent(
     onDone: () -> Unit,
     onRegister: () -> Unit,
     onLogin: () -> Unit,
@@ -193,7 +200,13 @@ private fun OnboardingTopBar(
             modifier =
                 Modifier
                     .clip(CircleShape)
-                    .background(if (isVisible) TokenProvider.colors.bgElevated else Color.Transparent)
+                    .background(
+                        if (isVisible) {
+                            TokenProvider.colors.bgAccent.copy(alpha = 0.5f)
+                        } else {
+                            Color.Transparent
+                        },
+                    )
                     .clickable(enabled = isVisible, onClick = onSkip)
                     .padding(
                         start = TokenProvider.spacings.md,
@@ -206,17 +219,14 @@ private fun OnboardingTopBar(
         ) {
             Text(
                 text = skipLabel,
-                style =
-                    TokenProvider.textStyles.bodyStrong.copy(
-                        fontSize = TokenProvider.fontSizes.caption,
-                    ),
-                color = if (isVisible) TokenProvider.colors.text else Color.Transparent,
+                style = TokenProvider.textStyles.captionStrong,
+                color = if (isVisible) TokenProvider.colors.textInverse else Color.Transparent,
             )
             Icon(
                 painter = painterResource(Icons.Close.icon),
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
-                tint = if (isVisible) TokenProvider.colors.text else Color.Transparent,
+                tint = if (isVisible) TokenProvider.colors.textInverse else Color.Transparent,
             )
         }
     }
@@ -347,24 +357,9 @@ private fun OnboardingPageContent(
                     onClick = onLogin,
                     isPrimary = false,
                 )
-                Text(
-                    text = stringResource(Res.string.onboarding_continue_guest),
-                    modifier =
-                        Modifier
-                            .clip(CircleShape)
-                            .clickable(onClick = onDone)
-                            .padding(
-                                start = TokenProvider.spacings.md,
-                                end = TokenProvider.spacings.md,
-                                top = TokenProvider.spacings.md,
-                                bottom = TokenProvider.spacings.sm,
-                            ),
-                    style =
-                        TokenProvider.textStyles.bodyStrong.copy(
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.SemiBold,
-                        ),
-                    color = TokenProvider.colors.text,
+                OnboardingGuestButton(
+                    label = stringResource(Res.string.onboarding_continue_guest),
+                    onClick = onDone,
                 )
             }
         }
@@ -380,7 +375,7 @@ private fun OnboardingTitle(title: String) {
                 fontSize = 36.sp,
                 lineHeight = 39.sp,
             ),
-        color = OnboardingOrange,
+        color = TokenProvider.colors.bgAccent,
         textAlign = TextAlign.Center,
     )
 }
@@ -401,7 +396,7 @@ private fun PageIndicator(
             modifier =
                 Modifier
                     .background(
-                        color = OnboardingOrange.copy(alpha = 0.5f),
+                        color = TokenProvider.colors.bgAccent.copy(alpha = 0.5f),
                         shape = RoundedCornerShape(TokenProvider.borderRadius.pill),
                     )
                     .padding(contentPadding),
@@ -416,9 +411,9 @@ private fun PageIndicator(
                             .clip(CircleShape)
                             .background(
                                 if (page == currentPage) {
-                                    OnboardingOrange
+                                    TokenProvider.colors.bgAccent
                                 } else {
-                                    Color.White
+                                    TokenProvider.colors.bgSurface
                                 },
                             )
                             .clickable { onPageSelected(page) },
@@ -429,58 +424,56 @@ private fun PageIndicator(
 }
 
 @Composable
-private fun OnboardingActionButton(
+fun OnboardingActionButton(
     label: String,
     onClick: () -> Unit,
     isPrimary: Boolean,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.98f else 1f,
-        label = "onboardingActionScale",
-    )
-    val shape = RoundedCornerShape(TokenProvider.borderRadius.pill)
-    val backgroundColor =
-        if (isPrimary) {
-            if (isPressed) OnboardingOrangePressed else OnboardingOrange
-        } else {
-            Color.Transparent
-        }
+    if (isPrimary) {
+        PlayroomPrimaryButton(
+            label = label,
+            onClick = onClick,
+        )
+    } else {
+        PlayroomGhostButton(
+            label = label,
+            onClick = onClick,
+        )
+    }
+}
 
-    Box(
+@Composable
+fun OnboardingGuestButton(
+    label: String,
+    onClick: () -> Unit,
+) {
+    Row(
         modifier =
             Modifier
-                .fillMaxWidth()
-                .height(58.dp)
-                .scale(scale)
-                .clip(shape)
-                .background(backgroundColor)
-                .then(
-                    if (isPrimary) {
-                        Modifier
-                    } else {
-                        Modifier.border(
-                            border = BorderStroke(2.dp, OnboardingOrange),
-                            shape = shape,
-                        )
-                    },
-                )
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = onClick,
+                .padding(top = TokenProvider.spacings.sm)
+                .clip(CircleShape)
+                .background(TokenProvider.colors.bgSurface)
+                .clickable(role = Role.Button, onClick = onClick)
+                .heightIn(min = 48.dp)
+                .padding(
+                    horizontal = TokenProvider.spacings.md,
+                    vertical = TokenProvider.spacings.xs,
                 ),
-        contentAlignment = Alignment.Center,
+        horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.xs),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = label,
-            style =
-                TokenProvider.textStyles.button.copy(
-                    fontSize = 18.sp,
-                    lineHeight = 24.sp,
-                ),
-            color = if (isPrimary) Color.White else TokenProvider.colors.text,
+            modifier = Modifier.weight(1f, fill = false),
+            style = TokenProvider.textStyles.actionText,
+            color = TokenProvider.colors.textBrand,
+            textAlign = TextAlign.Center,
+        )
+        Icon(
+            painter = painterResource(Icons.SettingsChevron.icon),
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = TokenProvider.colors.textBrand,
         )
     }
 }

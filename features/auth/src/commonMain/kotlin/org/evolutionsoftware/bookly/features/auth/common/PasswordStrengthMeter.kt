@@ -21,19 +21,24 @@ import bookly.features.auth.generated.resources.auth_password_strength_great
 import bookly.features.auth.generated.resources.auth_password_strength_none
 import bookly.features.auth.generated.resources.auth_password_strength_okay
 import bookly.features.auth.generated.resources.auth_password_strength_weak
+import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.jetbrains.compose.resources.stringResource
 
 private const val BAR_COUNT = 4
-private val EMPTY_BAR = Color(0xFFE6D8A0)
 
-private val SCORE_COLORS =
-    listOf(
-        EMPTY_BAR,
-        Color(0xFFFF7043),
-        Color(0xFFFFC107),
-        Color(0xFF43A047),
-        Color(0xFF1CB0F6),
-    )
+/**
+ * Weak to strong reads as danger -> accent -> success. The number of filled bars
+ * separates "good" from "great", so both top tiers share the success tone rather
+ * than introducing a fourth hue.
+ */
+@Composable
+private fun scoreColor(score: Int): Color =
+    when (score) {
+        0 -> TokenProvider.colors.border
+        1 -> TokenProvider.colors.textDanger
+        2 -> TokenProvider.colors.warning
+        else -> TokenProvider.colors.success
+    }
 
 /**
  * Scores a password from 0 to 4, one point each for reaching six characters,
@@ -54,7 +59,8 @@ internal fun PasswordStrengthMeter(
     modifier: Modifier = Modifier,
 ) {
     val score = passwordStrengthScore(password)
-    val scoreColor = SCORE_COLORS[score]
+    val scoreColor = scoreColor(score)
+    val emptyColor = TokenProvider.colors.border
     val label =
         stringResource(
             when (score) {
@@ -82,7 +88,7 @@ internal fun PasswordStrengthMeter(
                             .weight(1f)
                             .height(6.dp)
                             .clip(RoundedCornerShape(percent = 50))
-                            .background(if (index < score) scoreColor else EMPTY_BAR),
+                            .background(if (index < score) scoreColor else emptyColor),
                 )
             }
         }
@@ -90,8 +96,7 @@ internal fun PasswordStrengthMeter(
         Text(
             text = label,
             color = scoreColor,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
+            style = TokenProvider.textStyles.captionStrong,
         )
     }
 }

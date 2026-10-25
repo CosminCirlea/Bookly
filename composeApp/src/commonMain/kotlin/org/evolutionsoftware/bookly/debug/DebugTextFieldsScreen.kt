@@ -1,6 +1,7 @@
 package org.evolutionsoftware.bookly.debug
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,17 +20,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import org.evolutionsoftware.bookly.design.components.SecureTextField
 import org.evolutionsoftware.bookly.design.components.TextField
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 
 @Composable
 fun DebugTextFieldsScreen(onClose: () -> Unit) {
-    var defaultValue by remember { mutableStateOf("") }
-    var emailValue by remember { mutableStateOf("") }
-    var filledValue by remember { mutableStateOf("John Doe") }
-    var passwordValue by remember { mutableStateOf("password123") }
-    var errorValue by remember { mutableStateOf("Invalid input") }
+    val defaultState = rememberTextFieldState()
+    val emailState = rememberTextFieldState()
+    val filledState = rememberTextFieldState("John Doe")
+    val passwordState = rememberTextFieldState("password123")
+    val errorState = rememberTextFieldState("Invalid input")
+    val disabledEmptyState = rememberTextFieldState()
+    val disabledFilledState = rememberTextFieldState("This value cannot be changed")
+    val noLabelState = rememberTextFieldState()
+    var isPasswordRevealed by remember { mutableStateOf(false) }
 
     Column(
         modifier =
@@ -57,8 +64,7 @@ fun DebugTextFieldsScreen(onClose: () -> Unit) {
                         label = "Full Name",
                         placeholder = "Enter your full name",
                     ),
-                value = defaultValue,
-                onValueChange = { defaultValue = it },
+                state = defaultState,
             )
 
             DebugSectionTitle("Default - With Placeholder")
@@ -68,26 +74,34 @@ fun DebugTextFieldsScreen(onClose: () -> Unit) {
                         label = "Email Address",
                         placeholder = "example@email.com",
                     ),
-                value = emailValue,
-                onValueChange = { emailValue = it },
+                state = emailState,
             )
 
             DebugSectionTitle("Filled")
             TextField(
                 properties = TextFieldProperties(label = "Name"),
-                value = filledValue,
-                onValueChange = { filledValue = it },
+                state = filledState,
             )
 
             DebugSectionTitle("Password Field")
-            TextField(
+            SecureTextField(
                 properties =
                     TextFieldProperties(
                         label = "Password",
                         placeholder = "Enter password",
                     ),
-                value = passwordValue,
-                onValueChange = { passwordValue = it },
+                state = passwordState,
+                isRevealed = isPasswordRevealed,
+                suffix = {
+                    Text(
+                        text = if (isPasswordRevealed) "Hide" else "Show",
+                        style = TokenProvider.textStyles.label,
+                        color = TokenProvider.colors.textMuted,
+                        modifier =
+                            Modifier.padding(end = TokenProvider.spacings.xs)
+                                .clickable { isPasswordRevealed = !isPasswordRevealed },
+                    )
+                },
             )
 
             DebugSectionTitle("Error State")
@@ -97,8 +111,7 @@ fun DebugTextFieldsScreen(onClose: () -> Unit) {
                         label = "Username",
                         state = TextFieldProperties.State.Error,
                     ),
-                value = errorValue,
-                onValueChange = { errorValue = it },
+                state = errorState,
             )
 
             DebugSectionTitle("Disabled - Empty")
@@ -109,8 +122,7 @@ fun DebugTextFieldsScreen(onClose: () -> Unit) {
                         placeholder = "Cannot edit this",
                         state = TextFieldProperties.State.Disabled,
                     ),
-                value = "",
-                onValueChange = {},
+                state = disabledEmptyState,
                 enabled = false,
             )
 
@@ -121,8 +133,7 @@ fun DebugTextFieldsScreen(onClose: () -> Unit) {
                         label = "Read Only",
                         state = TextFieldProperties.State.Disabled,
                     ),
-                value = "This value cannot be changed",
-                onValueChange = {},
+                state = disabledFilledState,
                 enabled = false,
             )
 
@@ -132,8 +143,7 @@ fun DebugTextFieldsScreen(onClose: () -> Unit) {
                     TextFieldProperties(
                         placeholder = "Search...",
                     ),
-                value = "",
-                onValueChange = {},
+                state = noLabelState,
             )
 
             Spacer(modifier = Modifier.height(TokenProvider.spacings.xxl))

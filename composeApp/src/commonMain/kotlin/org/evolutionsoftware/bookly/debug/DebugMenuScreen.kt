@@ -66,7 +66,7 @@ fun DebugMenuScreen(
             item {
                 NavigationItem(
                     title = "Buttons",
-                    subtitle = "Primary, disabled states",
+                    subtitle = "Primary, ghost and onboarding states",
                     onClick = onNavigateToButtons,
                 )
             }
@@ -82,7 +82,7 @@ fun DebugMenuScreen(
             item {
                 NavigationItem(
                     title = "Icon Buttons",
-                    subtitle = "All icons and styles",
+                    subtitle = "Default, disabled, icons and styles",
                     onClick = onNavigateToIconButtons,
                 )
             }
@@ -166,13 +166,6 @@ private fun DebugMenuHeader(onClose: () -> Unit) {
         IconButton(
             properties = IconButtonProperties(icon = Icons.Close, ariaLabel = "Close"),
             onClick = onClose,
-            content = {
-                Icon(
-                    painter = painterResource(Icons.Close.icon),
-                    contentDescription = "Close",
-                    tint = TokenProvider.colors.textAccent,
-                )
-            },
         )
     }
 }

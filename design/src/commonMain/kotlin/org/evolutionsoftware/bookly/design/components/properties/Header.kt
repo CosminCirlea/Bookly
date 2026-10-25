@@ -3,7 +3,6 @@ package org.evolutionsoftware.bookly.design.components.properties
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 
@@ -20,8 +19,8 @@ data class HeaderProperties(
     val leadingIcon: Icons = Icons.ArrowLeft,
     val leadingAriaLabel: String = "Back",
 ) {
-    /** Matches the design system's circular icon button. */
-    fun getButtonSize(): Dp = BUTTON_SIZE
+    @Composable
+    fun getButtonSize(): Dp = TokenProvider.sizing.iconButtonSize
 
     @Composable
     fun getHorizontalPadding(): Dp = TokenProvider.spacings.lg
@@ -33,9 +32,6 @@ data class HeaderProperties(
     fun getBackgroundColor(): Color = TokenProvider.colors.bgBase
 
     @Composable
-    fun getTitleColor(): Color = TokenProvider.colors.borderAccent
+    fun getTitleColor(): Color = TokenProvider.colors.text
 
-    private companion object {
-        val BUTTON_SIZE = 44.dp
-    }
 }

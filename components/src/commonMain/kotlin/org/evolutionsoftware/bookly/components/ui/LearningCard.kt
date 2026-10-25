@@ -52,13 +52,13 @@ fun LearningCard(
         ) {
             Text(
                 text = title,
-                style = TokenProvider.textStyles.headline,
+                style = TokenProvider.textStyles.title,
                 color = TokenProvider.colors.text,
                 textAlign = TextAlign.Center,
             )
             Text(
                 text = description,
-                style = TokenProvider.textStyles.body,
+                style = TokenProvider.textStyles.cardSubtitle,
                 color = TokenProvider.colors.textMuted,
                 textAlign = TextAlign.Center,
             )

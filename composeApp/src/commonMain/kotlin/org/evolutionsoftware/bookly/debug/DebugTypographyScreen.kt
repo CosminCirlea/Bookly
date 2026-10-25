@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
@@ -56,9 +57,29 @@ fun DebugTypographyScreen(onClose: () -> Unit) {
             )
 
             TypographyItem(
+                name = "Card Title",
+                style = TokenProvider.textStyles.cardTitle,
+                sample = "The woodland adventure",
+            )
+
+            TypographyItem(
+                name = "Card Subtitle",
+                style = TokenProvider.textStyles.cardSubtitle,
+                sample = "Meet the animals that call the forest home.",
+                color = TokenProvider.colors.textMuted,
+            )
+
+            TypographyItem(
                 name = "Body Strong",
                 style = TokenProvider.textStyles.bodyStrong,
                 sample = "The quick brown fox jumps over the lazy dog",
+            )
+
+            TypographyItem(
+                name = "Action Text",
+                style = TokenProvider.textStyles.actionText,
+                sample = "Forgot Password?",
+                color = TokenProvider.colors.textAccent,
             )
 
             TypographyItem(
@@ -76,7 +97,7 @@ fun DebugTypographyScreen(onClose: () -> Unit) {
             TypographyItem(
                 name = "Button",
                 style = TokenProvider.textStyles.button,
-                sample = "CONTINUE",
+                sample = "Continue",
             )
 
             TypographyItem(
@@ -95,6 +116,7 @@ private fun TypographyItem(
     name: String,
     style: TextStyle,
     sample: String,
+    color: Color = TokenProvider.colors.text,
 ) {
     Column(
         modifier =
@@ -108,12 +130,12 @@ private fun TypographyItem(
         Text(
             text = name,
             style = TokenProvider.textStyles.label.copy(fontWeight = FontWeight.Bold),
-            color = TokenProvider.colors.textAccent,
+            color = TokenProvider.colors.textMuted,
         )
         Text(
             text = sample,
             style = style,
-            color = TokenProvider.colors.text,
+            color = color,
         )
         Text(
             text = buildString {

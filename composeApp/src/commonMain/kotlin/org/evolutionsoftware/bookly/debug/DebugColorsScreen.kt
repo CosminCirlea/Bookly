@@ -50,16 +50,15 @@ fun DebugColorsScreen(onClose: () -> Unit) {
             Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
 
             ColorSection(
-                title = "Background Colors",
+                title = "Neutrals & Brand",
                 colors =
                     listOf(
                         "bgBase" to TokenProvider.colors.bgBase,
                         "bgSurface" to TokenProvider.colors.bgSurface,
                         "bgElevated" to TokenProvider.colors.bgElevated,
                         "bgAccent" to TokenProvider.colors.bgAccent,
-                        "bgAccentSoft" to TokenProvider.colors.bgAccentSoft,
-                        "bgAccentStrong" to TokenProvider.colors.bgAccentStrong,
                         "bgAccentPressed" to TokenProvider.colors.bgAccentPressed,
+                        "bgAccentStrong" to TokenProvider.colors.bgAccentStrong,
                     ),
             )
 
@@ -69,7 +68,7 @@ fun DebugColorsScreen(onClose: () -> Unit) {
                     listOf(
                         "text" to TokenProvider.colors.text,
                         "textMuted" to TokenProvider.colors.textMuted,
-                        "textAccent" to TokenProvider.colors.textAccent,
+                        "textSubtle" to TokenProvider.colors.textSubtle,
                         "textInverse" to TokenProvider.colors.textInverse,
                         "textBrand" to TokenProvider.colors.textBrand,
                     ),
@@ -85,10 +84,46 @@ fun DebugColorsScreen(onClose: () -> Unit) {
             )
 
             ColorSection(
-                title = "Semantic Colors",
+                title = "Semantic - Soft Surfaces",
                 colors =
                     listOf(
+                        "bgAccentSoft" to TokenProvider.colors.bgAccentSoft,
+                        "bgSuccessSoft" to TokenProvider.colors.bgSuccessSoft,
+                        "bgDangerSoft" to TokenProvider.colors.bgDangerSoft,
+                        "bgInfoSoft" to TokenProvider.colors.bgInfoSoft,
+                        "bgWarningSoft" to TokenProvider.colors.bgWarningSoft,
+                    ),
+            )
+
+            ColorSection(
+                title = "Semantic - Ink",
+                colors =
+                    listOf(
+                        "textAccent" to TokenProvider.colors.textAccent,
+                        "textSuccess" to TokenProvider.colors.textSuccess,
+                        "textDanger" to TokenProvider.colors.textDanger,
+                        "textInfo" to TokenProvider.colors.textInfo,
+                        "success" to TokenProvider.colors.success,
                         "warning" to TokenProvider.colors.warning,
+                        "favorite" to TokenProvider.colors.favorite,
+                    ),
+            )
+
+            ColorSection(
+                title = "Elevation",
+                colors =
+                    listOf(
+                        "shadowSoft" to TokenProvider.colors.shadowSoft,
+                        "shadowStrong" to TokenProvider.colors.shadowStrong,
+                    ),
+            )
+
+            ColorSection(
+                title = "Vendor Brands",
+                colors =
+                    listOf(
+                        "socialGoogle" to TokenProvider.colors.socialGoogle,
+                        "socialFacebook" to TokenProvider.colors.socialFacebook,
                     ),
             )
 

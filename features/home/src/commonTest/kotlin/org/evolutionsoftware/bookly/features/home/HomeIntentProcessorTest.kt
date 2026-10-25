@@ -195,7 +195,49 @@ class HomeIntentProcessorTest {
         }
 
     @Test
-    fun `a selected API category that disappears falls back to all books`() =
+    fun `no category filter is selected by default`() =
+        runTest {
+            val mapper = HomeStateMapper()
+            val books = listOf(book("1", BookCategory.Animals, categoryId = "10"))
+            val withBooks = mapper(HomeAction.BooksLoaded(books), HomeViewState())
+            val state =
+                mapper(
+                    HomeAction.CategoriesLoaded(listOf(Category(id = "10", name = "Animals"))),
+                    withBooks,
+                )
+
+            assertTrue(state.selectedCategoryIds.isEmpty())
+            assertEquals(books, state.visibleBooks)
+        }
+
+    @Test
+    fun `multiple categories can be selected and deselected`() =
+        runTest {
+            val mapper = HomeStateMapper()
+            val books =
+                listOf(
+                    book("1", BookCategory.Food, categoryId = "20"),
+                    book("2", BookCategory.Animals, categoryId = "10"),
+                    book("3", BookCategory.Plants, categoryId = "30"),
+                )
+            val withBooks = mapper(HomeAction.BooksLoaded(books), HomeViewState())
+            val withFood = mapper(HomeAction.FilterToggled("20"), withBooks)
+            val withFoodAndAnimals = mapper(HomeAction.FilterToggled("10"), withFood)
+
+            assertEquals(setOf("20", "10"), withFoodAndAnimals.selectedCategoryIds)
+            assertEquals(listOf("1", "2"), withFoodAndAnimals.visibleBooks.map { it.id })
+
+            val withAnimalsOnly = mapper(HomeAction.FilterToggled("20"), withFoodAndAnimals)
+            assertEquals(setOf("10"), withAnimalsOnly.selectedCategoryIds)
+            assertEquals(listOf("2"), withAnimalsOnly.visibleBooks.map { it.id })
+
+            val withoutFilters = mapper(HomeAction.FilterToggled(null), withAnimalsOnly)
+            assertTrue(withoutFilters.selectedCategoryIds.isEmpty())
+            assertEquals(books, withoutFilters.visibleBooks)
+        }
+
+    @Test
+    fun `selected API categories that disappear are removed`() =
         runTest {
             val mapper = HomeStateMapper()
             val books =
@@ -206,15 +248,17 @@ class HomeIntentProcessorTest {
             val withBooks =
                 mapper(
                     HomeAction.BooksLoaded(books),
-                    HomeViewState(selectedCategoryId = "20"),
+                    HomeViewState(selectedCategoryIds = setOf("20", "10")),
                 )
             val withFood =
                 mapper(
-                    HomeAction.CategoriesLoaded(listOf(Category(id = "20", name = "Food"))),
+                    HomeAction.CategoriesLoaded(
+                        listOf(Category(id = "20", name = "Food"), Category(id = "10", name = "Animals")),
+                    ),
                     withBooks,
                 )
-            assertEquals("20", withFood.selectedCategoryId)
-            assertEquals(listOf("1"), withFood.visibleBooks.map { it.id })
+            assertEquals(setOf("20", "10"), withFood.selectedCategoryIds)
+            assertEquals(listOf("1", "2"), withFood.visibleBooks.map { it.id })
 
             val afterRefresh =
                 mapper(
@@ -222,8 +266,8 @@ class HomeIntentProcessorTest {
                     withFood,
                 )
 
-            assertEquals(null, afterRefresh.selectedCategoryId)
-            assertEquals(books, afterRefresh.visibleBooks)
+            assertEquals(setOf("10"), afterRefresh.selectedCategoryIds)
+            assertEquals(listOf("2"), afterRefresh.visibleBooks.map { it.id })
         }
 }
 

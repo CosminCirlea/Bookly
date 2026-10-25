@@ -15,7 +15,7 @@ internal data class HomeViewState(
     val profile: ParentProfile? = null,
     val allBooks: List<BookSummary> = emptyList(),
     val visibleBooks: List<BookSummary> = emptyList(),
-    val selectedCategoryId: String? = null,
+    val selectedCategoryIds: Set<String> = emptySet(),
     val searchQuery: String = "",
     val favoriteBookIds: Set<String> = emptySet(),
     val categories: List<Category> = emptyList(),
@@ -34,7 +34,7 @@ internal sealed interface HomeIntent : UserIntent {
     /** Explicit user request — retry or pull-to-refresh — which always hits the network. */
     data object Refresh : HomeIntent
 
-    data class FilterSelected(val categoryId: String?) : HomeIntent
+    data class FilterToggled(val categoryId: String?) : HomeIntent
 
     data class SearchChanged(val query: String) : HomeIntent
 
@@ -66,7 +66,7 @@ internal sealed interface HomeAction : UserIntentAction {
 
     data class LoadingFailed(val error: String) : HomeAction
 
-    data class FilterChanged(val categoryId: String?) : HomeAction
+    data class FilterToggled(val categoryId: String?) : HomeAction
 
     data class SearchChanged(val query: String) : HomeAction
 

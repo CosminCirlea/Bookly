@@ -21,6 +21,8 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -66,6 +68,7 @@ import org.evolutionsoftware.bookly.components.ui.BooklySheet
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.Header
 import org.evolutionsoftware.bookly.design.components.TextField
+import org.evolutionsoftware.bookly.design.components.TextFieldChangeEffect
 import org.evolutionsoftware.bookly.design.components.properties.ButtonProperties
 import org.evolutionsoftware.bookly.design.components.properties.HeaderProperties
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
@@ -73,20 +76,22 @@ import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.getString
 
-private val AVATAR_BACKGROUNDS = listOf(
-    Color(0xFFFFE796),
-    Color(0xFFD4F0FF),
-    Color(0xFFFFD4D4),
-    Color(0xFFD4FFE0),
-    Color(0xFFE8D4FF),
-    Color(0xFFFFEDD4),
-    Color(0xFFD4EEFF),
-    Color(0xFFFFF0D4),
-    Color(0xFFD4FFD4),
-    Color(0xFFFFD4F5),
-    Color(0xFFDCE7FF),
-    Color(0xFFFFE3C7),
-)
+/**
+ * Avatar tiles rotate through the palette's soft tints instead of a dozen bespoke
+ * pastels, so the picker stays on-brand while still separating neighbouring tiles.
+ */
+@Composable
+private fun avatarBackground(index: Int): Color {
+    val tints =
+        listOf(
+            TokenProvider.colors.bgAccentSoft,
+            TokenProvider.colors.bgInfoSoft,
+            TokenProvider.colors.bgSuccessSoft,
+            TokenProvider.colors.bgDangerSoft,
+            TokenProvider.colors.bgElevated,
+        )
+    return tints[((index % tints.size) + tints.size) % tints.size]
+}
 
 @Composable
 fun CreateProfileRoute(
@@ -164,6 +169,16 @@ internal fun CreateProfileContent(
                 Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
 
                 // Name field
+                val nameState = rememberTextFieldState(viewState.name)
+                val dateOfBirthState = rememberTextFieldState(viewState.dateOfBirth)
+                TextFieldChangeEffect(nameState) { onIntent(CreateProfileIntent.NameChanged(it)) }
+                // The date field is read only and driven entirely by the picker.
+                LaunchedEffect(viewState.dateOfBirth) {
+                    if (dateOfBirthState.text.toString() != viewState.dateOfBirth) {
+                        dateOfBirthState.setTextAndPlaceCursorAtEnd(viewState.dateOfBirth)
+                    }
+                }
+
                 TextField(
                     properties =
                         TextFieldProperties(
@@ -176,8 +191,7 @@ internal fun CreateProfileContent(
                                     else -> TextFieldProperties.State.Default
                                 },
                         ),
-                    value = viewState.name,
-                    onValueChange = { onIntent(CreateProfileIntent.NameChanged(it)) },
+                    state = nameState,
                     enabled = !viewState.isLoading,
                 )
                 if (viewState.nameError) {
@@ -208,8 +222,7 @@ internal fun CreateProfileContent(
                                         TextFieldProperties.State.Default
                                     },
                             ),
-                        value = viewState.dateOfBirth,
-                        onValueChange = {},
+                        state = dateOfBirthState,
                         enabled = !viewState.isLoading,
                         readOnly = true,
                     )
@@ -390,7 +403,7 @@ private fun AvatarPreview(
     onClick: () -> Unit,
 ) {
     val avatar = PROFILE_AVATARS.getOrElse(selected) { PROFILE_AVATARS.first() }
-    val background = AVATAR_BACKGROUNDS.getOrElse(selected) { AVATAR_BACKGROUNDS.first() }
+    val background = avatarBackground(selected)
 
     Box(
         modifier =
@@ -465,7 +478,7 @@ private fun AvatarOption(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    val background = AVATAR_BACKGROUNDS.getOrElse(index) { AVATAR_BACKGROUNDS.first() }
+    val background = avatarBackground(index)
 
     Box(
         modifier =

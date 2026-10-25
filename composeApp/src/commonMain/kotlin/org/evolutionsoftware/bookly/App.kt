@@ -70,6 +70,7 @@ private fun BooklyContent(
         val toastState = rememberBooklyToastState()
         val saveableStateHolder = rememberSaveableStateHolder()
         var refreshKey by remember { mutableIntStateOf(0) }
+        var authFlowId by remember { mutableIntStateOf(0) }
         val initialDestination =
             when {
                 startWithDebugMenu -> AppDestination.DebugMenu
@@ -94,6 +95,11 @@ private fun BooklyContent(
 
         fun showMessage(message: String) {
             showToast(message, BooklyToastKind.Info)
+        }
+
+        fun openAuth(authDestination: AuthDestination) {
+            authFlowId++
+            destination = AppDestination.Auth(authDestination, authFlowId)
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -136,14 +142,13 @@ private fun BooklyContent(
                             selectedLanguageTag = selectedLanguageTag,
                             onClose = { destination = AppDestination.Home },
                             onRequireAuthentication = { authDestination ->
-                                destination =
-                                    AppDestination.Auth(
-                                        when (authDestination) {
-                                            SettingsAuthDestination.SignIn -> AuthDestination.SignIn
-                                            SettingsAuthDestination.ChangePassword -> AuthDestination.ChangePassword
-                                            SettingsAuthDestination.ResetPassword -> AuthDestination.ForgotPassword
-                                        },
-                                    )
+                                openAuth(
+                                    when (authDestination) {
+                                        SettingsAuthDestination.SignIn -> AuthDestination.SignIn
+                                        SettingsAuthDestination.ChangePassword -> AuthDestination.ChangePassword
+                                        SettingsAuthDestination.ResetPassword -> AuthDestination.ForgotPassword
+                                    },
+                                )
                             },
                             onShowMessage = ::showMessage,
                             onShowToast = ::showToast,
@@ -312,7 +317,10 @@ private sealed interface AppDestination {
 
     data object ContactUs : AppDestination
 
-    data class Auth(val destination: AuthDestination) : AppDestination
+    data class Auth(
+        val destination: AuthDestination,
+        val flowId: Int = 0,
+    ) : AppDestination
 
     data class CreateProfile(val fromSettings: Boolean) : AppDestination
 

@@ -1,7 +1,7 @@
 package org.evolutionsoftware.bookly.features.auth.signin
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -11,11 +11,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import bookly.features.auth.generated.resources.Res
 import bookly.features.auth.generated.resources.auth_sign_in_email_label
@@ -31,8 +31,11 @@ import bookly.features.auth.generated.resources.auth_sign_in_to_register
 import org.evolutionsoftware.bookly.components.ui.PlayroomDivider
 import org.evolutionsoftware.bookly.components.ui.PlayroomSocialButton
 import org.evolutionsoftware.bookly.design.Icons
+import org.evolutionsoftware.bookly.design.components.ActionText
 import org.evolutionsoftware.bookly.design.components.Button
+import org.evolutionsoftware.bookly.design.components.SecureTextField
 import org.evolutionsoftware.bookly.design.components.TextField
+import org.evolutionsoftware.bookly.design.components.TextFieldChangeEffect
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.evolutionsoftware.bookly.features.auth.common.AuthScreenScaffold
@@ -73,6 +76,7 @@ internal fun SignInRoute(
     )
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun SignInContent(
     viewState: SignInViewState,
@@ -91,6 +95,11 @@ internal fun SignInContent(
                 TextFieldProperties.State.Default
             }
 
+        val emailState = rememberTextFieldState(viewState.emailOrPhone)
+        val passwordState = rememberTextFieldState(viewState.password)
+        TextFieldChangeEffect(emailState) { onIntent(SignInIntent.EmailOrPhoneChanged(it)) }
+        TextFieldChangeEffect(passwordState) { onIntent(SignInIntent.PasswordChanged(it)) }
+
         TextField(
             properties =
                 TextFieldProperties(
@@ -98,22 +107,22 @@ internal fun SignInContent(
                     placeholder = stringResource(Res.string.auth_sign_in_email_placeholder),
                     state = textFieldState,
                 ),
-            value = viewState.emailOrPhone,
-            onValueChange = { onIntent(SignInIntent.EmailOrPhoneChanged(it)) },
+            state = emailState,
             enabled = !viewState.isLoading,
+            contentType = ContentType.Username + ContentType.EmailAddress,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
-        TextField(
+        SecureTextField(
             properties =
                 TextFieldProperties(
                     label = stringResource(Res.string.auth_sign_in_password_label),
                     placeholder = stringResource(Res.string.auth_sign_in_password_placeholder),
                     state = textFieldState,
                 ),
-            value = viewState.password,
-            onValueChange = { onIntent(SignInIntent.PasswordChanged(it)) },
+            state = passwordState,
             enabled = !viewState.isLoading,
-            visualTransformation = if (viewState.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            isRevealed = viewState.isPasswordVisible,
+            contentType = ContentType.Password,
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -126,17 +135,14 @@ internal fun SignInContent(
                 )
             },
         )
-        Text(
+        ActionText(
             text = stringResource(Res.string.auth_sign_in_forgot_password),
+            onClick = { onIntent(SignInIntent.ForgotPasswordClicked) },
+            enabled = !viewState.isLoading,
             modifier =
                 Modifier
                     .align(Alignment.End)
-                    .padding(top = TokenProvider.spacings.formGapSm)
-                    .clickable(enabled = !viewState.isLoading) {
-                        onIntent(SignInIntent.ForgotPasswordClicked)
-                    },
-            style = TokenProvider.textStyles.body,
-            color = TokenProvider.colors.textBrand,
+                    .padding(top = TokenProvider.spacings.formGapSm),
         )
         viewState.errorMessage?.let {
             Text(
@@ -179,14 +185,10 @@ internal fun SignInContent(
             onClick = onFacebook,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
-        Text(
+        ActionText(
             text = stringResource(Res.string.auth_sign_in_to_register),
-            modifier =
-                Modifier.clickable(enabled = !viewState.isLoading) {
-                    onIntent(SignInIntent.SignUpClicked)
-                },
-            style = TokenProvider.textStyles.bodyStrong,
-            color = TokenProvider.colors.textAccent,
+            onClick = { onIntent(SignInIntent.SignUpClicked) },
+            enabled = !viewState.isLoading,
             textAlign = TextAlign.Center,
         )
     }

@@ -4,16 +4,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.evolutionsoftware.bookly.design.components.Button
-import org.evolutionsoftware.bookly.design.components.TextField
+import org.evolutionsoftware.bookly.design.components.SecureTextField
+import org.evolutionsoftware.bookly.design.components.TextFieldChangeEffect
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 
@@ -53,6 +53,13 @@ internal fun PasswordEditorScreen(
             TextFieldProperties.State.Default
         }
 
+    val currentPasswordState = rememberTextFieldState(currentPassword)
+    val newPasswordState = rememberTextFieldState(newPassword)
+    val confirmPasswordState = rememberTextFieldState(confirmPassword)
+    TextFieldChangeEffect(currentPasswordState, onCurrentPasswordChange)
+    TextFieldChangeEffect(newPasswordState, onNewPasswordChange)
+    TextFieldChangeEffect(confirmPasswordState, onConfirmPasswordChange)
+
     AuthScreenScaffold(
         title = screenTitle,
         onBack = onBack,
@@ -67,31 +74,28 @@ internal fun PasswordEditorScreen(
             )
         }
         if (includeCurrentPassword) {
-            TextField(
+            SecureTextField(
                 properties =
                     TextFieldProperties(
                         label = currentPasswordLabel,
                         placeholder = currentPasswordPlaceholder,
                         state = textFieldState,
                     ),
-                value = currentPassword,
-                onValueChange = onCurrentPasswordChange,
+                state = currentPasswordState,
                 enabled = !isLoading,
-                visualTransformation = PasswordVisualTransformation(),
             )
             Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
         }
-        TextField(
+        SecureTextField(
             properties =
                 TextFieldProperties(
                     label = newPasswordLabel,
                     placeholder = newPasswordPlaceholder,
                     state = textFieldState,
                 ),
-            value = newPassword,
-            onValueChange = onNewPasswordChange,
+            state = newPasswordState,
             enabled = !isLoading,
-            visualTransformation = if (isNewPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            isRevealed = isNewPasswordVisible,
             suffix = {
                 PasswordSuffix(
                     visible = isNewPasswordVisible,
@@ -100,17 +104,16 @@ internal fun PasswordEditorScreen(
             },
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
-        TextField(
+        SecureTextField(
             properties =
                 TextFieldProperties(
                     label = confirmPasswordLabel,
                     placeholder = confirmPasswordPlaceholder,
                     state = textFieldState,
                 ),
-            value = confirmPassword,
-            onValueChange = onConfirmPasswordChange,
+            state = confirmPasswordState,
             enabled = !isLoading,
-            visualTransformation = if (isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            isRevealed = isConfirmPasswordVisible,
             suffix = {
                 PasswordSuffix(
                     visible = isConfirmPasswordVisible,

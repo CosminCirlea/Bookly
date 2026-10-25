@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import org.evolutionsoftware.bookly.design.components.ShimmerBlock
@@ -70,7 +69,7 @@ internal fun HomeSkeleton(modifier: Modifier = Modifier) {
                 ShimmerBlock(modifier = Modifier.height(10.dp).width(64.dp), shape = pill, brush = brush)
                 ShimmerBlock(modifier = Modifier.height(16.dp).width(128.dp), shape = pill, brush = brush)
             }
-            ShimmerBlock(modifier = Modifier.size(44.dp), shape = CircleShape, brush = brush)
+            ShimmerBlock(modifier = Modifier.size(TokenProvider.sizing.iconButtonSize), shape = CircleShape, brush = brush)
         }
 
         // Search field.
@@ -154,8 +153,8 @@ private fun SkeletonBookCard(
                 .shadow(
                     elevation = 10.dp,
                     shape = RoundedCornerShape(TokenProvider.borderRadius.md),
-                    ambientColor = Color(0x0F392E00),
-                    spotColor = Color(0x0F392E00),
+                    ambientColor = TokenProvider.colors.shadowSoft,
+                    spotColor = TokenProvider.colors.shadowSoft,
                 ).clip(RoundedCornerShape(TokenProvider.borderRadius.md))
                 .background(TokenProvider.colors.bgSurface)
                 .padding(TokenProvider.spacings.sm),

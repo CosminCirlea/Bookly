@@ -18,16 +18,22 @@ data class IconButtonProperties(
     fun isEnabled(): Boolean = state == State.Default
 
     @Composable
-    fun getContainerColor(): Color =
-        when (state) {
+    fun getContainerColor(): Color {
+        return when (state) {
             State.Default -> TokenProvider.colors.bgAccentSoft
-            State.Disabled -> TokenProvider.colors.bgAccentSoft.copy(alpha = 0.48f)
+            State.Disabled -> TokenProvider.colors.bgDisabled
         }
+    }
 
     @Composable
     fun getIconTint(): Color =
         when (state) {
-            State.Default -> TokenProvider.colors.text
+            State.Default ->
+                if (icon == Icons.HeartFilled) {
+                    TokenProvider.colors.favorite
+                } else {
+                    TokenProvider.colors.textBrand
+                }
             State.Disabled -> TokenProvider.colors.textMuted.copy(alpha = 0.72f)
         }
 

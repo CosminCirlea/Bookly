@@ -19,6 +19,7 @@ data class ButtonProperties(
 
     enum class Variant {
         Primary,
+        Outlined,
     }
 
     enum class State {
@@ -33,25 +34,61 @@ data class ButtonProperties(
 
     @Composable
     fun getContainerColor(): Color =
-        when (state) {
-            State.Default, State.Loading -> TokenProvider.colors.bgAccent
-            State.Disabled -> DISABLED_CONTAINER
+        when (variant) {
+            Variant.Primary ->
+                when (state) {
+                    State.Default, State.Loading -> TokenProvider.colors.bgPrimaryButton
+                    State.Disabled -> TokenProvider.colors.bgDisabled
+                }
+            Variant.Outlined ->
+                when (state) {
+                    State.Default, State.Loading -> TokenProvider.colors.bgSecondaryButton
+                    State.Disabled -> TokenProvider.colors.bgDisabled
+                }
         }
 
     @Composable
     fun getBaseColor(): Color =
-        when (state) {
-            State.Default, State.Loading -> TokenProvider.colors.bgAccentPressed
-            State.Disabled -> DISABLED_BASE
+        when (variant) {
+            Variant.Primary ->
+                when (state) {
+                    State.Default, State.Loading -> TokenProvider.colors.bgPrimaryButtonPressed
+                    State.Disabled -> TokenProvider.colors.bgDisabledBase
+                }
+            Variant.Outlined ->
+                when (state) {
+                    State.Default, State.Loading -> TokenProvider.colors.border
+                    State.Disabled -> TokenProvider.colors.bgDisabledBase
+                }
         }
 
     @Composable
-    fun getContentColor(): Color = TokenProvider.colors.textInverse
+    fun getContentColor(): Color =
+        when (variant) {
+            Variant.Primary ->
+                if (state == State.Disabled) TokenProvider.colors.textMuted else TokenProvider.colors.textPrimaryButton
+            Variant.Outlined ->
+                when (state) {
+                    State.Default, State.Loading -> TokenProvider.colors.textSecondaryButton
+                    State.Disabled -> TokenProvider.colors.textMuted
+                }
+        }
+
+    @Composable
+    fun getBorderColor(): Color =
+        when (state) {
+            State.Default, State.Loading -> TokenProvider.colors.bgSecondaryButton
+            State.Disabled -> TokenProvider.colors.textMuted.copy(alpha = 0.16f)
+        }
 
     @Composable
     fun getCornerRadius(): Dp = TokenProvider.borderRadius.md
 
-    fun getDepth(): Dp = 6.dp
+    fun getDepth(): Dp =
+        when (variant) {
+            Variant.Primary -> 6.dp
+            Variant.Outlined -> 0.dp
+        }
 
     @Composable
     fun getHorizontalPadding(): Dp = TokenProvider.spacings.lg
@@ -65,12 +102,7 @@ data class ButtonProperties(
 
     fun getMinHeight(): Dp =
         when (size) {
-            Size.Medium -> 56.dp
-            Size.Large -> 60.dp
+            Size.Medium -> 48.dp
+            Size.Large -> 52.dp
         }
-
-    private companion object {
-        val DISABLED_CONTAINER = Color(0xFFCFD2C4)
-        val DISABLED_BASE = Color(0xFFB8BBAE)
-    }
 }

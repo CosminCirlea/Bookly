@@ -27,6 +27,8 @@ import androidx.compose.foundation.lazy.items as lazyItems
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -84,6 +86,7 @@ import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.Feedback
 import org.evolutionsoftware.bookly.design.components.Header
 import org.evolutionsoftware.bookly.design.components.IconButton
+import org.evolutionsoftware.bookly.design.components.TextFieldChangeEffect
 import org.evolutionsoftware.bookly.design.components.properties.ButtonProperties
 import org.evolutionsoftware.bookly.design.components.properties.FeedbackAction
 import org.evolutionsoftware.bookly.design.components.properties.FeedbackProperties
@@ -179,8 +182,8 @@ private fun HomeScreen(
 
         HomeFilterRow(
             categories = state.categories,
-            selectedCategoryId = state.selectedCategoryId,
-            onCategorySelected = { onIntent(HomeIntent.FilterSelected(it)) },
+            selectedCategoryIds = state.selectedCategoryIds,
+            onCategoryToggled = { onIntent(HomeIntent.FilterToggled(it)) },
             onOpenFilterSheet = { showFilterSheet = true },
         )
 
@@ -248,12 +251,9 @@ private fun HomeScreen(
     HomeFilterSheet(
         visible = showFilterSheet,
         categories = state.categories,
-        selectedCategoryId = state.selectedCategoryId,
-        onCategorySelected = {
-            onIntent(HomeIntent.FilterSelected(it))
-            showFilterSheet = false
-        },
-        onReset = { onIntent(HomeIntent.FilterSelected(null)) },
+        selectedCategoryIds = state.selectedCategoryIds,
+        onCategoryToggled = { onIntent(HomeIntent.FilterToggled(it)) },
+        onReset = { onIntent(HomeIntent.FilterToggled(null)) },
         onDismiss = { showFilterSheet = false },
     )
 }
@@ -294,33 +294,28 @@ private fun HomeToolbar(
                 modifier =
                     Modifier
                         .size(44.dp)
-                        .shadow(elevation = 3.dp, shape = CircleShape, spotColor = Color(0xFFFABD00))
+                        .shadow(elevation = 3.dp, shape = CircleShape, spotColor = TokenProvider.colors.bgAccent)
                         .clip(CircleShape)
-                        .background(TokenProvider.colors.borderAccent)
+                        .background(TokenProvider.colors.bgAccentSoft)
                         .border(2.dp, TokenProvider.colors.bgSurface, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = profile?.initials ?: displayName.toInitials(),
-                    color = TokenProvider.colors.text,
+                    color = TokenProvider.colors.textAccent,
                     style = TokenProvider.textStyles.bodyStrong,
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(Res.string.home_greeting_eyebrow).uppercase(),
-                    style =
-                        TokenProvider.textStyles.eyebrow.copy(
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.6.sp,
-                        ),
+                    style = TokenProvider.textStyles.overline,
                     color = TokenProvider.colors.textMuted,
                 )
                 Text(
                     text = displayName + stringResource(Res.string.home_playroom_suffix),
                     style = TokenProvider.textStyles.title,
-                    color = TokenProvider.colors.borderAccent,
+                    color = TokenProvider.colors.text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -352,9 +347,12 @@ private fun HomeSearchField(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val state = rememberTextFieldState(query)
+    TextFieldChangeEffect(state, onQueryChange)
+    val text = state.text
+
     BasicTextField(
-        value = query,
-        onValueChange = onQueryChange,
+        state = state,
         modifier =
             modifier
                 .fillMaxWidth()
@@ -366,8 +364,8 @@ private fun HomeSearchField(
             TokenProvider.textStyles.input.copy(
                 color = TokenProvider.colors.text,
             ),
-        singleLine = true,
-        decorationBox = { innerTextField ->
+        lineLimits = TextFieldLineLimits.SingleLine,
+        decorator = { innerTextField ->
             Row(
                 modifier =
                     Modifier.padding(
@@ -384,7 +382,7 @@ private fun HomeSearchField(
                     modifier = Modifier.size(22.dp),
                 )
                 Box(modifier = Modifier.weight(1f)) {
-                    if (query.isEmpty()) {
+                    if (text.isEmpty()) {
                         Text(
                             text = stringResource(Res.string.home_search_placeholder),
                             style = TokenProvider.textStyles.input,
@@ -419,42 +417,49 @@ private data class CategoryFilterOption(
 )
 
 private fun List<Category>.toFilterOptions(): List<CategoryFilterOption> =
-    listOf(
+    map { category ->
         CategoryFilterOption(
-            id = null,
-            label = BookCategory.All.label,
-            imageUrl = null,
-            style = BookCategory.All,
-        ),
-    ) +
-        map { category ->
-            CategoryFilterOption(
-                id = category.id,
-                label = category.name,
-                imageUrl = category.imageUrl,
-                style = BookCategory.fromName(category.name),
-            )
-        }
-
-private fun categoryStyle(category: BookCategory): CategoryStyle =
-    when (category) {
-        BookCategory.All -> CategoryStyle(Icons.CategoryAll, null, Color(0xFFFFE0B2), Color(0xFF874E00))
-        BookCategory.Animals -> CategoryStyle(Icons.CategoryAnimals, null, Color(0xFFFFE0B2), Color(0xFF874E00))
-        BookCategory.Plants -> CategoryStyle(Icons.CategoryPlants, null, Color(0xFFDCEDC8), Color(0xFF1B5E20))
-        BookCategory.Weather -> CategoryStyle(Icons.CategoryWeather, null, Color(0xFFB3E5FC), Color(0xFF005E9F))
-        BookCategory.Colors -> CategoryStyle(Icons.CategoryColors, null, Color(0xFFF8BBD0), Color(0xFFAD1457))
-        BookCategory.Shapes -> CategoryStyle(Icons.CategoryShapes, null, Color(0xFFBBDEFB), Color(0xFF005E9F))
-        BookCategory.Food -> CategoryStyle(Icons.CategoryFood, null, Color(0xFFFFCDD2), Color(0xFFB71C1C))
-        // The prototype uses the Material "123" symbol, which renders as the digits themselves.
-        BookCategory.Numbers -> CategoryStyle(null, "123", Color(0xFFFFE0B2), Color(0xFFE65100))
-        BookCategory.Birds -> CategoryStyle(Icons.CategoryBirds, null, Color(0xFFB3E5FC), Color(0xFF005E9F))
+            id = category.id,
+            label = category.name,
+            imageUrl = category.imageUrl,
+            style = BookCategory.fromName(category.name),
+        )
     }
+
+/**
+ * Categories share the four semantic tints rather than each owning a bespoke hue,
+ * so the filter row reads as one palette instead of a rainbow.
+ */
+@Composable
+private fun categoryStyle(category: BookCategory): CategoryStyle {
+    val accentTile = TokenProvider.colors.bgAccentSoft
+    val accentInk = TokenProvider.colors.textAccent
+    val successTile = TokenProvider.colors.bgSuccessSoft
+    val successInk = TokenProvider.colors.textSuccess
+    val infoTile = TokenProvider.colors.bgInfoSoft
+    val infoInk = TokenProvider.colors.textInfo
+    val dangerTile = TokenProvider.colors.bgDangerSoft
+    val dangerInk = TokenProvider.colors.textDanger
+
+    return when (category) {
+        BookCategory.All -> CategoryStyle(Icons.CategoryAll, null, accentTile, accentInk)
+        BookCategory.Animals -> CategoryStyle(Icons.CategoryAnimals, null, accentTile, accentInk)
+        BookCategory.Plants -> CategoryStyle(Icons.CategoryPlants, null, successTile, successInk)
+        BookCategory.Weather -> CategoryStyle(Icons.CategoryWeather, null, infoTile, infoInk)
+        BookCategory.Colors -> CategoryStyle(Icons.CategoryColors, null, dangerTile, dangerInk)
+        BookCategory.Shapes -> CategoryStyle(Icons.CategoryShapes, null, infoTile, infoInk)
+        BookCategory.Food -> CategoryStyle(Icons.CategoryFood, null, dangerTile, dangerInk)
+        // The prototype uses the Material "123" symbol, which renders as the digits themselves.
+        BookCategory.Numbers -> CategoryStyle(null, "123", accentTile, accentInk)
+        BookCategory.Birds -> CategoryStyle(Icons.CategoryBirds, null, infoTile, infoInk)
+    }
+}
 
 @Composable
 private fun HomeFilterRow(
     categories: List<Category>,
-    selectedCategoryId: String?,
-    onCategorySelected: (String?) -> Unit,
+    selectedCategoryIds: Set<String>,
+    onCategoryToggled: (String?) -> Unit,
     onOpenFilterSheet: () -> Unit,
 ) {
     val filters = categories.toFilterOptions()
@@ -471,7 +476,8 @@ private fun HomeFilterRow(
                 label = stringResource(Res.string.home_filters_label),
                 isActive = false,
                 tileColor = TokenProvider.colors.text,
-                showBadge = selectedCategoryId != null,
+                showBadge = selectedCategoryIds.isNotEmpty(),
+                badgeCount = selectedCategoryIds.size,
                 onClick = onOpenFilterSheet,
             ) {
                 Icon(
@@ -484,14 +490,14 @@ private fun HomeFilterRow(
         }
         lazyItems(filters, key = { it.id ?: "all" }) { category ->
             val style = categoryStyle(category.style)
-            val active = category.id == selectedCategoryId
+            val active = category.id != null && category.id in selectedCategoryIds
             // Muted until selected, then the tile tints and the glyph takes its accent.
             val glyphTint = if (active) style.accent else TokenProvider.colors.textSubtle
             FilterTile(
                 label = category.label,
                 isActive = active,
                 tileColor = if (active) style.tileColor else TokenProvider.colors.bgElevated,
-                onClick = { onCategorySelected(category.id) },
+                onClick = { onCategoryToggled(category.id) },
             ) {
                 if (!category.imageUrl.isNullOrBlank()) {
                     AsyncImage(
@@ -530,6 +536,7 @@ private fun FilterTile(
     tileColor: Color,
     onClick: () -> Unit,
     showBadge: Boolean = false,
+    badgeCount: Int = 1,
     content: @Composable () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -586,7 +593,7 @@ private fun FilterTile(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "1",
+                        text = badgeCount.toString(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Black,
                         color = TokenProvider.colors.textInverse,
@@ -596,11 +603,7 @@ private fun FilterTile(
         }
         Text(
             text = label,
-            style =
-                TokenProvider.textStyles.eyebrow.copy(
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
+            style = TokenProvider.textStyles.overline,
             color = if (isActive) TokenProvider.colors.text else TokenProvider.colors.textSubtle,
             textAlign = TextAlign.Center,
             maxLines = 1,
@@ -613,8 +616,8 @@ private fun FilterTile(
 private fun HomeFilterSheet(
     visible: Boolean,
     categories: List<Category>,
-    selectedCategoryId: String?,
-    onCategorySelected: (String?) -> Unit,
+    selectedCategoryIds: Set<String>,
+    onCategoryToggled: (String?) -> Unit,
     onReset: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -627,21 +630,21 @@ private fun HomeFilterSheet(
             Text(
                 text = stringResource(Res.string.home_filter_sheet_title),
                 modifier = Modifier.weight(1f),
-                style = TokenProvider.textStyles.title.copy(fontSize = 22.sp),
+                style = TokenProvider.textStyles.title,
                 color = TokenProvider.colors.text,
             )
             Text(
                 text = stringResource(Res.string.home_filter_sheet_reset),
                 modifier =
                     Modifier.clickable(onClick = onReset),
-                style = TokenProvider.textStyles.bodyStrong.copy(fontSize = TokenProvider.fontSizes.caption),
+                style = TokenProvider.textStyles.captionStrong,
                 color = TokenProvider.colors.textBrand,
             )
         }
         Spacer(modifier = Modifier.height(TokenProvider.spacings.xs))
         Text(
             text = stringResource(Res.string.home_filter_sheet_subtitle),
-            style = TokenProvider.textStyles.body.copy(fontSize = TokenProvider.fontSizes.caption),
+            style = TokenProvider.textStyles.caption,
             color = TokenProvider.colors.textMuted,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
@@ -656,8 +659,8 @@ private fun HomeFilterSheet(
                 row.forEach { category ->
                     FilterSheetItem(
                         category = category,
-                        isActive = category.id == selectedCategoryId,
-                        onClick = { onCategorySelected(category.id) },
+                        isActive = category.id != null && category.id in selectedCategoryIds,
+                        onClick = { onCategoryToggled(category.id) },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -748,11 +751,7 @@ private fun FilterSheetItem(
             }
             Text(
                 text = category.label,
-                style =
-                    TokenProvider.textStyles.eyebrow.copy(
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
+                style = TokenProvider.textStyles.overline,
                 color = TokenProvider.colors.text,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
@@ -817,8 +816,8 @@ private fun PlayroomBookCard(
                     .shadow(
                         elevation = 8.dp,
                         shape = RoundedCornerShape(TokenProvider.borderRadius.md),
-                        ambientColor = Color(0x14392E00),
-                        spotColor = Color(0x14392E00),
+                        ambientColor = TokenProvider.colors.shadowSoft,
+                        spotColor = TokenProvider.colors.shadowSoft,
                     )
                     .clip(RoundedCornerShape(TokenProvider.borderRadius.md))
                     .background(TokenProvider.colors.bgSurface)
@@ -873,11 +872,7 @@ private fun PlayroomBookCard(
             Text(
                 text = book.title,
                 modifier = Modifier.padding(bottom = TokenProvider.spacings.xxs),
-                style =
-                    TokenProvider.textStyles.bodyStrong.copy(
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                    ),
+                style = TokenProvider.textStyles.cardTitle,
                 color = TokenProvider.colors.text,
                 textAlign = TextAlign.Center,
                 minLines = 2,
@@ -918,8 +913,8 @@ private fun FavoriteButton(
                 .shadow(
                     elevation = 4.dp,
                     shape = CircleShape,
-                    ambientColor = Color(0x26392E00),
-                    spotColor = Color(0x26392E00),
+                    ambientColor = TokenProvider.colors.shadowStrong,
+                    spotColor = TokenProvider.colors.shadowStrong,
                 )
                 .clip(CircleShape)
                 .background(TokenProvider.colors.bgSurface.copy(alpha = 0.92f))

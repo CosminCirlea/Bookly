@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,7 +13,6 @@ import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.IconButton
 import org.evolutionsoftware.bookly.design.components.properties.IconButtonProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
-import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun DebugScreenHeader(
@@ -37,13 +35,6 @@ fun DebugScreenHeader(
         IconButton(
             properties = IconButtonProperties(icon = Icons.Close, ariaLabel = "Close"),
             onClick = onClose,
-            content = {
-                Icon(
-                    painter = painterResource(Icons.Close.icon),
-                    contentDescription = "Close",
-                    tint = TokenProvider.colors.textAccent,
-                )
-            },
         )
     }
 }

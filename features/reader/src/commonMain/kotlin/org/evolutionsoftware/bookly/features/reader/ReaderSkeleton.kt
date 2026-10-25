@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.evolutionsoftware.bookly.design.components.ShimmerBlock
 import org.evolutionsoftware.bookly.design.components.rememberShimmerBrush
@@ -75,8 +74,8 @@ internal fun ReaderSkeleton(
                             .shadow(
                                 elevation = 24.dp,
                                 shape = RoundedCornerShape(TokenProvider.borderRadius.xl),
-                                ambientColor = Color(0x14392E00),
-                                spotColor = Color(0x14392E00),
+                                ambientColor = TokenProvider.colors.shadowSoft,
+                                spotColor = TokenProvider.colors.shadowSoft,
                             ).clip(RoundedCornerShape(TokenProvider.borderRadius.xl))
                             .background(TokenProvider.colors.bgSurface),
                     contentAlignment = Alignment.Center,
@@ -112,7 +111,7 @@ internal fun ReaderSkeleton(
                     ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(modifier = Modifier.size(44.dp))
+            Box(modifier = Modifier.size(TokenProvider.sizing.iconButtonSize))
             Row(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement =
@@ -133,7 +132,7 @@ internal fun ReaderSkeleton(
                 }
             }
             ShimmerBlock(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(TokenProvider.sizing.iconButtonSize),
                 shape = CircleShape,
                 brush = brush,
             )

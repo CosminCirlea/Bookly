@@ -24,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.evolutionsoftware.bookly.design.Icons
@@ -119,13 +118,28 @@ private fun BooklyToast(
 
     val (background, foreground, icon) =
         when (toast.kind) {
-            BooklyToastKind.Success -> Triple(Color(0xFFE8F5E9), Color(0xFF1B5E20), Icons.CheckCircle)
-            BooklyToastKind.Error -> Triple(Color(0xFFFFEBEE), Color(0xFF7F0F00), Icons.ErrorCircle)
-            BooklyToastKind.Info -> Triple(Color(0xFFFFF0C4), Color(0xFF392E00), Icons.InfoCircle)
+            BooklyToastKind.Success ->
+                Triple(
+                    TokenProvider.colors.bgSuccessSoft,
+                    TokenProvider.colors.textSuccess,
+                    Icons.CheckCircle,
+                )
+            BooklyToastKind.Error ->
+                Triple(
+                    TokenProvider.colors.bgDangerSoft,
+                    TokenProvider.colors.textDanger,
+                    Icons.ErrorCircle,
+                )
+            BooklyToastKind.Info ->
+                Triple(
+                    TokenProvider.colors.bgElevated,
+                    TokenProvider.colors.text,
+                    Icons.InfoCircle,
+                )
         }
     val iconTint =
         when (toast.kind) {
-            BooklyToastKind.Success -> Color(0xFF43A047)
+            BooklyToastKind.Success -> TokenProvider.colors.success
             BooklyToastKind.Error -> TokenProvider.colors.textDanger
             BooklyToastKind.Info -> TokenProvider.colors.borderAccent
         }
@@ -142,8 +156,8 @@ private fun BooklyToast(
                     .shadow(
                         elevation = 10.dp,
                         shape = RoundedCornerShape(TokenProvider.borderRadius.md),
-                        ambientColor = Color(0x26392E00),
-                        spotColor = Color(0x26392E00),
+                        ambientColor = TokenProvider.colors.shadowStrong,
+                        spotColor = TokenProvider.colors.shadowStrong,
                     )
                     .background(
                         color = background,

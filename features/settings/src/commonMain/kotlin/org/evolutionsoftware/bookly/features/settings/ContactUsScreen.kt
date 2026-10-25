@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,6 +57,7 @@ import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.Header
 import org.evolutionsoftware.bookly.design.components.TextField
+import org.evolutionsoftware.bookly.design.components.TextFieldChangeEffect
 import org.evolutionsoftware.bookly.design.components.properties.ButtonProperties
 import org.evolutionsoftware.bookly.design.components.properties.HeaderProperties
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
@@ -132,7 +134,7 @@ fun ContactUsRoute(
                 )
                 Text(
                     text = stringResource(Res.string.contact_banner),
-                    style = TokenProvider.textStyles.body.copy(fontSize = TokenProvider.fontSizes.caption),
+                    style = TokenProvider.textStyles.caption,
                     color = TokenProvider.colors.textMuted,
                 )
             }
@@ -166,29 +168,31 @@ fun ContactUsRoute(
                 }
             }
 
+            val emailState = rememberTextFieldState(email)
+            TextFieldChangeEffect(emailState) { email = it }
             TextField(
                 properties =
                     TextFieldProperties(
                         label = stringResource(Res.string.contact_email_label),
                         placeholder = stringResource(Res.string.contact_email_placeholder),
                     ),
-                value = email,
-                onValueChange = { email = it },
+                state = emailState,
             )
 
             Column {
                 SheetTextArea(
                     value = message,
-                    onValueChange = { if (it.length <= MESSAGE_LIMIT) message = it },
+                    onValueChange = { message = it },
                     label = stringResource(Res.string.contact_message_label),
                     placeholder = stringResource(Res.string.contact_message_placeholder),
                     minHeight = 130.dp,
+                    maxLength = MESSAGE_LIMIT,
                 )
                 Spacer(modifier = Modifier.height(TokenProvider.spacings.xxs))
                 Text(
                     text = "${message.length}/$MESSAGE_LIMIT",
                     modifier = Modifier.padding(start = TokenProvider.spacings.xxs),
-                    style = TokenProvider.textStyles.body.copy(fontSize = 12.sp),
+                    style = TokenProvider.textStyles.caption,
                     color = TokenProvider.colors.textMuted,
                 )
             }
@@ -273,7 +277,7 @@ private fun FieldLabel(text: String) {
                 start = TokenProvider.spacings.xxs,
                 bottom = TokenProvider.spacings.xs,
             ),
-        style = TokenProvider.textStyles.bodyStrong.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold),
+        style = TokenProvider.textStyles.label,
         color = TokenProvider.colors.text,
     )
 }

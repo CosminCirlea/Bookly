@@ -21,32 +21,43 @@ import org.evolutionsoftware.bookly.design.theme.ThemeTextStyles
 private object BooklyTokens : ThemeProvider {
     override val colors =
         ThemeColors(
-            bgBase = Color(0xFFFFF6E1),
-            bgSurface = Color(0xFFFFFFFF),
-            bgElevated = Color(0xFFFFF0C4),
-            bgAccent = Color(0xFF1CB0F6),
-            bgAccentPressed = Color(0xFF1899D6),
-            bgAccentSoft = Color(0xFFFAE18C),
-            bgAccentStrong = Color(0xFF005E9F),
-            bgSuccessSoft = Color(0xFF91F78E),
-            bgInfoSoft = Color(0x3344A5FF),
-            bgWarningSoft = Color(0x1AFFC791),
-            bgDangerSoft = Color(0x22F95630),
-            text = Color(0xFF392E00),
-            textMuted = Color(0xFF695B23),
-            textSubtle = Color(0xFF86763B),
+            // Neutrals — warm cream
+            bgBase = Color(0xFFFFF7DF),
+            bgSurface = Color(0xFFFFFDF6),
+            bgElevated = Color(0xFFFFF0C2),
+            // Brand — orange, four steps
+            bgAccent = Color(0xFFE3924B),
+            bgAccentPressed = Color(0xFFCB7835),
+            bgAccentSoft = Color(0xFFFFE6B5),
+            bgAccentStrong = Color(0xFFAA602C),
+            // Semantic surfaces — one soft tint per hue
+            bgSuccessSoft = Color(0xFFE1EED2),
+            bgInfoSoft = Color(0xFFE0EDF2),
+            bgWarningSoft = Color(0xFFFFE5A3),
+            bgDangerSoft = Color(0xFFFFDCD1),
+            text = Color(0xFFE3924B),
+            textMuted = Color(0xFF90623F),
+            textSubtle = Color(0xFF90623F),
             textInverse = Color(0xFFFFFFFF),
-            textAccent = Color(0xFF874E00),
-            textBrand = Color(0xFF1CB0F6),
-            textSuccess = Color(0xFF005E17),
-            textDanger = Color(0xFFB02500),
-            border = Color(0xFFF5DC81),
-            borderAccent = Color(0xFFFFC107),
-            success = Color(0xFF22A447),
-            warning = Color(0xFFF95630),
-            favorite = Color(0xFFE53935),
+            textAccent = Color(0xFF9C5523),
+            textBrand = Color(0xFFE3924B),
+            textSuccess = Color(0xFF4D713A),
+            textDanger = Color(0xFFA94531),
+            textInfo = Color(0xFF476E80),
+            border = Color(0xFFF0D49A),
+            borderAccent = Color(0xFFE3924B),
+            bgDisabled = Color(0xFFEFE6D3),
+            bgDisabledBase = Color(0xFFDED0B6),
+            success = Color(0xFF4D713A),
+            warning = Color(0xFFAA602C),
+            favorite = Color(0xFFC76049),
+            shadowSoft = Color(0x14E3924B),
+            shadowStrong = Color(0x26E3924B),
             socialGoogle = Color(0xFF3C4043),
             socialFacebook = Color(0xFF1877F2),
+            bgPrimaryButton = Color(0xFFFFDF8A),
+            bgPrimaryButtonPressed = Color(0xFFD7A63A),
+            textPrimaryButton = Color(0xFF975017),
         )
 
     override val borderRadius =
@@ -115,13 +126,14 @@ private object BooklyTokens : ThemeProvider {
             label =
                 TextStyle(
                     fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = fontSizes.body,
                     lineHeight = lineHeights.body,
                 ),
             body =
                 TextStyle(
                     fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = fontSizes.body,
                     lineHeight = lineHeights.body,
                 ),
@@ -135,20 +147,21 @@ private object BooklyTokens : ThemeProvider {
             input =
                 TextStyle(
                     fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = fontSizes.body,
                     lineHeight = lineHeights.body,
                 ),
             title =
                 TextStyle(
                     fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 18.sp,
-                    lineHeight = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = fontSizes.title,
+                    lineHeight = lineHeights.title,
                 ),
             headline =
                 TextStyle(
                     fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.ExtraBold,
+                    fontWeight = FontWeight.Bold,
                     fontSize = fontSizes.headline,
                     lineHeight = lineHeights.headline,
                 ),
@@ -159,6 +172,35 @@ private object BooklyTokens : ThemeProvider {
                     fontSize = 18.sp,
                     lineHeight = 26.sp,
                 ),
+            actionText =
+                TextStyle(
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = fontSizes.body,
+                    lineHeight = lineHeights.body,
+                ),
+            caption =
+                TextStyle(
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = fontSizes.caption,
+                    lineHeight = 20.sp,
+                ),
+            captionStrong =
+                TextStyle(
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = fontSizes.caption,
+                    lineHeight = 20.sp,
+                ),
+            overline =
+                TextStyle(
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp,
+                    lineHeight = 12.sp,
+                    letterSpacing = 1.2.sp,
+                ),
         )
 }
 
@@ -166,6 +208,39 @@ private object BooklyTokens : ThemeProvider {
 fun BooklyTheme(content: @Composable () -> Unit) {
     FrameDesignSystem(
         themeProvider = BooklyTokens,
+        content = content,
+    )
+}
+
+private object OnboardingTokens : ThemeProvider by BooklyTokens {
+    override val colors =
+        BooklyTokens.colors.copy(
+            bgBase = Color(0xFFFFF6E1),
+            bgSurface = Color(0xFFFFFFFF),
+            bgElevated = Color(0xFFFFF0C4),
+            bgAccent = Color(0xFFF57C16),
+            bgAccentPressed = Color(0xFFD95D08),
+            bgAccentSoft = Color(0xFFFFE0B2),
+            bgAccentStrong = Color(0xFFA34300),
+            text = Color(0xFF392E00),
+            textMuted = Color(0xFF695B23),
+            textSubtle = Color(0xFF86763B),
+            textAccent = Color(0xFFA34300),
+            textBrand = Color(0xFFF57C16),
+            border = Color(0xFFF5DC81),
+            borderAccent = Color(0xFFF57C16),
+            bgPrimaryButton = Color(0xFFF57C16),
+            bgPrimaryButtonPressed = Color(0xFFD95D08),
+            textPrimaryButton = Color(0xFFFFFFFF),
+            bgSecondaryButton = Color(0xFFFFE0B2),
+            textSecondaryButton = Color(0xFFA34300),
+        )
+}
+
+@Composable
+fun BooklyOnboardingTheme(content: @Composable () -> Unit) {
+    FrameDesignSystem(
+        themeProvider = OnboardingTokens,
         content = content,
     )
 }

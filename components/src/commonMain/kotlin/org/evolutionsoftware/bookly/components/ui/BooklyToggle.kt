@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 
 /**
- * Pill toggle matching the Bookly prototype: action-blue track when on,
+ * Pill toggle matching the Bookly palette: apricot track when on,
  * muted sand track when off, with a white sliding knob.
  */
 @Composable

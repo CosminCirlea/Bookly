@@ -13,16 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 
-private val SHIMMER_BASE = Color(0xFFFFF0C4)
-private val SHIMMER_HIGHLIGHT = Color(0xFFFDF6DD)
-
-/** Width of the travelling highlight band. */
 private val SHIMMER_BAND = 360.dp
 private const val SHIMMER_DURATION_MS = 1_400
 
@@ -34,6 +30,8 @@ private const val SHIMMER_DURATION_MS = 1_400
  */
 @Composable
 fun rememberShimmerBrush(): Brush {
+    val shimmerBase = TokenProvider.colors.bgElevated
+    val shimmerHighlight = TokenProvider.colors.bgBase
     val bandPx = with(LocalDensity.current) { SHIMMER_BAND.toPx() }
     val transition = rememberInfiniteTransition(label = "shimmer")
     val offset by transition.animateFloat(
@@ -49,9 +47,9 @@ fun rememberShimmerBrush(): Brush {
     return Brush.linearGradient(
         colorStops =
             arrayOf(
-                0f to SHIMMER_BASE,
-                0.4f to SHIMMER_HIGHLIGHT,
-                0.8f to SHIMMER_BASE,
+                0f to shimmerBase,
+                0.4f to shimmerHighlight,
+                0.8f to shimmerBase,
             ),
         start = Offset(offset, 0f),
         end = Offset(offset + bandPx, 0f),

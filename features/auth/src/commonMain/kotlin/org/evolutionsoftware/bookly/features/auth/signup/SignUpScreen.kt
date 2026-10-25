@@ -1,6 +1,6 @@
 package org.evolutionsoftware.bookly.features.auth.signup
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -10,8 +10,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import bookly.features.auth.generated.resources.Res
 import bookly.features.auth.generated.resources.auth_sign_in_facebook
@@ -30,8 +28,11 @@ import bookly.features.auth.generated.resources.auth_sign_up_to_sign_in
 import org.evolutionsoftware.bookly.components.ui.PlayroomDivider
 import org.evolutionsoftware.bookly.components.ui.PlayroomSocialButton
 import org.evolutionsoftware.bookly.design.Icons
+import org.evolutionsoftware.bookly.design.components.ActionText
 import org.evolutionsoftware.bookly.design.components.Button
+import org.evolutionsoftware.bookly.design.components.SecureTextField
 import org.evolutionsoftware.bookly.design.components.TextField
+import org.evolutionsoftware.bookly.design.components.TextFieldChangeEffect
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.evolutionsoftware.bookly.features.auth.common.AuthScreenScaffold
@@ -88,6 +89,13 @@ internal fun SignUpContent(
             } else {
                 TextFieldProperties.State.Default
             }
+        val emailState = rememberTextFieldState(viewState.emailOrPhone)
+        val passwordState = rememberTextFieldState(viewState.password)
+        val confirmPasswordState = rememberTextFieldState(viewState.confirmPassword)
+        TextFieldChangeEffect(emailState) { onIntent(SignUpIntent.EmailOrPhoneChanged(it)) }
+        TextFieldChangeEffect(passwordState) { onIntent(SignUpIntent.PasswordChanged(it)) }
+        TextFieldChangeEffect(confirmPasswordState) { onIntent(SignUpIntent.ConfirmPasswordChanged(it)) }
+
         TextField(
             properties =
                 TextFieldProperties(
@@ -95,22 +103,20 @@ internal fun SignUpContent(
                     placeholder = stringResource(Res.string.auth_sign_up_email_placeholder),
                     state = textFieldState,
                 ),
-            value = viewState.emailOrPhone,
-            onValueChange = { onIntent(SignUpIntent.EmailOrPhoneChanged(it)) },
+            state = emailState,
             enabled = !viewState.isLoading,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
-        TextField(
+        SecureTextField(
             properties =
                 TextFieldProperties(
                     label = stringResource(Res.string.auth_sign_up_password_label),
                     placeholder = stringResource(Res.string.auth_sign_up_password_placeholder),
                     state = textFieldState,
                 ),
-            value = viewState.password,
-            onValueChange = { onIntent(SignUpIntent.PasswordChanged(it)) },
+            state = passwordState,
             enabled = !viewState.isLoading,
-            visualTransformation = if (viewState.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            isRevealed = viewState.isPasswordVisible,
             suffix = {
                 PasswordSuffix(
                     visible = viewState.isPasswordVisible,
@@ -124,17 +130,16 @@ internal fun SignUpContent(
             modifier = Modifier.padding(horizontal = TokenProvider.spacings.xxs),
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
-        TextField(
+        SecureTextField(
             properties =
                 TextFieldProperties(
                     label = stringResource(Res.string.auth_sign_up_confirm_password_label),
                     placeholder = stringResource(Res.string.auth_sign_up_confirm_password_placeholder),
                     state = textFieldState,
                 ),
-            value = viewState.confirmPassword,
-            onValueChange = { onIntent(SignUpIntent.ConfirmPasswordChanged(it)) },
+            state = confirmPasswordState,
             enabled = !viewState.isLoading,
-            visualTransformation = if (viewState.isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            isRevealed = viewState.isConfirmPasswordVisible,
             suffix = {
                 PasswordSuffix(
                     visible = viewState.isConfirmPasswordVisible,
@@ -192,14 +197,10 @@ internal fun SignUpContent(
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.sm))
-        Text(
+        ActionText(
             text = stringResource(Res.string.auth_sign_up_to_sign_in),
-            modifier =
-                Modifier.clickable(enabled = !viewState.isLoading) {
-                    onIntent(SignUpIntent.SignInClicked)
-                },
-            style = TokenProvider.textStyles.bodyStrong,
-            color = TokenProvider.colors.textAccent,
+            onClick = { onIntent(SignUpIntent.SignInClicked) },
+            enabled = !viewState.isLoading,
             textAlign = TextAlign.Center,
         )
     }

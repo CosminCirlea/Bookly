@@ -31,7 +31,7 @@
     <string name="auth_change_password_submit">Update Password</string>
     <string name="auth_change_password_success_message">Password updated successfully.</string>
     <string name="auth_forgot_password_title">Reset Password</string>
-    <string name="auth_forgot_password_description">Enter your email address and we\'ll send you a magical link to get back in.</string>
+    <string name="auth_forgot_password_description">Enter your email address and we'll send you a magical link to get back in.</string>
     <string name="auth_forgot_password_email_label">Email Address</string>
     <string name="auth_forgot_password_email_placeholder">parent@email.com</string>
     <string name="auth_forgot_password_submit">Send Reset Link</string>

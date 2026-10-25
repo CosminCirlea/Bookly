@@ -3,6 +3,7 @@ package org.evolutionsoftware.bookly.features.auth.forgotpassword
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +20,7 @@ import bookly.features.auth.generated.resources.auth_forgot_password_submit
 import bookly.features.auth.generated.resources.auth_forgot_password_title
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.TextField
+import org.evolutionsoftware.bookly.design.components.TextFieldChangeEffect
 import org.evolutionsoftware.bookly.design.components.properties.TextFieldProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
 import org.evolutionsoftware.bookly.features.auth.common.AuthScreenScaffold
@@ -33,6 +35,8 @@ internal fun ForgotPasswordRoute(
     onLinkSent: (String) -> Unit,
 ) {
     var email by remember { mutableStateOf("") }
+    val emailState = rememberTextFieldState()
+    TextFieldChangeEffect(emailState) { email = it }
     val isValid = EMAIL_PATTERN.matches(email.trim())
 
     AuthScreenScaffold(
@@ -52,8 +56,7 @@ internal fun ForgotPasswordRoute(
                     label = stringResource(Res.string.auth_forgot_password_email_label),
                     placeholder = stringResource(Res.string.auth_forgot_password_email_placeholder),
                 ),
-            value = email,
-            onValueChange = { email = it },
+            state = emailState,
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
         Button(

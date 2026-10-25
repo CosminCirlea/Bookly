@@ -21,21 +21,21 @@ internal class HomeStateMapper : StateMapper<HomeAction, HomeViewState> {
                     visibleBooks =
                         filterBooks(
                             books = action.books,
-                            categoryId = currentState.selectedCategoryId,
+                            categoryIds = currentState.selectedCategoryIds,
                             query = currentState.searchQuery,
                         ),
                 )
             }
             is HomeAction.CategoriesLoaded -> {
                 val categoryIds = action.categories.map { it.id }.toSet()
-                val selectedCategoryId = currentState.selectedCategoryId?.takeIf { it in categoryIds }
+                val selectedCategoryIds = currentState.selectedCategoryIds.intersect(categoryIds)
                 currentState.copy(
                     categories = action.categories,
-                    selectedCategoryId = selectedCategoryId,
+                    selectedCategoryIds = selectedCategoryIds,
                     visibleBooks =
                         filterBooks(
                             books = currentState.allBooks,
-                            categoryId = selectedCategoryId,
+                            categoryIds = selectedCategoryIds,
                             query = currentState.searchQuery,
                         ),
                 )
@@ -58,23 +58,32 @@ internal class HomeStateMapper : StateMapper<HomeAction, HomeViewState> {
                     // error screen when there is no content at all.
                     error = if (currentState.allBooks.isEmpty()) action.error else null,
                 )
-            is HomeAction.FilterChanged ->
+            is HomeAction.FilterToggled -> {
+                val selectedCategoryIds =
+                    action.categoryId?.let { categoryId ->
+                        if (categoryId in currentState.selectedCategoryIds) {
+                            currentState.selectedCategoryIds - categoryId
+                        } else {
+                            currentState.selectedCategoryIds + categoryId
+                        }
+                    } ?: emptySet()
                 currentState.copy(
-                    selectedCategoryId = action.categoryId,
+                    selectedCategoryIds = selectedCategoryIds,
                     visibleBooks =
                         filterBooks(
                             books = currentState.allBooks,
-                            categoryId = action.categoryId,
+                            categoryIds = selectedCategoryIds,
                             query = currentState.searchQuery,
                         ),
                 )
+            }
             is HomeAction.SearchChanged ->
                 currentState.copy(
                     searchQuery = action.query,
                     visibleBooks =
                         filterBooks(
                             books = currentState.allBooks,
-                            categoryId = currentState.selectedCategoryId,
+                            categoryIds = currentState.selectedCategoryIds,
                             query = action.query,
                         ),
                 )
@@ -96,11 +105,11 @@ private fun Set<String>.update(
 
 private fun filterBooks(
     books: List<BookSummary>,
-    categoryId: String?,
+    categoryIds: Set<String>,
     query: String,
 ): List<BookSummary> =
     books.filter { book ->
-        val matchesCategory = categoryId == null || categoryId in book.categoryIds
+        val matchesCategory = categoryIds.isEmpty() || categoryIds.any { it in book.categoryIds }
         val matchesQuery = query.isBlank() || book.title.contains(query.trim(), ignoreCase = true)
         matchesCategory && matchesQuery
     }

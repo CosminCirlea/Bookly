@@ -45,8 +45,11 @@ fun BookCard(
         ) {
             Text(
                 text = title,
-                style = TokenProvider.textStyles.title,
+                modifier = Modifier.weight(1f).padding(end = TokenProvider.spacings.xs),
+                style = TokenProvider.textStyles.cardTitle,
                 color = TokenProvider.colors.text,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             Box(
                 modifier =
@@ -73,7 +76,7 @@ fun BookCard(
 
         Text(
             text = description,
-            style = TokenProvider.textStyles.body,
+            style = TokenProvider.textStyles.cardSubtitle,
             color = TokenProvider.colors.textMuted,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,

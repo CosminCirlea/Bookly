@@ -29,7 +29,7 @@ internal class HomeIntentProcessor(
 
             HomeIntent.Refresh -> loadCatalog(CatalogRefresh.Force)
 
-            is HomeIntent.FilterSelected -> flowOf(HomeAction.FilterChanged(intent.categoryId))
+            is HomeIntent.FilterToggled -> flowOf(HomeAction.FilterToggled(intent.categoryId))
 
             is HomeIntent.SearchChanged -> flowOf(HomeAction.SearchChanged(intent.query))
 

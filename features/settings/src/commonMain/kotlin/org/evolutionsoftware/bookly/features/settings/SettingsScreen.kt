@@ -24,6 +24,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.maxLength
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -52,7 +55,6 @@ import bookly.features.settings.generated.resources.settings_contact_us
 import bookly.features.settings.generated.resources.settings_edit_profile
 import bookly.features.settings.generated.resources.settings_edit_profile_aria
 import bookly.features.settings.generated.resources.settings_free_plan
-import bookly.features.settings.generated.resources.settings_help_center
 import bookly.features.settings.generated.resources.settings_invite_body
 import bookly.features.settings.generated.resources.settings_invite_close
 import bookly.features.settings.generated.resources.settings_invite_copy
@@ -98,6 +100,7 @@ import org.evolutionsoftware.bookly.components.ui.PlayroomSocialButton
 import org.evolutionsoftware.bookly.design.Icons
 import org.evolutionsoftware.bookly.design.components.Button
 import org.evolutionsoftware.bookly.design.components.Header
+import org.evolutionsoftware.bookly.design.components.TextFieldChangeEffect
 import org.evolutionsoftware.bookly.design.components.properties.ButtonProperties
 import org.evolutionsoftware.bookly.design.components.properties.HeaderProperties
 import org.evolutionsoftware.bookly.design.theme.TokenProvider
@@ -225,9 +228,6 @@ private fun SettingsScreen(
                 title = stringResource(Res.string.settings_support),
                 items =
                     listOf(
-                        SettingsRowItem(stringResource(Res.string.settings_help_center), Icons.SettingsHelp, SettingsRowStyles.Help) {
-                            onIntent(SettingsIntent.HelpCenterClicked)
-                        },
                         SettingsRowItem(stringResource(Res.string.settings_contact_us), Icons.SettingsContact, SettingsRowStyles.Success) {
                             onIntent(SettingsIntent.ContactUsClicked)
                         },
@@ -291,12 +291,7 @@ private fun SettingsScreen(
             Text(
                 text = stringResource(Res.string.settings_version).uppercase(),
                 modifier = Modifier.fillMaxWidth(),
-                style =
-                    TokenProvider.textStyles.eyebrow.copy(
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.6.sp,
-                    ),
+                style = TokenProvider.textStyles.overline,
                 color = TokenProvider.colors.textMuted.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
             )
@@ -365,8 +360,8 @@ private fun LoginBanner(onClick: () -> Unit) {
                 .shadow(
                     elevation = 8.dp,
                     shape = RoundedCornerShape(TokenProvider.borderRadius.lg),
-                    ambientColor = Color(0x0F392E00),
-                    spotColor = Color(0x0F392E00),
+                    ambientColor = TokenProvider.colors.shadowSoft,
+                    spotColor = TokenProvider.colors.shadowSoft,
                 ).clip(RoundedCornerShape(TokenProvider.borderRadius.lg))
                 .background(TokenProvider.colors.bgSurface)
                 .clickable(
@@ -395,7 +390,7 @@ private fun LoginBanner(onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(Res.string.settings_login_banner_title),
-                style = TokenProvider.textStyles.title,
+                style = TokenProvider.textStyles.label,
                 color = TokenProvider.colors.text,
             )
             Spacer(modifier = Modifier.height(2.dp))
@@ -426,8 +421,8 @@ private fun ProfileCard(
                 .shadow(
                     elevation = 8.dp,
                     shape = RoundedCornerShape(TokenProvider.borderRadius.lg),
-                    ambientColor = Color(0x0F392E00),
-                    spotColor = Color(0x0F392E00),
+                    ambientColor = TokenProvider.colors.shadowSoft,
+                    spotColor = TokenProvider.colors.shadowSoft,
                 )
                 .clip(RoundedCornerShape(TokenProvider.borderRadius.lg))
                 .background(TokenProvider.colors.bgSurface)
@@ -445,14 +440,14 @@ private fun ProfileCard(
         ) {
             Text(
                 text = displayName.toInitials(),
-                style = TokenProvider.textStyles.title.copy(fontSize = 22.sp),
+                style = TokenProvider.textStyles.title,
                 color = TokenProvider.colors.text,
             )
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = displayName,
-                style = TokenProvider.textStyles.title,
+                style = TokenProvider.textStyles.label,
                 color = TokenProvider.colors.text,
             )
             Spacer(modifier = Modifier.height(TokenProvider.spacings.xs - 2.dp))
@@ -460,7 +455,7 @@ private fun ProfileCard(
                 modifier =
                     Modifier
                         .clip(CircleShape)
-                        .background(Color(0xFFFFE0B2))
+                        .background(TokenProvider.colors.bgAccentSoft)
                         .padding(
                             horizontal = TokenProvider.spacings.xs,
                             vertical = 2.dp,
@@ -471,15 +466,13 @@ private fun ProfileCard(
                 Icon(
                     painter = painterResource(Icons.Star.icon),
                     contentDescription = null,
-                    tint = Color(0xFF874E00),
+                    tint = TokenProvider.colors.textAccent,
                     modifier = Modifier.size(12.dp),
                 )
                 Text(
                     text = stringResource(Res.string.settings_free_plan).uppercase(),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp,
-                    color = Color(0xFF874E00),
+                    style = TokenProvider.textStyles.overline,
+                    color = TokenProvider.colors.textAccent,
                 )
             }
         }
@@ -532,14 +525,15 @@ private fun RateAppSheet(
 
     BooklySheet(visible = visible, onDismiss = onDismiss) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            SheetIconBadge(icon = Icons.Star, background = Color(0xFFFFE0B2), tint = Color(0xFF874E00))
-            Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
             Text(
                 text = stringResource(Res.string.settings_rate_title),
-                style = TokenProvider.textStyles.title.copy(fontSize = 24.sp),
+                style = TokenProvider.textStyles.title,
                 color = TokenProvider.colors.text,
             )
             Spacer(modifier = Modifier.height(TokenProvider.spacings.xs))
@@ -558,7 +552,7 @@ private fun RateAppSheet(
                     Icon(
                         painter = painterResource(if (filled) Icons.Star.icon else Icons.StarOutline.icon),
                         contentDescription = null,
-                        tint = if (filled) TokenProvider.colors.borderAccent else Color(0xFFE6D8A0),
+                        tint = if (filled) TokenProvider.colors.borderAccent else TokenProvider.colors.border,
                         modifier =
                             Modifier
                                 .size(44.dp)
@@ -595,8 +589,12 @@ private fun RateAppSheet(
                 onClick = { onSubmit(stars) },
             )
             Spacer(modifier = Modifier.height(TokenProvider.spacings.sm))
-            PlayroomGhostButton(
-                label = stringResource(Res.string.settings_rate_later),
+            Button(
+                properties =
+                    ButtonProperties(
+                        label = stringResource(Res.string.settings_rate_later),
+                        variant = ButtonProperties.Variant.Outlined,
+                    ),
                 onClick = onDismiss,
             )
         }
@@ -614,11 +612,11 @@ private fun InviteFriendSheet(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            SheetIconBadge(icon = Icons.Gift, background = Color(0xFFE3F2FD), tint = Color(0xFF005E9F))
+            SheetIconBadge(icon = Icons.Gift, background = TokenProvider.colors.bgInfoSoft, tint = TokenProvider.colors.textInfo)
             Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
             Text(
                 text = stringResource(Res.string.settings_invite_title),
-                style = TokenProvider.textStyles.title.copy(fontSize = 24.sp),
+                style = TokenProvider.textStyles.title,
                 color = TokenProvider.colors.text,
             )
             Spacer(modifier = Modifier.height(TokenProvider.spacings.xs))
@@ -648,7 +646,7 @@ private fun InviteFriendSheet(
                 Text(
                     text = stringResource(Res.string.settings_invite_link),
                     modifier = Modifier.weight(1f),
-                    style = TokenProvider.textStyles.bodyStrong.copy(fontSize = TokenProvider.fontSizes.caption),
+                    style = TokenProvider.textStyles.captionStrong,
                     color = TokenProvider.colors.text,
                     maxLines = 1,
                 )
@@ -665,8 +663,7 @@ private fun InviteFriendSheet(
                 ) {
                     Text(
                         text = stringResource(Res.string.settings_invite_copy),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
+                        style = TokenProvider.textStyles.captionStrong,
                         color = TokenProvider.colors.textInverse,
                     )
                 }
@@ -678,25 +675,25 @@ private fun InviteFriendSheet(
             ) {
                 InviteShareOption(
                     icon = Icons.Mail,
-                    iconTint = Color(0xFF874E00),
+                    iconTint = TokenProvider.colors.textAccent,
                     label = stringResource(Res.string.settings_invite_email),
-                    iconBackground = Color(0xFFFFE0B2),
+                    iconBackground = TokenProvider.colors.bgAccentSoft,
                     onClick = onCopy,
                     modifier = Modifier.weight(1f),
                 )
                 InviteShareOption(
                     icon = Icons.Chat,
-                    iconTint = Color(0xFF006B1B),
+                    iconTint = TokenProvider.colors.textSuccess,
                     label = stringResource(Res.string.settings_invite_message),
-                    iconBackground = Color(0xFFC8E6C9),
+                    iconBackground = TokenProvider.colors.bgSuccessSoft,
                     onClick = onCopy,
                     modifier = Modifier.weight(1f),
                 )
                 InviteShareOption(
                     icon = Icons.Share,
-                    iconTint = Color(0xFF005E9F),
+                    iconTint = TokenProvider.colors.textInfo,
                     label = stringResource(Res.string.settings_invite_more),
-                    iconBackground = Color(0xFFE3F2FD),
+                    iconBackground = TokenProvider.colors.bgInfoSoft,
                     onClick = onCopy,
                     modifier = Modifier.weight(1f),
                 )
@@ -746,8 +743,7 @@ private fun InviteShareOption(
         }
         Text(
             text = label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
+            style = TokenProvider.textStyles.captionStrong,
             color = TokenProvider.colors.text,
         )
     }
@@ -786,7 +782,7 @@ private fun LanguageSheet(
         Text(
             text = stringResource(Res.string.settings_language_title),
             modifier = Modifier.fillMaxWidth(),
-            style = TokenProvider.textStyles.title.copy(fontSize = 22.sp),
+            style = TokenProvider.textStyles.title,
             color = TokenProvider.colors.text,
             textAlign = TextAlign.Center,
         )
@@ -794,7 +790,7 @@ private fun LanguageSheet(
         Text(
             text = stringResource(Res.string.settings_language_subtitle),
             modifier = Modifier.fillMaxWidth(),
-            style = TokenProvider.textStyles.body.copy(fontSize = TokenProvider.fontSizes.caption),
+            style = TokenProvider.textStyles.caption,
             color = TokenProvider.colors.textMuted,
             textAlign = TextAlign.Center,
         )
@@ -856,7 +852,7 @@ private fun LogoutConfirmSheet(
                     Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFFEBEE)),
+                        .background(TokenProvider.colors.bgDangerSoft),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -869,7 +865,7 @@ private fun LogoutConfirmSheet(
             Spacer(modifier = Modifier.height(TokenProvider.spacings.md))
             Text(
                 text = stringResource(Res.string.settings_logout_title),
-                style = TokenProvider.textStyles.title.copy(fontSize = 24.sp),
+                style = TokenProvider.textStyles.title,
                 color = TokenProvider.colors.text,
             )
             Spacer(modifier = Modifier.height(TokenProvider.spacings.xs))
@@ -929,15 +925,19 @@ internal fun SheetTextArea(
     maxHeight: androidx.compose.ui.unit.Dp = androidx.compose.ui.unit.Dp.Unspecified,
     modifier: Modifier = Modifier,
     label: String? = null,
+    maxLength: Int? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
+    val state = rememberTextFieldState(value)
+    TextFieldChangeEffect(state, onValueChange)
+    val text = state.text
     val floatingLabel = label?.takeIf { it.isNotBlank() }
-    val shouldFloatLabel = floatingLabel != null && (isFocused || value.isNotEmpty())
+    val shouldFloatLabel = floatingLabel != null && (isFocused || text.isNotEmpty())
 
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
+        state = state,
+        inputTransformation = maxLength?.let { InputTransformation.maxLength(it) },
         modifier =
             modifier
                 .fillMaxWidth()
@@ -951,14 +951,14 @@ internal fun SheetTextArea(
                 color = TokenProvider.colors.text,
             ),
         interactionSource = interactionSource,
-        decorationBox = { innerTextField ->
+        decorator = { innerTextField ->
             Box(
                 modifier =
                     Modifier
                         .fillMaxSize()
                         .padding(TokenProvider.spacings.sm),
                 contentAlignment =
-                    if (shouldFloatLabel || value.isNotEmpty()) {
+                    if (shouldFloatLabel || text.isNotEmpty()) {
                         Alignment.TopStart
                     } else {
                         Alignment.CenterStart
@@ -975,7 +975,7 @@ internal fun SheetTextArea(
                             color = TokenProvider.colors.textMuted,
                         )
                         Box(modifier = Modifier.fillMaxWidth()) {
-                            if (value.isEmpty()) {
+                            if (text.isEmpty()) {
                                 Text(
                                     text = placeholder,
                                     style = TokenProvider.textStyles.input,
@@ -987,7 +987,7 @@ internal fun SheetTextArea(
                     }
                 } else {
                     Box(modifier = Modifier.fillMaxWidth()) {
-                        if (value.isEmpty()) {
+                        if (text.isEmpty()) {
                             Text(
                                 text = floatingLabel ?: placeholder,
                                 style = TokenProvider.textStyles.input,
@@ -1097,15 +1097,37 @@ private data class SettingsRowStyle(
 )
 
 /**
- * The five row palettes used by the prototype's settings menu. Each badge is the
- * icon's own colour at 10% opacity, except Help, which sits on soft amber.
+ * Settings rows draw from the four semantic tints, so the menu reads as one
+ * palette. Each badge pairs a hue's soft surface with its ink.
  */
 private object SettingsRowStyles {
-    val Info = SettingsRowStyle(tint = Color(0xFF005E9F), background = Color(0x1A005E9F))
-    val Accent = SettingsRowStyle(tint = Color(0xFF874E00), background = Color(0x1A874E00))
-    val Danger = SettingsRowStyle(tint = Color(0xFFB02500), background = Color(0x1AB02500))
-    val Success = SettingsRowStyle(tint = Color(0xFF006B1B), background = Color(0x1A006B1B))
-    val Help = SettingsRowStyle(tint = Color(0xFF874E00), background = Color(0x33FFC107))
+    val Info: SettingsRowStyle
+        @Composable get() =
+            SettingsRowStyle(
+                tint = TokenProvider.colors.textInfo,
+                background = TokenProvider.colors.bgInfoSoft,
+            )
+
+    val Accent: SettingsRowStyle
+        @Composable get() =
+            SettingsRowStyle(
+                tint = TokenProvider.colors.textAccent,
+                background = TokenProvider.colors.bgAccentSoft,
+            )
+
+    val Danger: SettingsRowStyle
+        @Composable get() =
+            SettingsRowStyle(
+                tint = TokenProvider.colors.textDanger,
+                background = TokenProvider.colors.bgDangerSoft,
+            )
+
+    val Success: SettingsRowStyle
+        @Composable get() =
+            SettingsRowStyle(
+                tint = TokenProvider.colors.textSuccess,
+                background = TokenProvider.colors.bgSuccessSoft,
+            )
 }
 
 private fun primaryButtonProperties(
