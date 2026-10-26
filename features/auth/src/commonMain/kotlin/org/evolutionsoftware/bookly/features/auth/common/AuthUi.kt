@@ -80,3 +80,7 @@ internal fun primaryButtonProperties(
                 else -> ButtonProperties.State.Disabled
             },
     )
+
+private val EMAIL_REGEX = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+
+internal fun isValidEmail(value: String): Boolean = EMAIL_REGEX.matches(value.trim())

@@ -1,12 +1,12 @@
 <resources>
     <string name="auth_sign_in_title">Sign In</string>
-    <string name="auth_sign_in_email_label">Email or Phone</string>
-    <string name="auth_sign_in_email_placeholder">Enter your email or phone</string>
+    <string name="auth_sign_in_email_label">Email</string>
+    <string name="auth_sign_in_email_placeholder">Enter your email</string>
     <string name="auth_sign_in_password_label">Password</string>
     <string name="auth_sign_in_password_placeholder">Enter your password</string>
     <string name="auth_sign_in_forgot_password">Forgot Password?</string>
     <string name="auth_sign_in_submit">Login</string>
-    <string name="auth_sign_in_validation_error">Enter a valid email or phone and a longer password.</string>
+    <string name="auth_sign_in_validation_error">Enter a valid email and a longer password.</string>
     <string name="auth_sign_in_success_message">Welcome back.</string>
     <string name="auth_sign_in_to_register">New here? Create an account</string>
     <string name="auth_sign_in_google">Continue with Google</string>
@@ -14,14 +14,14 @@
     <string name="auth_sign_up_title">Create Account</string>
     <string name="auth_sign_up_symbol">✨</string>
     <string name="auth_sign_up_description">Create an account to save favorites, remember progress, and keep the grown-up settings in one place.</string>
-    <string name="auth_sign_up_email_label">Email or Phone</string>
-    <string name="auth_sign_up_email_placeholder">Enter your email or phone</string>
+    <string name="auth_sign_up_email_label">Email</string>
+    <string name="auth_sign_up_email_placeholder">Enter your email</string>
     <string name="auth_sign_up_password_label">Password</string>
     <string name="auth_sign_up_password_placeholder">Create a password</string>
     <string name="auth_sign_up_confirm_password_label">Confirm Password</string>
     <string name="auth_sign_up_confirm_password_placeholder">Confirm your password</string>
     <string name="auth_sign_up_submit">Create Account</string>
-    <string name="auth_sign_up_validation_error">Enter your email or phone to create your account.</string>
+    <string name="auth_sign_up_validation_error">Enter your email to create your account.</string>
     <string name="auth_sign_up_password_match_error">Passwords do not match yet.</string>
     <string name="auth_sign_up_success_message">Welcome to Bookly.</string>
     <string name="auth_sign_up_to_sign_in">Already have an account? Log in</string>

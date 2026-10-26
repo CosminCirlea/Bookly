@@ -20,7 +20,7 @@ fun ActionText(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    color: Color = TokenProvider.colors.text,
+    color: Color = TokenProvider.colors.textBrand,
     textAlign: TextAlign? = null,
 ) {
     Text(

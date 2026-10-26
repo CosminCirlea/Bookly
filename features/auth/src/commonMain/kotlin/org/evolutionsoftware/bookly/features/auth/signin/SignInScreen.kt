@@ -3,6 +3,9 @@ package org.evolutionsoftware.bookly.features.auth.signin
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -110,6 +113,7 @@ internal fun SignInContent(
             state = emailState,
             enabled = !viewState.isLoading,
             contentType = ContentType.Username + ContentType.EmailAddress,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
         SecureTextField(
@@ -172,18 +176,20 @@ internal fun SignInContent(
         Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
         PlayroomDivider()
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.md, Alignment.CenterHorizontally),
+        ) {
         PlayroomSocialButton(
             label = stringResource(Res.string.auth_sign_in_google),
-            textColor = TokenProvider.colors.socialGoogle,
             icon = Icons.Google,
         )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapSm))
         PlayroomSocialButton(
             label = stringResource(Res.string.auth_sign_in_facebook),
-            textColor = TokenProvider.colors.socialFacebook,
             icon = Icons.Facebook,
             onClick = onFacebook,
         )
+        }
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
         ActionText(
             text = stringResource(Res.string.auth_sign_in_to_register),

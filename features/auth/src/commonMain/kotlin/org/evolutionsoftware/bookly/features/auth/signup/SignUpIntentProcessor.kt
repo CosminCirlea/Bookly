@@ -14,6 +14,7 @@ import org.evolutionsoftware.bookly.core.network.UserSession
 import org.evolutionsoftware.bookly.core.network.UserSessionStore
 import org.evolutionsoftware.bookly.core.usecase.utils.Result
 import org.evolutionsoftware.bookly.features.auth.common.PasswordValidators
+import org.evolutionsoftware.bookly.features.auth.common.isValidEmail
 import org.evolutionsoftware.bookly.services.auth.domain.model.AuthSession
 import org.evolutionsoftware.bookly.services.auth.domain.usecase.RegisterUseCase
 
@@ -32,7 +33,7 @@ internal class SignUpIntentProcessor(
             is SignUpIntent.ConfirmPasswordChanged -> flowOf(SignUpAction.ConfirmPasswordUpdated(intent.value))
             is SignUpIntent.Submit ->
                 flow {
-                    if (intent.emailOrPhone.isBlank()) {
+                    if (!isValidEmail(intent.emailOrPhone)) {
                         emit(SignUpAction.ValidationFailed(Res.string.auth_sign_up_validation_error))
                         return@flow
                     }

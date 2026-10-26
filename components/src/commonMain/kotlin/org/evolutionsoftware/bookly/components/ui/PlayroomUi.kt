@@ -19,6 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -60,46 +64,29 @@ fun PlayroomSecondaryChip(
 @Composable
 fun PlayroomSocialButton(
     label: String,
-    textColor: Color,
     icon: Icons,
     onClick: (() -> Unit)? = null,
 ) {
-    Row(
+    Box(
         modifier =
             Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(TokenProvider.borderRadius.md))
+                .size(56.dp)
+                .clip(CircleShape)
                 .background(TokenProvider.colors.bgSurface)
                 .border(
                     width = TokenProvider.borderWidths.strong,
                     color = TokenProvider.colors.border,
-                    shape = RoundedCornerShape(TokenProvider.borderRadius.md),
+                    shape = CircleShape,
                 )
-                .then(
-                    if (onClick != null) {
-                        Modifier.clickable(onClick = onClick)
-                    } else {
-                        Modifier
-                    },
-                )
-                .padding(
-                    horizontal = TokenProvider.spacings.lg + TokenProvider.spacings.xs,
-                    vertical = TokenProvider.spacings.md,
-                ),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
+                .semantics { contentDescription = label; role = Role.Button }
+                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             painter = painterResource(icon.icon),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(if (icon == Icons.Facebook) 24.dp else 20.dp),
-        )
-        Text(
-            text = label,
-            modifier = Modifier.padding(start = TokenProvider.spacings.sm),
-            color = textColor,
-            style = TokenProvider.textStyles.bodyStrong,
+            modifier = Modifier.size(if (icon == Icons.Facebook) 28.dp else 24.dp),
         )
     }
 }

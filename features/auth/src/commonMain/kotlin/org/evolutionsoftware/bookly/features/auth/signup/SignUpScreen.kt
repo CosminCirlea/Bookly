@@ -3,6 +3,13 @@ package org.evolutionsoftware.bookly.features.auth.signup
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -105,6 +112,7 @@ internal fun SignUpContent(
                 ),
             state = emailState,
             enabled = !viewState.isLoading,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
         )
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapMd))
         SecureTextField(
@@ -176,18 +184,20 @@ internal fun SignUpContent(
         Spacer(modifier = Modifier.height(TokenProvider.spacings.sectionGap))
         PlayroomDivider(label = stringResource(Res.string.auth_sign_up_divider))
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(TokenProvider.spacings.md, Alignment.CenterHorizontally),
+        ) {
         PlayroomSocialButton(
             label = stringResource(Res.string.auth_sign_in_google),
-            textColor = TokenProvider.colors.socialGoogle,
             icon = Icons.Google,
         )
-        Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapSm))
         PlayroomSocialButton(
             label = stringResource(Res.string.auth_sign_in_facebook),
-            textColor = TokenProvider.colors.socialFacebook,
             icon = Icons.Facebook,
             onClick = onFacebook,
         )
+        }
         Spacer(modifier = Modifier.height(TokenProvider.spacings.formGapLg))
         Text(
             text = stringResource(Res.string.auth_sign_up_terms),
